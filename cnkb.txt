@@ -1,0 +1,291 @@
+"Prefix": "."
+
+"ENUM": {
+	"STAT1": [
+		"basicStat",	//전직 떄에만 가변, 기본 불변
+		"levelStat",	//SP로 증가 가능, 감소 불가능
+		"equipStat",	//장비 변경 시 증감
+		"quickStat",	//일시적으로 저장되는 스텟
+		"ARStat",		//연구/업적 스텟
+		"increStat",	//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + AR 스텟
+		"totalStat"		//베이직 스텟 + 인크리 스텟
+	],
+	"STAT2": [
+		"maxhp",	//최대 체력
+		"hp",		//현재 체력
+		"maxmn",	//최대 마나
+		"mn",		//현재 마나
+		"maxeg",	//최대 활동력
+		"eg",		//현재 활동력
+		"atk",		//공격력
+		"matk",		//마법 공격력
+		"def",		//방어력
+		"mdef",		//마법 방어력
+		"bre",		//관통력
+		"mbre",		//마법 관통력
+		"dra",		//흡수력
+		"mdra",		//마법 흡수력
+		"cd",		//쿨감
+		"spd",		//이속
+		"eva",		//회피
+		"acc"		//정확성
+	],
+	"ETYPE": [
+		"helmet",		//투구
+		"chestplate",	//갑옷(상의)
+		"leggings",		//갑옷(하의)
+		"shoes",		//신발
+		"ring",			//반지
+		"earring",		//귀걸이
+		"necklace",		//목걸이
+		"gem1",			//보석1
+		"gem2",			//보석2
+		"gem3",			//보석3
+		"heartgem",		//보석 심장 - 보석 1~3이 모두 있을 시, 보석 1~3의 스텟에 영향을 받아 자동 생성 됨
+		"amulet"		//부적 - 특별한 효과들이 담겨있다
+	],
+	"TYPE": [
+		"fire",			//도트데미지 - 일정 시간 후 자동 해제
+		"poison",		//도트데미지 - 기본 영구 지속
+		"grass",		//회복
+		"water",		//디버프 해제
+		"ice",			//기절
+		"dirt",			//데미지 감소
+		"stone",		//데미지 반사
+		"iron",			//추가 물리 데미지
+		"energy",		//추가 마법 데미지
+		"dark",			//침묵
+		"mirror"		//디버프 반사
+	],
+	"JOB": [
+		"NOTHING",			//무직
+		"MERCHANT",			//일반 상인
+		"MAGIC_MERCHANT",	//마법 상인
+		"DARK_DEALER",		//암흑 거래상
+		"WANDERING_TRADER",	//떠돌이 상인
+		"BLACKSMITH",		//대장장이
+		"MAGIC_BLACKSMITH",	//마법 대장장이
+		"FARMER",			//농부
+		"COACHMAN",			//마부
+		"WARRIOR",			//전사
+		"MAGICIAN",			//마법사
+		"TANKER",			//탱커
+		"ARCHER",			//궁수
+		"PRIEST",			//성직자
+		"DARK_PRIEST"		//암흑 성직자
+	],
+	"WAIT_RESPONSE": [
+		"NOTHING",			//대답 없음
+		"YES",				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
+		"NO",				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
+		"NUMBER",			//숫자 형태 전부
+		"ANYTHING"			//아무 채팅
+	],
+	"DOING": [
+		"NONE",
+		"MOVE",
+		"BUY",
+		"CHAT",
+		"FIGHT",
+		"EXPLORE",
+		"MINE",
+		"REINFORCE"
+	]
+}
+
+"Coordinate": {
+	"x": Integer,			//X 좌표(Unsigned)(가로) = 0
+	"y": Integer			//Y 좌표(Unsigned)(세로) = 0
+	//-----------------------------------------------
+	Coordinate()
+	Coordinate(x)
+	Coordinate(x, y)
+	//-----------------------------------------------
+	getter/setter/adder
+	getDistance(Coordinate)	//길찾기 알고리즘 이용 + 마을마다 - Integer(거리)
+	//-----------------------------------------------
+}
+
+"Chat": {
+	"id": Integer,								//챗 아이디 - 기본키
+	"name": String,								//챗 이름
+	"text": String,								//챗 텍스트
+	"money": Long,								//지급 돈 = 0
+	"teleport": List<Coordinate>,				//텔레포트 좌표 목록 = []
+	"wait": Map<WAIT_RESPONSE, Integer>,		//WAIT_RESPONSE, 챗 id = {WAIT_RESPONSE.NOTHING, -1}
+	"quest": Map<Integer, Integer>				//퀘스트 id, 확률(기본 100%) = {}
+	"stat": Map<STAT2, Integer>,				//STAT2, 지급 스텟 = {}
+	"item": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
+	//-----------------------------------------------
+	Chat(name, text)
+	Chat(chat)
+	//-----------------------------------------------
+	getter/setter
+}
+
+"Npc": {
+	"id": Integer,															//인식 정보 - 기본키
+	"name": String,															//npc 이름
+	"job": Map<JOB, Integer>,												//JOB, 직업 레벨 = {}
+	"coord": Coordinate														//Coordinate = new Coordinate()
+	"chat": [
+		{
+			"chat": Integer,												//Chat id = -1,
+			"min": {
+				"lv": Integer,												//최소 레벨 제한 = 1
+				"closeRate": Integer,										//최소 친밀도 제한 = 0
+				"stat": Map<STAT2, Integer>									//STAT2, 최소 스텟 제한 = {}
+			},
+			"max": {
+				"lv": Integer,												//최대 레벨 제한 = 999
+				"closeRate": Integer,										//최대 친밀도 제한 = 10000
+				"stat": Map<STAT2, Integer>									//STAT2, 최대 스텟 제한 = {}
+			}
+		}
+	]
+ 	"selling": Map<JOB, Map<Integer, Map<Integer, Map<Integer, Integer>>>>,	//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
+	"easter": Map<Integer, Integer>											//퀘스트 id, 확률(0.0001% 기준) = {}
+	//-----------------------------------------------
+	Npc(name)
+	Npc(npc)
+	//-----------------------------------------------
+	getter/setter
+	executeEaster() - boolean(실행 여부)
+	getAvailableChats(player id) - List<Chat>(표시 가능한 챗들)
+	getAvailableSellings(JOB, player id) - List<Item, Integer>(해당 직업의 상품 내역 중 구매 가능한 아이템들과 갯수)
+}
+
+"Quest": {
+	"id": Integer,										//인식 정보 - 기본키
+	"name": String,										//이름
+	"isClearedOnce": boolean,							//클리어 여부(최초 클리어 시 알림) = false
+	"isRepeatable": boolean,							//반복 허용 여부 = false
+	"limit": {
+		"min": {
+			"lv": Integer								//최소 레벨 제한 = 1
+			"closeRate": Map<Integer, Integer>,			//엔피시 id, 최소 친밀도 제한 = {}
+			"stat": Map<STAT2, Integer>					//STAT1, {STAT2, 최소 스텟 제한} = {}
+		},
+		"max": {
+			"lv": Integer								//최대 레벨 제한 = 999
+			"closeRate": Map<Integer, Integer>,			//엔피시 id, 최대 친밀도 제한 = {}
+			"stat": Map<STAT2, Integer>					//STAT1, {STAT2, 최대 스텟 제한} = {}
+		}
+	}
+	"need": {
+		"money": Integer,								//클리어 요구 돈 = 0
+		"item": Map<Integer, Integer>,					//클리어 요구 아이템, 아이템 갯수 = {}
+		"closeRate": Map<Integer, Integer>,				//클리어 요구 엔피시 id, 필요 친밀도 = {}
+	},
+	"reward": {
+		"exp": Long,									//보상 경험치 = 0
+		"adv": Integer,									//보상 모험 = 0
+		"money": Integer,								//보상 돈 = 0
+		"item": Map<Integer, Integer>,					//보상 아이템, 아이템 갯수 = {}
+		"stat": Map<STAT2, Integer>						//보상 스텟, 스텟 = {}
+	}
+	//-----------------------------------------------
+	Quest(name)
+	Quest(quest)
+	//-----------------------------------------------
+	getter/setter
+	checkClear(player id) - boolean(클리어 체크 여부) (플레이어가 특정 행동을 할 때마다 need에서 처리를 해 주고, 모두 0일 시 true 리턴해주면 됨)
+}
+
+"Item": {
+	"id": Integer,			//인식 정보 - 기본키
+	"name": String,			//이름(변경 불가능)
+	"description": String,	//설명
+	"value": Long,			//기본 가격 = -1(구매 불가)
+	"isWeapon": boolean		//무기인지 아이템인지 판별 - 수정 불가 = false
+	//-----------------------------------------------
+	Item(name, description)
+	Item(item)
+	//-----------------------------------------------
+	getter
+	setter - isWeapon 제외
+}
+
+"Equipment": {										//Item 상속
+	"id": Integer,									//인식 정보 - 기본키
+	"typeId": Integer,								//원형 아이디
+	"name": String,									//이름(변경 가능)
+	"description": String,							//설명
+	"eType": ETYPE									//ETYPE
+	"value": Long,									//기본 가격 = -1(구매 불가),
+	"isItem": boolean								//무기인지 아이템인지 판별 - 수정불가 = true
+	"stat": Map<STAT2, Integer>,					//STAT2, 스텟 = {}
+	"limit": {
+		"lv": Integer,								//레벨 제한 = 1
+		"stat": Map<STAT2, Integer>					//STAT2, 스텟 제한 = {}
+	},
+	"type": Map<TYPE, Integer>,						//TYPE, 속성 레벨 = {}
+	"reinforce": {
+		"max": Integer,								//최대 강화 횟수
+		"reinforce": Map<STAT2, Integer>,			//STAT2, 강화 스텟 = {}
+		"lvDown": List<Integer>						//레벨 다운 수치 = []
+	}
+	//-----------------------------------------------
+	Equipment(typeId, name, description, eType)
+	Equipment(Item, typeId, eType)
+	Equipment(Equipment)
+	//-----------------------------------------------
+	getter/setter
+	adder - value
+}
+
+"Player": {
+	"id": Integer,			//인식 정보 - 기본 키
+	"nickName": String,		//닉네임 - 후보 키
+	"name": String,			//카카오톡 이름 - 합성 키(image)
+	"image": String,		//카카오톡 프로필 - 합성 키(name)
+	"lastTime": Long,		//최종 접속 시간 = Date.now()
+	"recentRoom": String,	//최근 채팅친 방
+	"coord": Coordinate		//현재 위치 = new Coordinate()
+	"title": String,		//현재 칭호 = ""
+	"money": Long,			//돈 = 1000
+	"lv": Integer,			//레벨 = 1
+	"exp": Long,			//경험치 = 0
+	"adv": Integer,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
+	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
+	"job": Map<JOB, Integer>,						//JOB, 직업 레벨 = {}
+	"stat": {
+		"main": Map<STAT1, Map<STAT2, Integer>>,	//STAT1, {STAT2, 스텟} = {}
+		"other": Map<STAT3, Integer>,				//STAT3, 스텟 = {}
+		"resist": Map<TYPE, Integer>				//TYPE, 저항 스텟 = {}
+	},
+	"inventory": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
+	"equiped": Map<ETYPE, Integer>,					//ETYPE, 장비 id = {}
+	"quest": {
+		"now": List<Integer>,						//퀘스트 id = []
+		"cleared": Map<Integer, Integer>			//퀘스트 id, 클리어 횟수 = {}
+	},
+	"data": {
+		"achieve": List<Integer>,					//업적 id = []
+		"research": List<Integer>,					//연구 id = []
+		"title": List<String>,						//칭호 이름 = []
+		"closeRate": Map<Integer, Integer>,			//엔피시 id, 친밀도 = {}
+		"log": Map<String, Integer>					//특정 행동(ex 기부), 행동 횟수 = {}
+	},
+	"buff": {
+		"buff": Map<Long, Map<STAT2, Integer>>,		//종료시간, {STAT2, 증가 스텟}
+		"debuff": Map<Long, Map<STAT2, Integer>,	//종료시간, {STAT2, 감소 스텟}
+		"type": Map<Long, Map<TYPE, Integer>>,		//종료시간, {TYPE, 단계}
+	}
+	//-----------------------------------------------
+	Player(nickName, name, image, room)
+	Player(Player) - 계정 이동
+	//-----------------------------------------------
+	getter/setter
+	checkLvUp()
+	levelUp()
+	canGetQuest(questId)
+	clearQuest(questId)
+	canEquip(equipId)
+	equip(equipId)
+	handleQuest()
+	handleAchieve()
+	handleResearch()
+	handleBuff()
+	update() - 버전 업데이트
+}
