@@ -111,9 +111,9 @@
 	"name": String,								//챗 이름
 	"text": String,								//챗 텍스트
 	"money": Long,								//지급 돈 = 0
-	"teleport": List<Coordinate>,				//텔레포트 좌표 목록 = []
+	"teleport": Coordinate,						//텔레포트 좌표 목록 = new Coordinate()
 	"wait": Map<WAIT_RESPONSE, Integer>,		//WAIT_RESPONSE, 챗 id = {WAIT_RESPONSE.NOTHING, -1}
-	"quest": Map<Integer, Integer>				//퀘스트 id, 확률(기본 100%) = {}
+	"quest": Map<Integer, Integer>				//퀘스트 id, 확률(기본 100%(0.01% 단위)) = {}
 	"stat": Map<STAT2, Integer>,				//STAT2, 지급 스텟 = {}
 	"item": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
 	//-----------------------------------------------
@@ -246,12 +246,12 @@
 	"money": Long,			//돈 = 1000
 	"lv": Integer,			//레벨 = 1
 	"exp": Long,			//경험치 = 0
+	"sp": Integer,			//잔여 레벨 스탯 = 10
 	"adv": Integer,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
 	"job": Map<JOB, Integer>,						//JOB, 직업 레벨 = {}
 	"stat": {
 		"main": Map<STAT1, Map<STAT2, Integer>>,	//STAT1, {STAT2, 스텟} = {}
-		"other": Map<STAT3, Integer>,				//STAT3, 스텟 = {}
 		"resist": Map<TYPE, Integer>				//TYPE, 저항 스텟 = {}
 	},
 	"inventory": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
@@ -274,12 +274,16 @@
 	}
 	//-----------------------------------------------
 	Player(nickName, name, image, room)
-	Player(Player) - 계정 이동
+	Player(name, image, room, Player) - 계정 이동
 	//-----------------------------------------------
 	getter/setter
+	getNeedExp()
 	checkLvUp()
 	levelUp()
-	canGetQuest(questId)
+	canAddQuest(questId)
+	canAddAchieve(achieveId)
+	canAddResearch(researchId)
+	canAddTitle(title)
 	clearQuest(questId)
 	canEquip(equipId)
 	equip(equipId)
@@ -287,5 +291,6 @@
 	handleAchieve()
 	handleResearch()
 	handleBuff()
+	updateStat()
 	update() - 버전 업데이트
 }
