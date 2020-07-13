@@ -1,7 +1,7 @@
 "Prefix": "."
 
 "ENUM": {
-	"STAT1": [
+	"STAT1": {
 		"basicStat",	//전직 떄에만 가변, 기본 불변
 		"levelStat",	//SP로 증가 가능, 감소 불가능
 		"equipStat",	//장비 변경 시 증감
@@ -9,8 +9,8 @@
 		"ARStat",		//연구/업적 스텟
 		"increStat",	//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + AR 스텟
 		"totalStat"		//베이직 스텟 + 인크리 스텟
-	],
-	"STAT2": [
+	},
+	"STAT2": {
 		"maxhp",	//최대 체력
 		"hp",		//현재 체력
 		"maxmn",	//최대 마나
@@ -29,8 +29,8 @@
 		"spd",		//이속
 		"eva",		//회피
 		"acc"		//정확성
-	],
-	"ETYPE": [
+	},
+	"ETYPE": {
 		"helmet",		//투구
 		"chestplate",	//갑옷(상의)
 		"leggings",		//갑옷(하의)
@@ -43,8 +43,8 @@
 		"gem3",			//보석3
 		"heartgem",		//보석 심장 - 보석 1~3이 모두 있을 시, 보석 1~3의 스텟에 영향을 받아 자동 생성 됨
 		"amulet"		//부적 - 특별한 효과들이 담겨있다
-	],
-	"TYPE": [
+	},
+	"TYPE": {
 		"fire",			//도트데미지 - 일정 시간 후 자동 해제
 		"poison",		//도트데미지 - 기본 영구 지속
 		"grass",		//회복
@@ -56,41 +56,50 @@
 		"energy",		//추가 마법 데미지
 		"dark",			//침묵
 		"mirror"		//디버프 반사
-	],
-	"JOB": [
-		"NOTHING",			//무직
-		"MERCHANT",			//일반 상인
-		"MAGIC_MERCHANT",	//마법 상인
-		"DARK_DEALER",		//암흑 거래상
-		"WANDERING_TRADER",	//떠돌이 상인
-		"BLACKSMITH",		//대장장이
-		"MAGIC_BLACKSMITH",	//마법 대장장이
-		"FARMER",			//농부
-		"COACHMAN",			//마부
-		"WARRIOR",			//전사
-		"MAGICIAN",			//마법사
-		"TANKER",			//탱커
-		"ARCHER",			//궁수
-		"PRIEST",			//성직자
-		"DARK_PRIEST"		//암흑 성직자
-	],
-	"WAIT_RESPONSE": [
-		"NOTHING",			//대답 없음
-		"YES",				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
-		"NO",				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
-		"NUMBER",			//숫자 형태 전부
-		"ANYTHING"			//아무 채팅
-	],
-	"DOING": [
-		"NONE",
-		"MOVE",
-		"BUY",
-		"CHAT",
-		"FIGHT",
-		"EXPLORE",
-		"MINE",
-		"REINFORCE"
-	]
+	},
+	"JOB": {
+		"merchant",			//일반 상인
+		"magicMerchant",	//마법 상인
+		"darkDealer",		//암흑 거래상
+		"wanderingTrader",	//떠돌이 상인
+		"blacksmith",		//대장장이
+		"magicBlacksmith",	//마법 대장장이
+		"farmer",			//농부
+		"coachman",			//마부
+		"warrior",			//전사
+		"magician",			//마법사
+		"tanker",			//탱커
+		"archer",			//궁수
+		"priest",			//성직자
+		"darkPriest"		//암흑 성직자
+	},
+	"WAIT_RESPONSE": {
+		"nothing",			//대답 없음
+		"yes",				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
+		"no",				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
+		"number",			//숫자 형태 전부
+		"anything"			//아무 채팅
+	},
+	"DOING": {
+		"none",				//Idle 상태
+		"move",				//이동
+		"buy",				//구매
+		"chat",				//대화
+		"fight",			//전투
+		"explore",			//탐험/조사
+		"mine",				//광질/채집 등
+		"reinforce"			//강화
+	},
+	"ID": {
+		"player",			//플레이어
+		"chat",				//채팅
+		"npc",				//엔피시
+		"quest",			//퀘스트
+		"item",				//아이템
+		"equipment",		//장비
+		"achieve",			//업적
+		"research"			//연구
+	}
 }
 
 "Coordinate": {
@@ -106,10 +115,11 @@
 	"id": Integer,								//챗 아이디 - 기본키
 	"name": String,								//챗 이름
 	"text": String,								//챗 텍스트
+	"percentTotal": Intger,						//확률 총 합(분모)
 	"money": Long,								//지급 돈 = 0
 	"teleport": Coordinate,						//텔레포트 좌표 목록 = new Coordinate()
 	"wait": Map<WAIT_RESPONSE, Integer>,		//WAIT_RESPONSE, 챗 id = {WAIT_RESPONSE.NOTHING, -1}
-	"quest": Map<Integer, Integer>				//퀘스트 id, 확률(기본 100%(0.01% 단위)) = {}
+	"quest": Map<Integer, Integer>				//퀘스트 id, 확률 = {}
 	"stat": Map<STAT2, Integer>,				//STAT2, 지급 스텟 = {}
 	"item": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
 	//-----------------------------------------------
@@ -119,18 +129,20 @@
 "Npc": {
 	"id": Integer,															//인식 정보 - 기본키
 	"name": String,															//npc 이름
-	"job": Map<JOB, Integer>,												//JOB, 직업 레벨 = {}
 	"coord": Coordinate														//Coordinate = new Coordinate()
+	"job": Map<JOB, Integer>,												//JOB, 직업 레벨 = {}
 	"chat": [
 		{
-			"chat": Integer,												//Chat id = -1,
-			"percent": Integer												//확률(0.01%)
+			"chat": Integer,												//챗 id = -1,
+			"percent": Integer												//확률
 			"minLv": Integer,												//최소 레벨 제한 = 1
 			"minCloseRate": Integer,										//최소 친밀도 제한 = 0
-			"minStat": Map<STAT2, Integer>									//STAT2, 최소 스텟 제한 = {}
+			"minStat": Map<STAT2, Integer>,									//STAT2, 최소 스텟 제한 = {}
+			"minQuest": Map<Integer, Integer>,								//퀘스트 Id, 최소 클리어 횟수 제한
 			"maxLv": Integer,												//최대 레벨 제한 = 999
 			"maxCloseRate": Integer,										//최대 친밀도 제한 = 10000
-			"maxStat": Map<STAT2, Integer>									//STAT2, 최대 스텟 제한 = {}
+			"maxStat": Map<STAT2, Integer>,									//STAT2, 최대 스텟 제한
+			"maxQuest": Map<Integer, Integer>								//퀘스트 Id, 최대 클리어 횟수 제한
 		}
 	]
  	"selling": Map<JOB, Map<Integer, Map<Integer, Map<Integer, Integer>>>>,	//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
@@ -169,6 +181,7 @@
 	"id": Integer,			//인식 정보 - 기본키
 	"name": String,			//이름(변경 불가능)
 	"description": String,	//설명
+	"handleLevel": Integer,	//아이템 등급
 	"value": Long,			//기본 가격 = -1(구매 불가)
 	"isWeapon": boolean		//무기인지 아이템인지 판별 - 수정 불가 = false
 	//-----------------------------------------------
@@ -178,12 +191,12 @@
 
 "Equipment": {										//Item 상속
 	"id": Integer,									//인식 정보 - 기본키
-	"typeId": Integer,								//원형 아이디
 	"name": String,									//이름(변경 가능)
 	"description": String,							//설명
-	"eType": ETYPE									//ETYPE
+	"eType": ETYPE,									//ETYPE
+	"handleLevel": Integer,							//장비 등급
 	"value": Long,									//기본 가격 = -1(구매 불가),
-	"isItem": boolean								//무기인지 아이템인지 판별 - 수정불가 = true
+	"isItem": boolean,								//무기인지 아이템인지 판별 - 수정불가 = true
 	"stat": Map<STAT2, Integer>,					//STAT2, 스텟 = {}
 	"limitLv": Integer,								//레벨 제한 = 1
 	"limitStat": Map<STAT2, Integer>				//STAT2, 스텟 제한 = {}
@@ -212,6 +225,7 @@
 	"sp": Integer,			//잔여 레벨 스탯 = 10
 	"adv": Integer,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
+	"nowChat": Integer		//Quest id
 	"job": Map<JOB, Integer>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Integer>>,	//STAT1, {STAT2, 스텟} = {}
 	"resistStat": Map<TYPE, Integer>				//TYPE, 저항 스텟 = {}

@@ -60,16 +60,7 @@ const FUNC = {
 		VAR.log += " (" + line + ") - " + logState + "\n";
 	},
 
-	checkType: function (original, variable, line) {
-		if (typeof variable !== typeof original) {
-			this.log("Type Error - (original : " + typeof original + ", variable : " + typeof variable + ")", line, ENUM.LOG.error);
-			return original;
-		}
-
-		return variable;
-	},
-
-	checkType_: function (func, variable, line) {
+	checkType: function (func, variable, line) {
 		var funcName = this.getFuncName(func);
 		var varFuncName = variable.constructor.name;
 
@@ -81,10 +72,10 @@ const FUNC = {
 		return variable;
 	},
 
-	checkNaN: function (defaultReturn, variable, line, min, max) {
+	checkNaN: function (variable, line, min, max) {
 		if (isNaN(variable) || (typeof min !== "undefined" && variable < min) || (typeof max !== "undefined" && variable > max)) {
-			this.log("NaN Error - (default : " + defaultReturn + ", variable : " + variable + ")", line, ENUM.LOG.error);
-			return defaultReturn;
+			this.log("NaN Error - (variable : " + variable + ")", line, ENUM.LOG.error);
+			return null;
 		}
 
 		return Number(variable);
@@ -145,7 +136,7 @@ const FUNC = {
 	reply: function (player, text, more) {
 		Api.replyRoom(player.getRecentRoom(),
 			"[" + player.getTitle() + "] " + player.getNickName() + "\n" +
-			text + VAR.all + "----------" + more, true);
+			text + VAR.all + "----------\n" + more, true);
 	},
 
 	time: function () {
@@ -224,47 +215,47 @@ const ENUM = {
 		"max": 10
 	},
 	"JOB": {
-		"MERCHANT": 0,			//일반 상인
-		"MAGIC_MERCHANT": 1,	//마법 상인
-		"DARK_DEALER": 2,		//암흑 거래상
-		"WANDERING_TRADER": 3,	//떠돌이 상인
-		"BLACKSMITH": 4,		//대장장이
-		"MAGIC_BLACKSMITH": 5,	//마법 대장장이
-		"FARMER": 6,			//농부
-		"COACHMAN": 7,			//마부
-		"WARRIOR": 8,			//전사
-		"MAGICIAN": 9,			//마법사
-		"TANKER": 10,			//탱커
-		"ARCHER": 11,			//궁수
-		"PRIEST": 12,			//성직자
-		"DARK_PRIEST": 13,		//암흑 성직자
+		"merchant": 0,			//일반 상인
+		"magicMerchant": 1,	//마법 상인
+		"dark_Dealer": 2,		//암흑 거래상
+		"wanderingTrader": 3,	//떠돌이 상인
+		"blacksmith": 4,		//대장장이
+		"magicBlacksmith": 5,	//마법 대장장이
+		"farmer": 6,			//농부
+		"coachman": 7,			//마부
+		"warrior": 8,			//전사
+		"magician": 9,			//마법사
+		"tanker": 10,			//탱커
+		"archer": 11,			//궁수
+		"priest": 12,			//성직자
+		"dark_priest": 13,		//암흑 성직자
 	},
 	"WAIT_RESPONSE": {
-		"NOTHING": 0,			//대답 없음
-		"YES": 1,				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
-		"NO": 2,				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
-		"NUMBER": 3,			//숫자 형태 전부
-		"ANYTHING": 4,			//아무 채팅
+		"nothing": 0,			//대답 없음
+		"yes": 1,				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
+		"no": 2,				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
+		"number": 3,			//숫자 형태 전부
+		"anything": 4,			//아무 채팅
 	},
 	"DOING": {
-		"NONE": 0,				//IDLE 상태
-		"MOVE": 1,				//이동
-		"BUY": 2,				//구매
-		"CHAT": 3,				//NPC와 대화
-		"FIGHT": 4,				//전투
-		"EXPLORE": 5,			//탐험/수색
-		"MINE": 6,				//광질 및 다양한 채집
-		"REINFORCE": 7,			//강화, 마법부여 등
+		"none": 0,				//IDLE 상태
+		"move": 1,				//이동
+		"buy": 2,				//구매
+		"chat": 3,				//NPC와 대화
+		"fight": 4,				//전투
+		"explore": 5,			//탐험/수색
+		"mine": 6,				//광질 및 다양한 채집
+		"reinforce": 7,			//강화, 마법부여 등
 	},
 	"ID": {
-		"PLAYER": 0,
-		"CHAT": 1,
-		"NPC": 2,
-		"QUEST": 3,
-		"ITEM": 4,
-		"EQUIPMENT": 5,
-		"ACHIEVE": 6,
-		"RESEARCH": 7
+		"player": 0,
+		"chat": 1,
+		"npc": 2,
+		"quest": 3,
+		"item": 4,
+		"equipment": 5,
+		"achieve": 6,
+		"research": 7
 	}
 };
 
@@ -283,26 +274,310 @@ const VAR = {
 };
 
 function Coordinate(x, y) {
+	this.x = this.setX(x);
+	this.y = this.setY(y);
 
+	this.getX = function () {
+		return this.x;
+	}
+	this.getY = function () {
+		return this.y;
+	}
+
+	this.setX = function (x) {
+		var temp = FUNC.checkNaN(x, FUNC.line(), 0);
+		if (temp !== null) this.x = temp;
+	}
+	this.setY = function (y) {
+		var temp = FUNC.checkNaN(y, FUNC.line(), 0);
+		if (temp !== null) this.y = temp;
+	}
+
+	this.addX = function (x) {
+		var temp = FUNC.checkNaN(x, FUNC.line());
+		if (temp !== null) this.setX(this.x + temp);
+	}
+	this.addY = function (y) {
+		var temp = FUNC.checkNaN(y, FUNC.line());
+		if (temp !== null) this.setY(this.y + temp);
+	}
 }
 
 function Chat(name, text, chat) {
+	if (typeof chat === "undefined") {
+		this.id = this.setId(FUNC.getId(ENUM.id));
+		this.name = this.setName(name);
+		this.text = this.setText(text);
+		this.percentTotal = 0;
+		this.money = 0;
+		this.teleport = new Coordinate();
+		this.wait = new Map();
+		this.quest = new Map();
+		this.stat = new Map();
+		this.item = new Map();
 
+		this.setWait(ENUM.WAIT_RESPONSE.nothing, -1);
+		FUNC.log("Created New Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	else {
+		this.id = chat.id;
+		this.name = chat.name;
+		this.text = chat.text;
+		this.percentTotal = chat.percentTotal;
+		this.money = chat.money
+		this.teleport = chat.teleport
+		this.wait = chat.wait;
+		this.quest = chat.quest;
+		this.stat = chat.stat;
+		this.item = chat.item;
+
+		FUNC.log("Copied Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	this.getWait = function (waitEnum) {
+		var temp = FUNC.checkNaN(null, waitEnum, FUNC.line());
+		return this.wait.get(temp);
+	}
+	this.getQuest = function (questId) {
+		var temp = FUNC.checkNaN(null, questId, FUNC.line());
+		return this.quest.get(temp);
+	}
+	this.getStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum);
+		return this.quest.get(temp);
+	}
+	this.getItem = function (itemId) {
+		var temp = FUNC.checkNaN(null, itemId, FUNC.line());
+		return this.quest.get(temp);
+	}
+
+	this.setId = function (id) {
+		var temp = FUNC.checkNaN(this.getId(), id, FUNC.line());
+		if (temp !== null) this.id = id;
+	}
+	this.setName = function (name) {
+		var temp = FUNC.checkType(String, name, FUNC.line());
+		if (temp !== null) this.name = name;
+	}
+	this.setText = function (text) {
+		var temp = FUNC.checkType(String, text, FUNC.line());
+		if (temp !== null) this.text = text;
+	}
+	this.setMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line());
+		if (temp !== null) this.money = money;
+	}
+	this.setTeleport = function (teleport) {
+		var temp = FUNC.checkType(Coordinate, teleport, FUNC.line());
+		if (temp !== null) this.teleport = teleport;
+	}
+	this.setWait = function (waitEnum, chatId, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(waitEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(chatId, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			if (ignore === false && typeof this.getWait(temp1) !== "undefined")
+				return;
+			this.wait.set(temp1, temp2);
+		}
+	}
+	this.setQuest = function (questId, percent, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(questId, FUNC.line());
+		var temp2 = FUNC.checkNaN(percent, FUNC.line(), 1);
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getQuest(temp1);
+			if (ignore === false && typeof value !== "undefined")
+				return;
+
+			this.totalStat -= value;
+			this.totalStat += temp2;
+			this.quest.set(temp1, temp2);
+		}
+	}
+	this.setStat = function (stat2Enum, stat, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			if (ignore === false && typeof this.getStat(temp1) !== "undefined")
+				return;
+			this.quest.set(temp1, temp2);
+		}
+	}
+	this.setItem = function (itemId, itemCount, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			if (ignore === false && typeof this.getItem(temp1) !== "undefined")
+				return;
+			this.quest.set(temp1, temp2);
+		}
+	}
+
+	this.addMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line());
+		if (temp !== null) this.setMoney(this.money + money);
+	}
+	this.addQuestPercent = function (questId, percent, setZero) {
+		setZero = typeof setZero === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(questId, FUNC.line());
+		var temp2 = FUNC.checkNaN(percent, FUCN.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getQuest(temp1);
+
+			if (typeof value === "undefined") {
+				if (setZero)
+					value = 0;
+				else {
+					FUNC.log("addQuestPercent Warning", FUNC.line(), ENUM.LOG.warning);
+					return;
+				}
+			}
+
+			this.setQuest(temp1, value + temp2, true);
+		}
+	}
+	this.addStatStat = function (stat2Enum, stat, setZero) {
+		setZero = typeof setZero === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getStat(temp1);
+
+			if (typeof value === "undefined") {
+				if (setZero)
+					value = 0;
+				else {
+					FUNC.log("addStatStat Warning", FUNC.line(), ENUM.LOG.warning);
+					return;
+				}
+			}
+
+			this.setStat(temp1, value + temp2, true);
+		}
+	}
+	this.addItemCount = function (itemId, itemCount, setZero) {
+		setZero = typeof setZero === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getStat(temp1);
+
+			if (typeof value === "undefined") {
+				if (setZero)
+					value = 0;
+				else {
+					FUNC.log("addItemCount Warning", FUNC.line(), ENUM.LOG.warning);
+					return;
+				}
+			}
+
+			this.setItem(temp1, value + temp2, true);
+		}
+	}
+
+	this.executeQuest = function () {
+		var random = FUNC.random(this.percentTotal);
+		var compare = 0;
+
+		var iterator = this.quest.entries();
+		var value;
+		while (true) {
+			value = iterator.next().value;
+
+			if (typeof value === "undefined") {
+				FUNC.log("executeQuest Error", FUNC.line(), ENUM.LOG.error);
+				return;
+			}
+
+			compare += value[1];
+			if (compare <= random)
+				return value[0];
+		}
+	}
 }
 
 function Npc(name, npc) {
+	if (typeof npc === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.npc);
+		this.name = name;
+		this.coord = new Coordinate();
+		this.job = new Map();
+		this.chat = new Array();
+		this.selling = new Map();
+
+		FUNC.log("Created New Npc - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	else {
+		this.id = npc.id;
+		this.name = npc.name;
+		this.coord = npc.coord;
+		this.job = npc.get
+		this.chat = npc.chat;
+		this.selling = npc.selling;
+
+		FUNC.log("Copied Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	this.getJob = function (jobEnum) {
+		var temp = FUNC.checkNaN(jobEnum, FUNC.line());
+		return this.job.get(temp);
+	}
+	this.getChat = function (chatId) {
+		var temp = FUNC.checkNaN(chatId, FUNC.line());
+
+		if (temp !== null) {
+			for (var i = 0; i < this.chat.length; i++) {
+				if (this.chat[i].get("chat") === temp)
+					return i;
+			}
+		}
+
+		return undefined;
+	}
+	this.getSelling = function (jobEnum, jobLv, minCloseRate, itemId) {
+		var temp1 = FUNC.checkNaN(jobEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobLv, FUNC.line(), 1, 100);
+		var temp3 = FUNC.checkNaN(minCloseRate, FUNC.line(), 0, 10000);
+		var temp4 = FUNC.checkNaN(itemId, FUNC.line());
+
+		if (temp1 === null) {
+			var iterator1 = this.selling.entries();
+			var value1;
+
+			while (true) {
+				value1 = iterator1.next().value;
+
+				if (typeof value1 === "undefined") {
+					
+				}
+			}
+		}
+
+		return undefined;
+	}
+}
+
+function Quest(name) {
 
 }
 
-function Quest(name, quest) {
+function Item(id, name, description) {
 
 }
 
-function Item(id, name, description, item) {
-
-}
-
-function Equipment(typeId, name, description, eTypeEnum, item, equipment) {
+function Equipment(typeId, name, description, eTypeEnum) {
 
 }
 
