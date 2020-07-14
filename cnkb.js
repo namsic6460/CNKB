@@ -1,6 +1,6 @@
 const scriptName = "cnkb.js";
 
-const kalingModule = require("./kaling").Kakao();
+const kalingModule = require("kaling.js").Kakao();
 const Kakao = new kalingModule;
 Kakao.init('0cbf070cc46c70fe11cfe7b90cd93874');
 Kakao.login("nambap6460@gmail.com", "64qlalfqjsgh60!");
@@ -73,7 +73,7 @@ const FUNC = {
 	},
 
 	checkNaN: function (variable, line, min, max) {
-		if (isNaN(variable) || (typeof min !== "undefined" && variable < min) || (typeof max !== "undefined" && variable > max)) {
+		if (isNaN(parseInt(variable, 10)) || (typeof min !== "undefined" && variable < min) || (typeof max !== "undefined" && variable > max)) {
 			this.log("NaN Error - (variable : " + variable + ")", line, ENUM.LOG.error);
 			return null;
 		}
@@ -103,30 +103,25 @@ const FUNC = {
 		return String(func).substring(9, 10);
 	},
 
-	checkStat2: function (original, comparing, checking, ignore) {
+	check: function (original, comparing, checking, ignore) {	//checking이 small이라면 compare이 original에 비해 더 작을 때 true
 		ignore = typeof ignore !== "undefined" ? ignore : true;
-		checking = typeof checking !== "undefined" ? checking : ENUM.CHECKING.same;
 
 		var iterator = original.entries();
 		var value, compare;
-		while (true) {
-			value = iterator.next().value;
 
-			if (typeof value === "undefined")
-				return true;
-
+		while (typeof (value = iterator.next().value) !== "undefined") {
 			if (!comparing.has(value[0])) {
 				if (!ignore)
 					return false;
 				continue;
 			}
 
-			if (value[1] === comparing.get(value[0]))
-				compare = ENUM.CHECKING.same;
-			else if (value[1] > comparing.get(value[1]))
+			if (value[1] > comparing.get(value[1]))
 				compare = ENUM.CHECKING.small;
-			else
+			else if (value[1] < com)
 				compare = ENUM.CHECKING.big;
+			else
+				continue;
 
 			if (compare !== checking)
 				return false;
@@ -134,13 +129,17 @@ const FUNC = {
 	},
 
 	reply: function (player, text, more) {
-		Api.replyRoom(player.getRecentRoom(),
-			"[" + player.getTitle() + "] " + player.getNickName() + "\n" +
+		Api.replyRoom(player.recentRoom,
+			player.getFullName() +
 			text + VAR.all + "----------\n" + more, true);
 	},
 
 	time: function () {
 		return Date.now();
+	},
+
+	sleep: function (millis) {
+		java.lang.Thread.sleep(millis);
 	}
 };
 
@@ -151,8 +150,7 @@ const ENUM = {
 		"error": 2
 	},
 	"CHECKING": {
-		"small": -1,
-		"same": 0,
+		"small": 0,
 		"big": 1
 	},
 	"STAT1": {
@@ -160,8 +158,8 @@ const ENUM = {
 		"levelStat": 1,			//SP로 증가 가능, 감소 불가능
 		"equipStat": 2,			//장비 변경 시 증감
 		"quickStat": 3,			//일시적으로 저장되는 스텟
-		"ARStat": 4,			//연구/업적 스텟
-		"increStat": 5,			//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + AR 스텟
+		"actStat": 4,			//활동으로 얻는 스텟(퀘스트, 대화, 연구, 업적 등등)
+		"increStat": 5,			//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + 액트 스텟
 		"totalStat": 6,			//베이직 스텟 + 인크리 스텟
 		"max": 6
 	},
@@ -303,99 +301,86 @@ function Coordinate(x, y) {
 	}
 }
 
-function Chat(name, text, chat) {
+function Chat(chat) {
 	if (typeof chat === "undefined") {
 		this.id = this.setId(FUNC.getId(ENUM.id));
-		this.name = this.setName(name);
-		this.text = this.setText(text);
-		this.percentTotal = 0;
+		this.totalPercent = 0;
+		this.pause = 0;
+		this.quest = -1;
 		this.money = 0;
 		this.teleport = new Coordinate();
-		this.wait = new Map();
-		this.quest = new Map();
+		this.text = new Array();
+		this.wait = new Array();
+		this.chat = new Map();
 		this.stat = new Map();
 		this.item = new Map();
 
-		this.setWait(ENUM.WAIT_RESPONSE.nothing, -1);
-		FUNC.log("Created New Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		this.wait[0] = ENUM.WAIT_RESPONSE.nothing;
+		FUNC.log("Created New Chat - (id : " + this.id + ")", FUNC.line(), ENUM.LOG.info);
 	}
 
 	else {
 		this.id = chat.id;
-		this.name = chat.name;
-		this.text = chat.text;
-		this.percentTotal = chat.percentTotal;
+		this.totalPercent = chat.totalPercent;
+		this.pause = chat.pause;
+		this.quest = chat.quest;
 		this.money = chat.money
 		this.teleport = chat.teleport
+		this.text = chat.text;
 		this.wait = chat.wait;
-		this.quest = chat.quest;
 		this.stat = chat.stat;
 		this.item = chat.item;
 
-		FUNC.log("Copied Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Copied Chat - (id : " + this.id + ")", FUNC.line(), ENUM.LOG.info);
 	}
 
-	this.getWait = function (waitEnum) {
-		var temp = FUNC.checkNaN(null, waitEnum, FUNC.line());
-		return this.wait.get(temp);
-	}
-	this.getQuest = function (questId) {
-		var temp = FUNC.checkNaN(null, questId, FUNC.line());
-		return this.quest.get(temp);
+	if (!VAR.chats.has(this.id))
+		VAR.chats.set(this.id, this);
+
+	this.getChat = function (response) {
+		return this.wait.get(response);
 	}
 	this.getStat = function (stat2Enum) {
-		var temp = FUNC.checkNaN(stat2Enum);
-		return this.quest.get(temp);
+		return this.stat.get(stat2Enum);
 	}
 	this.getItem = function (itemId) {
-		var temp = FUNC.checkNaN(null, itemId, FUNC.line());
-		return this.quest.get(temp);
+		return this.item.get(itemId);
 	}
 
 	this.setId = function (id) {
 		var temp = FUNC.checkNaN(this.getId(), id, FUNC.line());
-		if (temp !== null) this.id = id;
+		if (temp !== null) this.id = temp;
 	}
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name, FUNC.line());
-		if (temp !== null) this.name = name;
+	this.setPause = function (pause) {
+		var temp = FUNC.checkNaN(pause, FUNC.line(), 0);
+		if (temp !== null) this.pause = temp;
 	}
-	this.setText = function (text) {
-		var temp = FUNC.checkType(String, text, FUNC.line());
-		if (temp !== null) this.text = text;
+	this.setQuest = function (questId) {
+		var temp = FUNC.checkNaN(questId, FUNC.line());
+		if (temp !== null) this.quest = temp;
 	}
 	this.setMoney = function (money) {
 		var temp = FUNC.checkNaN(money, FUNC.line());
-		if (temp !== null) this.money = money;
+		if (temp !== null) this.money = temp;
 	}
-	this.setTeleport = function (teleport) {
-		var temp = FUNC.checkType(Coordinate, teleport, FUNC.line());
-		if (temp !== null) this.teleport = teleport;
+	this.setTeleport = function (x, y) {
+		var temp1 = FUNC.checkNaN(x, FUNC.line(), 0);
+		var temp2 = FUNC.checkNaN(y, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null) {
+			this.teleport.setX(temp1);
+			this.teleport.setY(temp2);
+		}
 	}
-	this.setWait = function (waitEnum, chatId, ignore) {
+	this.setChat = function (response, chatId, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(waitEnum, FUNC.line());
+		var temp1 = FUNC.checkType(String, response, FUNC.line());
 		var temp2 = FUNC.checkNaN(chatId, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (ignore === false && typeof this.getWait(temp1) !== "undefined")
+			if (!ignore && typeof this.getChat(temp1) !== "undefined")
 				return;
 			this.wait.set(temp1, temp2);
-		}
-	}
-	this.setQuest = function (questId, percent, ignore) {
-		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(questId, FUNC.line());
-		var temp2 = FUNC.checkNaN(percent, FUNC.line(), 1);
-
-		if (temp1 !== null && temp2 !== null) {
-			var value = this.getQuest(temp1);
-			if (ignore === false && typeof value !== "undefined")
-				return;
-
-			this.totalStat -= value;
-			this.totalStat += temp2;
-			this.quest.set(temp1, temp2);
 		}
 	}
 	this.setStat = function (stat2Enum, stat, ignore) {
@@ -404,9 +389,13 @@ function Chat(name, text, chat) {
 		var temp2 = FUNC.checkNaN(stat, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (ignore === false && typeof this.getStat(temp1) !== "undefined")
+			if (!ignore && typeof this.getStat(temp1) !== "undefined")
 				return;
-			this.quest.set(temp1, temp2);
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
 		}
 	}
 	this.setItem = function (itemId, itemCount, ignore) {
@@ -415,9 +404,13 @@ function Chat(name, text, chat) {
 		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (ignore === false && typeof this.getItem(temp1) !== "undefined")
+			if (!ignore && typeof this.getItem(temp1) !== "undefined")
 				return;
-			this.quest.set(temp1, temp2);
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
 		}
 	}
 
@@ -425,28 +418,26 @@ function Chat(name, text, chat) {
 		var temp = FUNC.checkNaN(money, FUNC.line());
 		if (temp !== null) this.setMoney(this.money + money);
 	}
-	this.addQuestPercent = function (questId, percent, setZero) {
-		setZero = typeof setZero === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(questId, FUNC.line());
-		var temp2 = FUNC.checkNaN(percent, FUCN.line());
+	this.addText = function (text) {
+		var temp = FUNC.checkType(String, text, FUNC.line());
+		if (temp !== null) this.text.push(temp);
+	}
+	this.addWait = function (waitEnum) {
+		var temp = FUNC.checkNaN(waitEnum, FUNC.line());
 
-		if (temp1 !== null && temp2 !== null) {
-			var value = this.getQuest(temp1);
-
-			if (typeof value === "undefined") {
-				if (setZero)
-					value = 0;
-				else {
-					FUNC.log("addQuestPercent Warning", FUNC.line(), ENUM.LOG.warning);
+		if (temp !== null) {
+			var length = this.wait.length;
+			for (var i = 0; i < length; i++) {
+				if (this.wait[i] === temp) {
+					FUNC.log("addWait Warning", FUNC.line(), ENUM.LOG.warning);
 					return;
 				}
 			}
 
-			this.setQuest(temp1, value + temp2, true);
+			this.wait.push(temp);
 		}
 	}
-	this.addStatStat = function (stat2Enum, stat, setZero) {
-		setZero = typeof setZero === "undefined" ? false : true;
+	this.addStat = function (stat2Enum, stat) {
 		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
 		var temp2 = FUNC.checkNaN(stat, FUNC.line());
 
@@ -454,19 +445,14 @@ function Chat(name, text, chat) {
 			var value = this.getStat(temp1);
 
 			if (typeof value === "undefined") {
-				if (setZero)
-					value = 0;
-				else {
-					FUNC.log("addStatStat Warning", FUNC.line(), ENUM.LOG.warning);
-					return;
-				}
+				FUNC.log("addStat Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
 			}
 
 			this.setStat(temp1, value + temp2, true);
 		}
 	}
-	this.addItemCount = function (itemId, itemCount, setZero) {
-		setZero = typeof setZero === "undefined" ? false : true;
+	this.addItem = function (itemId, itemCount) {
 		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
 		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
 
@@ -474,35 +460,70 @@ function Chat(name, text, chat) {
 			var value = this.getStat(temp1);
 
 			if (typeof value === "undefined") {
-				if (setZero)
-					value = 0;
-				else {
-					FUNC.log("addItemCount Warning", FUNC.line(), ENUM.LOG.warning);
-					return;
-				}
-			}
-
-			this.setItem(temp1, value + temp2, true);
-		}
-	}
-
-	this.executeQuest = function () {
-		var random = FUNC.random(this.percentTotal);
-		var compare = 0;
-
-		var iterator = this.quest.entries();
-		var value;
-		while (true) {
-			value = iterator.next().value;
-
-			if (typeof value === "undefined") {
-				FUNC.log("executeQuest Error", FUNC.line(), ENUM.LOG.error);
+				FUNC.log("addItem Warning", FUNC.line(), ENUM.LOG.warning);
 				return;
 			}
 
-			compare += value[1];
-			if (compare <= random)
-				return value[0];
+			var result = value + temp2;
+			result = result < 0 ? 0 : result;
+			this.setItem(temp1, result, true);
+		}
+	}
+
+	//TODO move to Player, remove room parameter
+	this.sendText = function (player, npcName, room) {
+		var length = this.text.length;
+		for (var i = 0; i < length; i++) {
+			var str = player.getFullName() +
+				npcName + " : \"" + this.text + "\"";
+
+			if (i - 1 === length) {
+				str += VAR.all + "대화 전송이 종료되었습니다";
+
+				if (this.wait.length !== 1 || this.wait[0] !== ENUM.WAIT_RESPONSE.nothing)
+					str += "\n입력을 해야 대화가 종료됩니다";
+
+				var result = player.getFullName();
+				if (this.teleport !== null) {
+					player.setCoord(this.teleport.getX(), this.teleport.getY());
+					result += "- 순간이동 완료\n";
+				}
+
+				var iterator = this.stat.entries();
+				var temp = false;
+				var value;
+				while (typeof (value = iterator.next().value) !== "undefined") {
+					if (!temp) {
+						result += "- 스텟 설정 완료\n";
+						temp = true;
+					}
+
+					player.addStat(ENUM.STAT1.actStat, value[0], value[1]);
+				}
+
+				iterator = this.item.entries();
+				temp = false;
+				while (typeof (value = iterator.next().value) !== "undefined") {
+					if (!temp) {
+						result += "- 아이템 갯수 설정 완료";
+						temp = true;
+					}
+
+					player.addItem(value[0], value[1]);
+				}
+
+				player.addMoney(this.money);
+				Api.replyRoom(room, str, true);
+
+				result = result.substring(0, result.length - 1);
+				if (result.includes("\n") !== -1)
+					Api.replyRoom(room, result, true);
+
+				return;
+			}
+
+			Api.replyRoom(room, str, true);
+			FUNC.sleep(this.pause);
 		}
 	}
 }
@@ -516,7 +537,7 @@ function Npc(name, npc) {
 		this.chat = new Array();
 		this.selling = new Map();
 
-		FUNC.log("Created New Npc - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Created New Npc - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
 	}
 
 	else {
@@ -527,20 +548,23 @@ function Npc(name, npc) {
 		this.chat = npc.chat;
 		this.selling = npc.selling;
 
-		FUNC.log("Copied Chat - (id : " + id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Copied Chat - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
 	}
 
+	if (!VAR.npcs.has(this.id))
+		VAR.npcs.set(this.id, this);
+
 	this.getJob = function (jobEnum) {
-		var temp = FUNC.checkNaN(jobEnum, FUNC.line());
-		return this.job.get(temp);
+		return this.job.get(jobEnum);
 	}
 	this.getChat = function (chatId) {
 		var temp = FUNC.checkNaN(chatId, FUNC.line());
 
 		if (temp !== null) {
-			for (var i = 0; i < this.chat.length; i++) {
+			var length = this.chat.length;
+			for (var i = 0; i < length; i++) {
 				if (this.chat[i].get("chat") === temp)
-					return i;
+					return this.chat[i];
 			}
 		}
 
@@ -552,25 +576,738 @@ function Npc(name, npc) {
 		var temp3 = FUNC.checkNaN(minCloseRate, FUNC.line(), 0, 10000);
 		var temp4 = FUNC.checkNaN(itemId, FUNC.line());
 
-		if (temp1 === null) {
-			var iterator1 = this.selling.entries();
-			var value1;
+		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && this.selling.has(temp1) &&
+			this.selling.get(temp1).has(temp2) && this.selling.get(temp1).get(temp2).has(temp3))
+			return this.selling.get(temp1).get(temp2).get(temp3).get(temp4);
 
-			while (true) {
-				value1 = iterator1.next().value;
+		return undefined;
+	}
 
-				if (typeof value1 === "undefined") {
-					
+	this.setId = function (id) {
+		var temp = FUNC.checkNaN(id, FUNC.line());
+		if (temp !== null) this.id = temp;
+	}
+	this.setName = function (name) {
+		var temp = FUNC.checkType(String, name, FUNC.line());
+		if (temp !== null) this.name = temp;
+	}
+	this.setCoord = function (x, y) {
+		var temp1 = FUNC.checkNaN(x, FUNC.line(), 0);
+		var temp2 = FUNC.checkNaN(y, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null) {
+			this.coord.setX(temp1);
+			this.coord.setY(temp2);
+		}
+	}
+	this.setJob = function (jobEnum, jobLv, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(jobEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobLv, FUNC.line(), 1, 100);
+
+		if (temp1 !== null && temp2 !== null) {
+			if (!ignore && typeof this.getJob(temp1) !== "undefined")
+				return;
+			this.job.set(temp1, temp2);
+		}
+	}
+	this.setSelling = function (jobEnum, jobLv, minCloseRate, itemId, itemCount, ignore) {
+		var temp1 = FUNC.checkNaN(jobEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobLv, FUNC.line(), 1, 100);
+		var temp3 = FUNC.checkNaN(minCloseRate, FUNC.line(), 1, 10000);
+		var temp4 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp5 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && temp5 !== null) {
+			if (!this.selling.has(temp1))
+				this.selling.set(temp1, new Map());
+			if (!this.selling.get(temp1).has(temp2))
+				this.selling.get(temp1).set(temp2, new Map());
+			if (!this.selling.get(temp1).get(temp2).has(temp3))
+				this.selling.get(temp1).get(temp2).set(temp3, new Map());
+
+			if (!ignore && typeof this.selling.get(temp1).get(temp2).get(temp3).get(temp4) !== "undefined")
+				return;
+
+			this.selling.get(temp1).get(temp2).get(temp3).set(temp4, temp5);
+		}
+	}
+
+	this.addJobLv = function (jobEnum, jobLv) {
+		var temp1 = FUNC.checkNaN(jobEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobLv, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getJob(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addJobLv Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setJob(temp1, value + temp2, true);
+		}
+	}
+	this.addChat = function (chatId, percent, minLv, minCloseRate, minStat, minQuest, maxLv, maxCloseRate, maxStat, maxQueset) {
+		var temp1 = FUNC.checkNaN(chatId, FUNC.line());
+		var temp2 = FUNC.checkNaN(percent, FUNC.line(), 1);
+		var temp3 = FUNC.checkNaN(minLv, FUNC.line(), 1, 999);
+		var temp4 = FUNC.checkNaN(minCloseRate, FUNC.line(), 1, 10000);
+		var temp5 = FUNC.checkType(Map, minStat, FUNC.line());
+		var temp6 = FUNC.checkType(Map, minQuest, FUNC.line());
+		var temp7 = FUNC.checkNaN(maxLv, FUNC.line(), 1, 999);
+		var temp8 = FUNC.checkNaN(maxCloseRate, FUNC.line(), 1, 10000);
+		var temp9 = FUNC.checkType(Map, maxStat, FUNC.line());
+		var temp10 = FUNC.checkType(Map, maxQuest, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && temp5 !== null &&
+			temp6 !== null && temp7 !== null && temp8 !== null && temp9 !== null && temp10 !== null &&
+			temp3 <= temp7 && temp4 <= temp8 && FUNC.check(temp5, temp9, ENUM.CHECKING.big) &&
+			FUNC.check(temp6, temp10, ENUM.CHECKING.big)) {
+			var value = this.getChat(temp1);
+
+			if (typeof value !== "undefined") {
+				FUNC.log("addChat Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			var map = new Map();
+			map.set("chat", temp1);
+			map.set("percent", temp2);
+			map.set("minLv", temp3);
+			map.set("minCloseRate", temp4);
+			map.set("minStat", temp5);
+			map.set("minQuest", temp6);
+			map.set("maxLv", temp7);
+			map.set("maxCloseRate", temp8);
+			map.set("maxStat", temp9);
+			map.set("maxQuest", temp10);
+
+			this.chat.push(map);
+		}
+	}
+	this.addSelling = function (jobEnum, jobLv, minCloseRate, itemId, itemCount) {
+		var temp1 = FUNC.checkNaN(jobEnum, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobLv, FUNC.line(), 1, 100);
+		var temp3 = FUNC.checkNaN(minCloseRate, FUNC.line(), 1, 10000);
+		var temp4 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp5 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && temp5 !== null) {
+			var value = this.getSelling(temp1, temp2, temp3, temp4);
+
+			if (typeof value !== "undefined") {
+				FUNC.log("addSelling Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setSelling(temp1, temp2, temp3, temp4, temp5, true)
+		}
+	}
+
+	this.getAvailableChat = function (playerId) {
+		var output = new Array();
+		var temp1 = FUNC.checkNaN(playerId, FUNC.line());
+
+		if (temp1 !== null) {
+			var player = VAR.players.get(temp1);
+			var lv = player.lv;
+			var closeRate = player.getCloseRate(this.id);
+			var stat = player.mainStat.get(ENUM.STAT1.totalStat);
+			var quest = player.clearedQuest;
+
+			var length = this.chat.length;
+			for (i = 0; i < length; i++) {
+				if (this.chat[i].get("minLv") <= lv && this.chat[i].get("maxLv") >= lv &&
+					this.chat[i].get("minCloseRate") <= closeRate && this.chat[i].get("maxCloseRate") >= closeRate &&
+					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big) &&
+					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big))
+					output.push(this.chat[i].get("chat"));
+			}
+		}
+
+		return output;
+	}
+	this.getAvailableSelling = function (playerId, jobEnum) {
+		var output = new Map();
+		var temp1 = FUNC.checkNaN(playerId, FUNC.line());
+		var temp2 = FUNC.checkNaN(jobEnum, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var map = this.selling.get(temp2);
+			var player = VAR.players.get(temp1);
+			var closeRate = player.getCloseRate(this.id);
+			var jobLv = this.getJob(temp2);
+
+			var iterator1, iterator2, iterator3;
+			var value1, value2, value3, value;
+
+			iterator1 = map.entries();
+
+			while (typeof (value1 = iterator1.next().value) !== "undefined") {
+				if (value1[0] <= jobLv) {
+					iterator2 = value1[1].entries();
+
+					while (typeof (value2 = iterator2.next().value) !== "undefined") {
+						if (value2[0] <= closeRate) {
+							itreator3 = value2[1].entries();
+
+							while (typeof (value3 = iterator3.next().value) !== "undefined") {
+								if (typeof value === "undefined")
+									output.set(value3[0], value3[1]);
+								else
+									output.set(value3[0], value + value3[1]);
+							}
+						}
+					}
 				}
 			}
 		}
 
-		return undefined;
+		return output;
+	}
+
+	//TODO move to Player
+	this.executeChat = function (playerId) {
+		var temp = FUNC.checkNaN(playerId, FUNC.line());
+
+		if (temp === null) {
+			FUNC.log("executeChat Error", FUNC.line(), ENUM.LOG.error);
+			return;
+		}
+
+		var availableChat = this.getAvailableChat(temp);
+		var totalPercent = 0;
+		var chatId = -1;
+
+		var value;
+		var length = availableChat.length;
+		for (var i = 0; i < length; i++) {
+			value = availableChat[i].get("percent");
+
+			if (value !== -1)
+				totalPercent += value;
+
+			else {
+				chatId = availableChat[i].get("chat");
+				break;
+			}
+		}
+
+		if (chatId === -1) {
+			var random = FUNC.random(totalPercent);
+
+			var value = 0;
+			for (var i = 0; i < length; i++) {
+				value += availableChat[i].get("percent");
+
+				if (value >= random) {
+					chatId = availableChat[i].get("chat");
+					break;
+				}
+			}
+		}
+
+		var chat = VAR.chats.get(chatId);
+		var player = VAR.chats.get(temp);
+		var room = player.recentRoom;
+
+		player.setDoing(ENUM.DOING.chat);
+		chat.sendText(player, this.name, room);
+
+		if (chat.wait.length !== 1 || chat.wait[0] === ENUM.WAIT_RESPONSE.nothing)
+			player.setNowChat(chatId);
 	}
 }
 
-function Quest(name) {
+function Quest(name, quest) {
+	if (typeof quest !== "undefined") {
+		this.id = FUNC.getId(ENUM.ID.quest);
+		this.name = name;
+		this.isClearedOnce = false;
+		this.isRepeatable = false;
+		this.minLimitLv = 1;
+		this.maxLimitLv = 999;
+		this.needMoney = 0;
+		this.needExp = 0;
+		this.needAdv = 0;
+		this.rewardExp = 0;
+		this.rewardAdv = 0;
+		this.rewardMoney = 0;
+		this.minLimitCloseRate = new Map();
+		this.maxLimitCloseRate = new Map();
+		this.minLimitStat = new Map();
+		this.maxLimitStat = new Map();
+		this.needItem = new Map();
+		this.needStat = new Map();
+		this.needCloseRate = new Map();
+		this.rewardItem = new Map();
+		this.rewardStat = new Map();
 
+		FUNC.log("Created New Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	else {
+		this.id = quest.id;
+		this.name = quest.name;
+		this.isClearedOnce = quest.isClearedOnce;
+		this.isRepeatable = quest.isRepeatable;
+		this.minLimitLv = quest.minLimitLv;
+		this.maxLimitLv = quest.maxLimitLv;
+		this.needMoney = quest.needMoney;
+		this.needExp = quest.needExp;
+		this.needAdv = quest.needAdv;
+		this.rewardExp = quest.rewardExp;
+		this.rewardAdv = quest.rewardAdv;
+		this.rewardMoney = quest.rewardMoney;
+		this.minLimitCloseRate = quest.minLimitCloseRate;
+		this.maxLimitCloseRate = quest.maxLimitCloseRate;
+		this.minLimitStat = quest.minLimitStat;
+		this.maxLimitStat = quest.minLimitStat;
+		this.needItem = quest.needItem;
+		this.needStat = quest.needStat
+		this.needCloseRate = quest.needCloseRate;
+		this.rewardItem = quest.rewardItem;
+		this.rewardStat = quest.rewardStat;
+
+		FUNC.log("Copied Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+	}
+
+	if (!VAR.quests.has(this.id))
+		VAR.quests.set(this.id, this);
+
+	this.getMinLimitCloseRate = function (npcId) {
+		return this.minLimitCloseRate.get(npcId);
+	}
+	this.getMaxLimitCloseRate = function (npcId) {
+		return this.maxLimitCloseRate.get(npcId);
+	}
+	this.getMinLimitStat = function (stat1Enum, stat2Enum) {
+		if (!this.minLimitStat.has(stat1Enum)) return undefined;
+		return this.minLimitStat.get(stat1Enum).get(stat2Enum);
+	}
+	this.getMaxLimitStat = function (stat1Enum, stat2Enum) {
+		if (!this.maxLimitStat.has(stat1Enum)) return undefined;
+		return this.maxLimitStat.get(stat1Enum).get(stat2Enum);
+	}
+	this.getNeedItem = function (itemId) {
+		return this.needItem.get(itemId);
+	}
+	this.getNeedCloseRate = function (npcId) {
+		return this.needCloseRate.get(npcId);
+	}
+	this.getNeedStat = function (stat1Enum, stat2Enum) {
+		if (!this.needStat.has(stat1Enum)) return undefined;
+		return this.needStat.get(stat1Enum).get(stat2Enum);
+	}
+	this.getRewardItem = function (itemId) {
+		return this.rewardItem.get(itemId);
+	}
+	this.getRewardStat = function (stat2Enum) {
+		return this.rewardStat.get(stat2Enum);
+	}
+
+	this.setId = function (id) {
+		var temp = FUNC.checkNaN(id, FUNC.line());
+		if (temp !== null) this.id = temp;
+	}
+	this.setName = function (name) {
+		var temp = FUNC.checkType(String, name, FUNC.line());
+		if (temp !== null) this.name = temp;
+	}
+	this.setIsClearedOnce = function (isClearedOnce) {
+		var temp = FUNC.checkType(Boolean, isClearedOnce, FUNC.line());
+		if (temp !== null) this.isClearedOnce = temp;
+	}
+	this.setIsRepeatable = function (isRepeatable) {
+		var temp = FUNC.checkType(Boolean, isRepeatable, FUNC.line());
+		if (temp !== null) this.isRepeatable = temp;
+	}
+	this.setMinLimitLv = function (lv) {
+		var temp = FUNC.checkNaN(lv, FUNC.line(), 1, 999);
+		if (temp !== null && temp <= this.maxLimitLv) this.minLimitLv = temp;
+	}
+	this.setMaxLimitLv = function (lv) {
+		var temp = FUNC.checkNaN(lv, FUNC.line(), 1, 999);
+		if (temp !== null && temp >= this.minLimitLv) this.maxLimitLv = temp;
+	}
+	this.setNeedMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line(), 0);
+		if (temp !== null) this.needMoney = temp;
+	}
+	this.setNeedExp = function (exp) {
+		var temp = FUNC.checkNaN(exp, FUNC.line(), 0);
+		if (temp !== null) this.needExp = temp;
+	}
+	this.setNeedAdv = function (adv) {
+		var temp = FUNC.checkNaN(adv, FUNC.line(), 0);
+		if (temp !== null) this.needAdv = temp;
+	}
+	this.setRewardExp = function (exp) {
+		var temp = FUNC.checkNaN(exp, FUNC.line());
+		if (temp !== null) this.rewardExp = temp;
+	}
+	this.setRewardAdv = function (adv) {
+		var temp = FUNC.checkNaN(adv, FUNC.line());
+		if (temp !== null) this.rewardAdv = temp;
+	}
+	this.setRewardMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line());
+		if (temp !== null) this.rewardMoney = temp;
+	}
+	this.setMinLimitCloseRate = function (npcId, closeRate, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line(), 0, 10000);
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMaxLimitCloseRate(temp1);
+			if (typeof value !== "undefined" && temp2 > value)
+				return;
+
+			if (!ignore && typeof this.getMinLimitCloseRate(temp1) !== "undefined")
+				return;
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
+		}
+	}
+	this.setMaxLimitCloseRate = function (npcId, closeRate, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line(), 0, 10000);
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMinLimitCloseRate(temp1);
+			if (typeof value !== "undefined" && temp2 < value)
+				return;
+
+			if (!ignore && typeof this.getMaxLimitCloseRate(temp1) !== "undefined")
+				return;
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
+		}
+	}
+	this.setMinLimitStat = function (stat1Enum, stat2Enum, stat, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			if (!this.minLimitStat.has(temp1))
+				this.minLimitStat.set(temp1, new Map());
+
+			var value = this.getMaxLimitStat(temp1, temp2);
+			if (typeof value !== "undefined" && temp3 > value)
+				return;
+
+			if (!ignore && typeof this.getMinLimitStat(temp1, temp2) !== "undefined")
+				return;
+
+			if (temp3 === 0)
+				this.stat.get(temp1).delete(temp2);
+			else
+				this.stat.get(temp1).set(temp2, temp3);
+		}
+	}
+	this.setMaxLimitStat = function (stat1Enum, stat2Enum, stat, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			if (!this.maxLimitStat.has(temp1))
+				this.maxLimitStat.set(temp1, new Map());
+
+			var value = this.getMinLimitStat(temp1, temp2);
+			if (typeof value !== "undefined" && temp3 < value)
+				return;
+
+			if (!ignore && typeof this.getMaxLimitStat(temp1, temp2) !== "undefined")
+				return;
+
+			if (temp3 === 0)
+				this.stat.get(temp1).delete(temp2);
+			else
+				this.stat.get(temp1).set(temp2, temp3);
+		}
+	}
+	this.setNeedItem = function (itemId, itemCount, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null) {
+			if (!ignore && typeof this.getNeedItem(temp1) !== "undefined")
+				return;
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
+		}
+	}
+	this.setNeedCloseRate = function (npcId, closeRate, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line(), 0, 10000);
+
+		if (temp1 !== null && temp2 !== null) {
+			if (!ignore && typeof this.getNeedCloseRate(temp1) !== "undefined")
+				return;
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
+		}
+	}
+	this.setNeedStat = function (stat1Enum, stat2Enum, stat, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			if (!ignore && typeof this.getNeedStat(temp1, temp2) !== "undefined")
+				return;
+
+			if (temp3 === 0)
+				this.stat.get(temp1).delete(temp2);
+			else
+				this.stat.get(temp1).set(temp2, temp3);
+		}
+	}
+	this.setRewardItem = function (itemId, itemCount, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			if (!ignore && typeof this.getRewardItem(temp1) !== "undefined")
+				return;
+
+			if (temp2 === 0)
+				this.stat.delete(temp1);
+			else
+				this.stat.set(temp1, temp2);
+		}
+	}
+	this.setRewardStat = function (stat1Enum, stat2Enum, stat, ignore) {
+		ignore = typeof ignore === "undefined" ? false : true;
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			if (!ignore && typeof this.getRewardStat(temp1, temp2) !== "undefined")
+				return;
+
+			if (temp3 === 0)
+				this.stat.get(temp1).delete(temp2);
+			else
+				this.stat.get(temp1).set(temp2, temp3);
+		}
+	}
+
+	this.addMinLimitLv = function (lv) {
+		var temp = FUNC.checkNaN(lv, FUNC.line());
+
+		if (temp !== null) {
+			var value = this.minLimitLv + temp;
+			if (value <= this.maxLimitLv) this.setMinLimitLv(value);
+		}
+	}
+	this.addMaxLimitLv = function (lv) {
+		var temp = FUNC.checkNaN(lv, FUNC.line());
+
+		if (temp !== null) {
+			var value = this.maxLimitLv + temp;
+			if (value <= this.minLimitLv) this.setMinLimitLv(value);
+		}
+	}
+	this.addNeedMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line());
+		if (temp !== null) this.setNeedMoney(this.needMoney + temp);
+	}
+	this.addNeedExp = function (exp) {
+		var temp = FUNC.checkNaN(exp, FUNC.line());
+		if (temp !== null) this.setNeedExp(this.needExp + temp);
+	}
+	this.addNeedAdv = function (adv) {
+		var temp = FUNC.checkNaN(adv, FUNC.line());
+		if (temp !== null) this.setNeedAdv(this.needMoney + temp);
+	}
+	this.addRewardExp = function (exp) {
+		var temp = FUNC.checkNaN(exp, FUNC.line());
+		if (temp !== null) this.setRewardExp(this.rewardExp + temp);
+	}
+	this.addRewardAdv = function (adv) {
+		var temp = FUNC.checkNaN(adv, FUNC.line());
+		if (temp !== null) this.setRewardAdv(this.rewardAdv + temp);
+	}
+	this.addRewardMoney = function (money) {
+		var temp = FUNC.checkNaN(money, FUNC.line());
+		if (temp !== null) this.setRewardMoney(this.rewardMoney + temp);
+	}
+	this.addMinLimitCloseRate = function (npcId, closeRate) {
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMinLimitCloseRate(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMinLimitCloseRate Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMinLimitCloseRate(temp1, value + temp2, true);
+		}
+	}
+	this.addMaxLimitCloseRate = function (npcId, closeRate) {
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMaxLimitCloseRate(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMaxLimitCloseRate Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMaxLimitCloseRate(temp1, value + temp2, true);
+		}
+	}
+	this.addMinLimitStat = function (stat1Enum, stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			var value = this.getMinLimitStat(temp1, temp2);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMinLimitStat Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMinLimitStat(temp1, temp2, value + temp3, true);
+		}
+	}
+	this.addMaxLimitStat = function (stat1Enum, stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null && temp3 !== null) {
+			var value = this.getMaxLimitStat(temp1, temp2);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMaxLimitStat Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMaxLimitStat(temp1, temp2, value + temp3, true);
+		}
+	}
+	this.addNeedItem = function (itemId, itemCount) {
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getNeedItem(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addNeedItem Warning", FUNC.line, ENUM.LOG.warning);
+				return;
+			}
+
+			this.setNeedItem(temp1, value + temp2, true);
+		}
+	}
+	this.addMinLimitCloseRate = function (npcId, closeRate) {
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMinLimitCloseRate(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMinLimitCloseRate Warning", FUNC.line, ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMinLimitCloseRate(temp1, value + temp2, true);
+		}
+	}
+	this.addMaxLimitCloseRate = function (npcId, closeRate) {
+		var temp1 = FUNC.checkNaN(npcId, FUNC.line());
+		var temp2 = FUNC.checkNaN(closeRate, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMaxLimitCloseRate(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addMaxLimitCloseRate Warning", FUNC.line, ENUM.LOG.warning);
+				return;
+			}
+
+			this.setMaxLimitCloseRate(temp1, value + temp2, true);
+		}
+	}
+	this.addRewardItem = function (itemId, itemCount) {
+		var temp1 = FUNC.checkNaN(itemId, FUNC.line());
+		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getRewardItem(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addRewardItem Warning", FUNC.line, ENUM.LOG.warning);
+				return;
+			}
+
+			this.setRewardItem(temp1, value + temp2);
+		}
+	}
+	this.addRewardStat = function (stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getRewardStat(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addRewardStat Warning", FUNC.line, ENUM.LOG.warning);
+				return;
+			}
+
+			this.setRewardStat(temp1, value + temp2);
+		}
+	}
+
+	//TODO move to Player
+	this.checkClear = function (playerId) {
+		var temp = FUNC.checkNaN(playerId, FUNC.line());
+		var player = VAR.players.get(temp);
+
+		if (player.money < this.needMoney || player.getTotalExp() < this.needExp || player.adv < this.needAdv ||
+			FUNC.check(this.needCloseRate, player.closeRate, ENUM.CHECKING.big, false) ||
+			FUNC.check(this.needItem, player.inventory, ENUM.CHECKING.big, false))
+			return false;
+
+		//TODO exeucte first clear
+		return true;
+	}
 }
 
 function Item(id, name, description) {
