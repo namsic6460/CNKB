@@ -129,9 +129,11 @@ const FUNC = {
 	},
 
 	reply: function (player, text, more) {
-		Api.replyRoom(player.recentRoom,
-			player.getFullName() +
-			text + VAR.all + "----------\n" + more, true);
+		var str = player.getFullName() + "\n" + text;
+		if (typeof more !== "undefined")
+			str += VAR.all + "----------\n" + more;
+
+		Api.replyRoom(player.recentRoom, str, true);
 	},
 
 	time: function () {
@@ -303,7 +305,7 @@ function Coordinate(x, y) {
 
 function Chat(chat) {
 	if (typeof chat === "undefined") {
-		this.id = this.setId(FUNC.getId(ENUM.id));
+		this.id = FUNC.getId(ENUM.id);
 		this.totalPercent = 0;
 		this.pause = 0;
 		this.quest = -1;
@@ -316,7 +318,7 @@ function Chat(chat) {
 		this.item = new Map();
 
 		this.wait[0] = ENUM.WAIT_RESPONSE.nothing;
-		FUNC.log("Created New Chat - (id : " + this.id + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Created New Chat - (id : " + this.id + ")", FUNC.line());
 	}
 
 	else {
@@ -331,26 +333,25 @@ function Chat(chat) {
 		this.stat = chat.stat;
 		this.item = chat.item;
 
-		FUNC.log("Copied Chat - (id : " + this.id + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Copied Chat - (id : " + this.id + ")", FUNC.line());
 	}
 
 	if (!VAR.chats.has(this.id))
 		VAR.chats.set(this.id, this);
 
 	this.getChat = function (response) {
-		return this.wait.get(response);
+		var temp = FUNC.checkType(String, response, FUNC.line());
+		return this.wait.get(temp);
 	}
 	this.getStat = function (stat2Enum) {
-		return this.stat.get(stat2Enum);
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.stat.get(temp);
 	}
 	this.getItem = function (itemId) {
-		return this.item.get(itemId);
+		var temp = FUNC.checkNaN(itemId, FUNC.line());
+		return this.item.get(temp);
 	}
 
-	this.setId = function (id) {
-		var temp = FUNC.checkNaN(this.getId(), id, FUNC.line());
-		if (temp !== null) this.id = temp;
-	}
 	this.setPause = function (pause) {
 		var temp = FUNC.checkNaN(pause, FUNC.line(), 0);
 		if (temp !== null) this.pause = temp;
@@ -378,9 +379,17 @@ function Chat(chat) {
 		var temp2 = FUNC.checkNaN(chatId, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getChat(temp1) !== "undefined")
-				return;
-			this.wait.set(temp1, temp2);
+			if (typeof this.getChat(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.chat.remove(temp1);
+					return;
+				}
+
+				if (!ignore)
+					return;
+			}
+
+			this.chat.set(temp1, temp2);
 		}
 	}
 	this.setStat = function (stat2Enum, stat, ignore) {
@@ -389,13 +398,17 @@ function Chat(chat) {
 		var temp2 = FUNC.checkNaN(stat, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getStat(temp1) !== "undefined")
-				return;
+			if (typeof this.getStat(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.stat.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (!ignore)
+					return;
+			}
+
+			this.stat.set(temp1, temp2);
 		}
 	}
 	this.setItem = function (itemId, itemCount, ignore) {
@@ -404,13 +417,17 @@ function Chat(chat) {
 		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getItem(temp1) !== "undefined")
-				return;
+			if (typeof this.getItem(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.item.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (!ignore)
+					return;
+			}
+
+			this.item.set(temp1, temp2);
 		}
 	}
 
@@ -470,18 +487,17 @@ function Chat(chat) {
 		}
 	}
 
-	//TODO move to Player, remove room parameter
-	this.sendText = function (player, npcName, room) {
+	//TODO move to Player
+	this.sendText = function (player, npcName) {
 		var length = this.text.length;
 		for (var i = 0; i < length; i++) {
-			var str = player.getFullName() +
-				npcName + " : \"" + this.text + "\"";
+			var str = npcName + " : \"" + this.text + "\"";
 
 			if (i - 1 === length) {
-				str += VAR.all + "대화 전송이 종료되었습니다";
+				var sub = "대화 전송이 종료되었습니다";
 
 				if (this.wait.length !== 1 || this.wait[0] !== ENUM.WAIT_RESPONSE.nothing)
-					str += "\n입력을 해야 대화가 종료됩니다";
+					sub += "\n입력을 해야 대화가 종료됩니다";
 
 				var result = player.getFullName();
 				if (this.teleport !== null) {
@@ -513,16 +529,16 @@ function Chat(chat) {
 				}
 
 				player.addMoney(this.money);
-				Api.replyRoom(room, str, true);
+				FUNC.reply(player, str, sub);
 
 				result = result.substring(0, result.length - 1);
-				if (result.includes("\n") !== -1)
-					Api.replyRoom(room, result, true);
+				if (!result.includes("\n"))
+					FUNC.reply(player, result);
 
 				return;
 			}
 
-			Api.replyRoom(room, str, true);
+			FUNC.reply(player, str);
 			FUNC.sleep(this.pause);
 		}
 	}
@@ -537,7 +553,7 @@ function Npc(name, npc) {
 		this.chat = new Array();
 		this.selling = new Map();
 
-		FUNC.log("Created New Npc - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Created New Npc - (id : " + this.id + ", name : " + name + ")", FUNC.line());
 	}
 
 	else {
@@ -548,14 +564,15 @@ function Npc(name, npc) {
 		this.chat = npc.chat;
 		this.selling = npc.selling;
 
-		FUNC.log("Copied Chat - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Copied Chat - (id : " + this.id + ", name : " + name + ")", FUNC.line());
 	}
 
 	if (!VAR.npcs.has(this.id))
 		VAR.npcs.set(this.id, this);
 
 	this.getJob = function (jobEnum) {
-		return this.job.get(jobEnum);
+		var temp = FUNC.checkNaN(jobEnum);
+		return this.job.get(temp);
 	}
 	this.getChat = function (chatId) {
 		var temp = FUNC.checkNaN(chatId, FUNC.line());
@@ -583,10 +600,6 @@ function Npc(name, npc) {
 		return undefined;
 	}
 
-	this.setId = function (id) {
-		var temp = FUNC.checkNaN(id, FUNC.line());
-		if (temp !== null) this.id = temp;
-	}
 	this.setName = function (name) {
 		var temp = FUNC.checkType(String, name, FUNC.line());
 		if (temp !== null) this.name = temp;
@@ -606,8 +619,16 @@ function Npc(name, npc) {
 		var temp2 = FUNC.checkNaN(jobLv, FUNC.line(), 1, 100);
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getJob(temp1) !== "undefined")
-				return;
+			if (typeof this.getJob(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.job.remove(temp1);
+					return;
+				}
+
+				if (!ignore)
+					return;
+			}
+
 			this.job.set(temp1, temp2);
 		}
 	}
@@ -626,8 +647,15 @@ function Npc(name, npc) {
 			if (!this.selling.get(temp1).get(temp2).has(temp3))
 				this.selling.get(temp1).get(temp2).set(temp3, new Map());
 
-			if (!ignore && typeof this.selling.get(temp1).get(temp2).get(temp3).get(temp4) !== "undefined")
-				return;
+			if (typeof this.selling.get(temp1).get(temp2).get(temp3).get(temp4) !== "undefined") {
+				if (temp5 === 0) {
+					this.selling.get(temp1).get(temp2).get(temp3).delete(temp4);
+					return;
+				}
+
+				if (!ignore)
+					return;
+			}
 
 			this.selling.get(temp1).get(temp2).get(temp3).set(temp4, temp5);
 		}
@@ -648,7 +676,7 @@ function Npc(name, npc) {
 			this.setJob(temp1, value + temp2, true);
 		}
 	}
-	this.addChat = function (chatId, percent, minLv, minCloseRate, minStat, minQuest, maxLv, maxCloseRate, maxStat, maxQueset) {
+	this.addChat = function (chatId, percent, minLv, minCloseRate, minStat, minQuest, maxLv, maxCloseRate, maxStat, maxQuest) {
 		var temp1 = FUNC.checkNaN(chatId, FUNC.line());
 		var temp2 = FUNC.checkNaN(percent, FUNC.line(), 1);
 		var temp3 = FUNC.checkNaN(minLv, FUNC.line(), 1, 999);
@@ -720,8 +748,8 @@ function Npc(name, npc) {
 			for (i = 0; i < length; i++) {
 				if (this.chat[i].get("minLv") <= lv && this.chat[i].get("maxLv") >= lv &&
 					this.chat[i].get("minCloseRate") <= closeRate && this.chat[i].get("maxCloseRate") >= closeRate &&
-					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big) &&
-					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big))
+					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big, false) &&
+					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big, false))
 					output.push(this.chat[i].get("chat"));
 			}
 		}
@@ -844,7 +872,7 @@ function Quest(name, quest) {
 		this.rewardItem = new Map();
 		this.rewardStat = new Map();
 
-		FUNC.log("Created New Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Created New Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line());
 	}
 
 	else {
@@ -870,47 +898,49 @@ function Quest(name, quest) {
 		this.rewardItem = quest.rewardItem;
 		this.rewardStat = quest.rewardStat;
 
-		FUNC.log("Copied Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line(), ENUM.LOG.info);
+		FUNC.log("Copied Quest - (id : " + this.id + ", name : " + name + ")", FUNC.line());
 	}
 
 	if (!VAR.quests.has(this.id))
 		VAR.quests.set(this.id, this);
 
 	this.getMinLimitCloseRate = function (npcId) {
-		return this.minLimitCloseRate.get(npcId);
+		var temp = FUNC.checkNaN(npcId, FUNC.line());
+		return this.minLimitCloseRate.get(temp);
 	}
 	this.getMaxLimitCloseRate = function (npcId) {
-		return this.maxLimitCloseRate.get(npcId);
+		var temp = FUNC.checkNaN(npcId, FUNC.line());
+		return this.maxLimitCloseRate.get(temp);
 	}
-	this.getMinLimitStat = function (stat1Enum, stat2Enum) {
-		if (!this.minLimitStat.has(stat1Enum)) return undefined;
-		return this.minLimitStat.get(stat1Enum).get(stat2Enum);
+	this.getMinLimitStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.minLimitStat.get(temp);
 	}
-	this.getMaxLimitStat = function (stat1Enum, stat2Enum) {
-		if (!this.maxLimitStat.has(stat1Enum)) return undefined;
-		return this.maxLimitStat.get(stat1Enum).get(stat2Enum);
+	this.getMaxLimitStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.minLimitStat.get(temp);
 	}
 	this.getNeedItem = function (itemId) {
-		return this.needItem.get(itemId);
+		var temp = FUNC.checkNaN(itemId, FUNC.line());
+		return this.needItem.get(temp);
 	}
 	this.getNeedCloseRate = function (npcId) {
-		return this.needCloseRate.get(npcId);
+		var temp = FUNC.checkNaN(npcId, FUNC.line());
+		return this.needCloseRate.get(temp);
 	}
-	this.getNeedStat = function (stat1Enum, stat2Enum) {
-		if (!this.needStat.has(stat1Enum)) return undefined;
-		return this.needStat.get(stat1Enum).get(stat2Enum);
+	this.getNeedStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.minLimitStat.get(temp);
 	}
 	this.getRewardItem = function (itemId) {
-		return this.rewardItem.get(itemId);
+		var temp = FUNC.checkNaN(itemId, FUNC.line());
+		return this.rewardItem.get(temp);
 	}
 	this.getRewardStat = function (stat2Enum) {
-		return this.rewardStat.get(stat2Enum);
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.rewardStat.get(temp);
 	}
 
-	this.setId = function (id) {
-		var temp = FUNC.checkNaN(id, FUNC.line());
-		if (temp !== null) this.id = temp;
-	}
 	this.setName = function (name) {
 		var temp = FUNC.checkType(String, name, FUNC.line());
 		if (temp !== null) this.name = temp;
@@ -962,16 +992,18 @@ function Quest(name, quest) {
 
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMaxLimitCloseRate(temp1);
-			if (typeof value !== "undefined" && temp2 > value)
-				return;
 
-			if (!ignore && typeof this.getMinLimitCloseRate(temp1) !== "undefined")
-				return;
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.minLimitCloseRate.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (temp2 > value || !ignore)
+					return;
+			}
+
+			this.minLimitCloseRate.set(temp1, temp2);
 		}
 	}
 	this.setMaxLimitCloseRate = function (npcId, closeRate, ignore) {
@@ -981,62 +1013,60 @@ function Quest(name, quest) {
 
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMinLimitCloseRate(temp1);
-			if (typeof value !== "undefined" && temp2 < value)
-				return;
 
-			if (!ignore && typeof this.getMaxLimitCloseRate(temp1) !== "undefined")
-				return;
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.maxLimitCloseRate.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (temp2 < value || !ignore)
+					return;
+			}
+
+			this.maxLimitCloseRate.set(temp1, temp2);
 		}
 	}
-	this.setMinLimitStat = function (stat1Enum, stat2Enum, stat, ignore) {
+	this.setMinLimitStat = function (stat2Enum, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line(), 0);
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			if (!this.minLimitStat.has(temp1))
-				this.minLimitStat.set(temp1, new Map());
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMaxLimitStat(temp1);
 
-			var value = this.getMaxLimitStat(temp1, temp2);
-			if (typeof value !== "undefined" && temp3 > value)
-				return;
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.minLimitStat.remove(temp1);
+					return;
+				}
 
-			if (!ignore && typeof this.getMinLimitStat(temp1, temp2) !== "undefined")
-				return;
+				if (temp2 > value || !ignore)
+					return;
+			}
 
-			if (temp3 === 0)
-				this.stat.get(temp1).delete(temp2);
-			else
-				this.stat.get(temp1).set(temp2, temp3);
+			this.minLimitStat.set(temp1, temp2);
 		}
 	}
-	this.setMaxLimitStat = function (stat1Enum, stat2Enum, stat, ignore) {
+	this.setMaxLimitStat = function (stat2Enum, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line(), 0);
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			if (!this.maxLimitStat.has(temp1))
-				this.maxLimitStat.set(temp1, new Map());
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMinLimitStat(temp1);
 
-			var value = this.getMinLimitStat(temp1, temp2);
-			if (typeof value !== "undefined" && temp3 < value)
-				return;
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.maxLimitStat.remove(temp1);
+					return;
+				}
 
-			if (!ignore && typeof this.getMaxLimitStat(temp1, temp2) !== "undefined")
-				return;
+				if (temp2 > value || !ignore)
+					return;
+			}
 
-			if (temp3 === 0)
-				this.stat.get(temp1).delete(temp2);
-			else
-				this.stat.get(temp1).set(temp2, temp3);
+			this.maxLimitStat.set(temp1, temp2);
 		}
 	}
 	this.setNeedItem = function (itemId, itemCount, ignore) {
@@ -1045,13 +1075,17 @@ function Quest(name, quest) {
 		var temp2 = FUNC.checkNaN(itemCount, FUNC.line(), 0);
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getNeedItem(temp1) !== "undefined")
-				return;
+			if (typeof this.getNeedItem(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.needItem.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (!ignore)
+					return;
+			}
+
+			this.needItem.set(temp1, temp2);
 		}
 	}
 	this.setNeedCloseRate = function (npcId, closeRate, ignore) {
@@ -1060,29 +1094,38 @@ function Quest(name, quest) {
 		var temp2 = FUNC.checkNaN(closeRate, FUNC.line(), 0, 10000);
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getNeedCloseRate(temp1) !== "undefined")
-				return;
+			if (typeof this.getNeedCloseRate(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.needCloseRate.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (!ignore)
+					return;
+			}
+
+			this.needCloseRate.set(temp1, temp2);
 		}
 	}
-	this.setNeedStat = function (stat1Enum, stat2Enum, stat, ignore) {
+	this.setNeedStat = function (stat2Enum, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line(), 0);
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line(), 0);
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			if (!ignore && typeof this.getNeedStat(temp1, temp2) !== "undefined")
-				return;
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getNeedStat(temp1);
 
-			if (temp3 === 0)
-				this.stat.get(temp1).delete(temp2);
-			else
-				this.stat.get(temp1).set(temp2, temp3);
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.needStat.remove(temp1);
+					return;
+				}
+
+				if (!ignore)
+					return;
+			}
+
+			this.needStat.set(temp1, temp2);
 		}
 	}
 	this.setRewardItem = function (itemId, itemCount, ignore) {
@@ -1091,29 +1134,38 @@ function Quest(name, quest) {
 		var temp2 = FUNC.checkNaN(itemCount, FUNC.line());
 
 		if (temp1 !== null && temp2 !== null) {
-			if (!ignore && typeof this.getRewardItem(temp1) !== "undefined")
-				return;
+			if (typeof this.getRewardItem(temp1) !== "undefined") {
+				if (temp2 === 0) {
+					this.rewardItem.remove(temp1);
+					return;
+				}
 
-			if (temp2 === 0)
-				this.stat.delete(temp1);
-			else
-				this.stat.set(temp1, temp2);
+				if (!ignore)
+					return;
+			}
+
+			this.rewardItem.set(temp1, temp2);
 		}
 	}
-	this.setRewardStat = function (stat1Enum, stat2Enum, stat, ignore) {
+	this.setRewardStat = function (stat2Enum, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line(), 0);
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			if (!ignore && typeof this.getRewardStat(temp1, temp2) !== "undefined")
-				return;
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getRewardStat(temp1);
 
-			if (temp3 === 0)
-				this.stat.get(temp1).delete(temp2);
-			else
-				this.stat.get(temp1).set(temp2, temp3);
+			if (typeof value !== "undefined") {
+				if (temp2 === 0) {
+					this.rewardStat.remove(temp1);
+					return;
+				}
+
+				if (temp2 > value || !ignore)
+					return;
+			}
+
+			this.rewardStat.set(temp1, temp2);
 		}
 	}
 
@@ -1187,36 +1239,34 @@ function Quest(name, quest) {
 			this.setMaxLimitCloseRate(temp1, value + temp2, true);
 		}
 	}
-	this.addMinLimitStat = function (stat1Enum, stat2Enum, stat) {
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+	this.addMinLimitStat = function (stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			var value = this.getMinLimitStat(temp1, temp2);
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMinLimitStat(temp1);
 
 			if (typeof value === "undefined") {
 				FUNC.log("addMinLimitStat Warning", FUNC.line(), ENUM.LOG.warning);
 				return;
 			}
 
-			this.setMinLimitStat(temp1, temp2, value + temp3, true);
+			this.setMinLimitStat(temp1, value + temp2, true);
 		}
 	}
-	this.addMaxLimitStat = function (stat1Enum, stat2Enum, stat) {
-		var temp1 = FUNC.checkNaN(stat1Enum, FUNC.line());
-		var temp2 = FUNC.checkNaN(stat2Enum, FUNC.line());
-		var temp3 = FUNC.checkNaN(stat, FUNC.line());
+	this.addMaxLimitStat = function (stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
 
-		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			var value = this.getMaxLimitStat(temp1, temp2);
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getMaxLimitStat(temp1);
 
 			if (typeof value === "undefined") {
 				FUNC.log("addMaxLimitStat Warning", FUNC.line(), ENUM.LOG.warning);
 				return;
 			}
 
-			this.setMaxLimitStat(temp1, temp2, value + temp3, true);
+			this.setMaxLimitStat(temp1, value + temp2, true);
 		}
 	}
 	this.addNeedItem = function (itemId, itemCount) {
@@ -1232,6 +1282,21 @@ function Quest(name, quest) {
 			}
 
 			this.setNeedItem(temp1, value + temp2, true);
+		}
+	}
+	this.addNeedStat = function (stat2Enum, stat) {
+		var temp1 = FUNC.checkNaN(stat2Enum, FUNC.line());
+		var temp2 = FUNC.checkNaN(stat, FUNC.line());
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getNeedStat(temp1);
+
+			if (typeof value === "undefined") {
+				FUNC.log("addNeedStat Warning", FUNC.line(), ENUM.LOG.warning);
+				return;
+			}
+
+			this.setNeedStat(temp1, value + temp2, true);
 		}
 	}
 	this.addMinLimitCloseRate = function (npcId, closeRate) {
@@ -1305,21 +1370,147 @@ function Quest(name, quest) {
 			FUNC.check(this.needItem, player.inventory, ENUM.CHECKING.big, false))
 			return false;
 
-		//TODO exeucte first clear
+		if (this.isClearedOnce == false) {
+			this.isClearedOnce = true;
+
+			FUNC.reply(player, "\"" + this.name + "\" 퀘스트를 최초 클리어 하셨습니다",
+				"이 메세지는 반복 퀘스트와 상관 없이 최초 클리어 시 발송됩니다");
+		}
+
 		return true;
 	}
 }
 
-function Item(id, name, description) {
+function Item(name, item) {
+	if (typeof item === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.item);
+		this.name = name;
+		this.description = "";
+		this.handleLevel = 1;
+		this.value = -1;
+		this.isWeapon = false;
 
+		FUNC.log("Created New Item(id : " + id + ", name : " + name + ")", FUNC.line());
+	}
+
+	else {
+		this.id = item.id;
+		this.name = item.name;
+		this.description = item.description;
+		this.handleLevel = item.handleLevel;
+		this.value = item.value;
+		this.isWeapon = false;
+
+		FUNC.log("Copied Item(id : " + id + ", name : " + name + ")", FUNC.line());
+	}
+
+	if (!VAR.items.has(this.id))
+		VAR.items.set(this.id, this);
+
+	this.setName = function (name) {
+		var temp = FUNC.checkType(String, name, FUNC.line());
+		if (temp !== null) this.name = temp;
+	}
+	this.setDescription = function (description) {
+		var temp = FUNC.checkType(String, description, FUNC.line());
+		if (temp !== null) this.description = temp;
+	}
+	this.setHandleLevel = function (handleLevel) {
+		var temp = FUNC.checkNaN(handleLevel, FUNC.line(), 1, 10);
+		if (temp !== null) this.handleLevel = temp;
+	}
+	this.setValue = function (value) {
+		var temp = FUNC.checkNaN(value, FUNC.line());
+		if (temp !== null) this.value = temp;
+	}
+
+	this.addHandleLevel = function (handleLevel) {
+		var temp = FUNC.checkNaN(handleLevel, FUNC.line());
+		if (temp !== null) this.setHandleLevel(this.handleLevel + temp);
+	}
+	this.addValue = function (value) {
+		var temp = FUNC.checkNaN(value, FUNC.line());
+		if (temp !== null) this.setValue(this.value + temp);
+	}
 }
 
-function Equipment(typeId, name, description, eTypeEnum) {
+function Equipment(name, description, eTypeEnum, equipment) {
+	if (typeof equipment !== "undefined") {
+		this.id = FUNC.getId(ENUM.ID.equipment);
+		this.name = name;
+		this.description = description;
+		this.eType = eTypeEnum;
+		this.value = -1;
+		this.handleLevel = 1;
+		this.limitLv = 1;
+		this.maxReinforce = 0;
+		this.nowReinforce = 0;
+		this.lvDown = 0;
+		this.isWeapon = true;
+		this.stat = new Map();
+		this.limitStat = new Map();
+		this.type = new Map();
+		this.reinforce = new Map();
+	}
 
+	else {
+		this.id = equipment.id;
+		this.name = equipment.iname;
+		this.description = equipment.description;
+		this.eType = equipment.eType;
+		this.value = -equipment.value;
+		this.handleLevel = equipment.handleLevel;
+		this.limitLv = equipment.limitLv;
+		this.maxReinforce = equipment.maxReinforce;
+		this.nowReinforce = equipment.nowReinforce;
+		this.lvDown = equipment.lvDown;
+		this.isWeapon = equipment.isWeapon;
+		this.stat = equipment.stat;
+		this.limitStat = equipment.limitStat;
+		this.type = equipment.type;
+		this.reinforce = equipment.reinforce;
+	}
+
+	if (!VAR.equipments.has(this.id))
+		VAR.equipments.set(this.id, this);
+
+	this.getFullName = function () {
+		var str = "[";
+
+		var c = this.handleLevel % 2 === 0 ? "★" : "☆";
+		for (var i = 0; i < (this.handleLevel + 1) / 2; i++)
+			str += c;
+
+		str += "] \"" + this.name + " (+" + this.nowReinforce + ")";
+		return str;
+	}
+
+	this.getStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.stat.get(temp);
+	}
+	this.getLimitStat = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.limitStat.get(temp);
+	}
+	this.getType = function (typeEnum) {
+		var temp = FUNC.checkNaN(typeEnum, FUNC.line());
+		return this.type.get(temp);
+	}
+	this.getReinforce = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
+		return this.reinforce.get(temp);
+	}
+
+	
 }
 
 function Player(nickName, name, image, room, player) {
 
+
+	this.getFullName = function () {
+		return "[" + this.nowTitle + "] " + this.nickName;
+	}
 }
 
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
