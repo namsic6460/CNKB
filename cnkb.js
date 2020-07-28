@@ -341,7 +341,7 @@ function Chat(chat) {
 
 	this.getChat = function (response) {
 		var temp = FUNC.checkType(String, response, FUNC.line());
-		return this.wait.get(temp);
+		return this.chat.get(temp);
 	}
 	this.getStat = function (stat2Enum) {
 		var temp = FUNC.checkNaN(stat2Enum, FUNC.line());
@@ -1389,6 +1389,7 @@ function Item(name, item) {
 		this.handleLevel = 1;
 		this.value = -1;
 		this.isWeapon = false;
+		this.recipe = new Array();
 
 		FUNC.log("Created New Item(id : " + id + ", name : " + name + ")", FUNC.line());
 	}
@@ -1400,6 +1401,7 @@ function Item(name, item) {
 		this.handleLevel = item.handleLevel;
 		this.value = item.value;
 		this.isWeapon = false;
+		this.recipe = item.recipe;
 
 		FUNC.log("Copied Item(id : " + id + ", name : " + name + ")", FUNC.line());
 	}
@@ -1432,6 +1434,10 @@ function Item(name, item) {
 		var temp = FUNC.checkNaN(value, FUNC.line());
 		if (temp !== null) this.setValue(this.value + temp);
 	}
+	this.addRecipe = function (recipe) {
+		var temp = FUNC.checkType(Map, recipe, FUNC.line());
+		if (temp !== null) this.recipe.push(temp);
+	}
 }
 
 function Equipment(name, description, eTypeEnum, equipment) {
@@ -1447,6 +1453,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		this.nowReinforce = 0;
 		this.lvDown = 0;
 		this.isWeapon = true;
+		this.recipe = new Array();
 		this.stat = new Map();
 		this.limitStat = new Map();
 		this.type = new Map();
@@ -1465,6 +1472,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		this.nowReinforce = equipment.nowReinforce;
 		this.lvDown = equipment.lvDown;
 		this.isWeapon = equipment.isWeapon;
+		this.recipe = equipment.recipe;
 		this.stat = equipment.stat;
 		this.limitStat = equipment.limitStat;
 		this.type = equipment.type;
@@ -1502,7 +1510,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		return this.reinforce.get(temp);
 	}
 
-	
+	//TODO - Add Setter/Adder
 }
 
 function Player(nickName, name, image, room, player) {
