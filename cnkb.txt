@@ -161,7 +161,6 @@ CloseRate : 0~10000
 "Quest": {
 	"id": Integer,										//인식 정보
 	"name": String,										//이름
-	"isClearedOnce": boolean,							//클리어 여부(최초 클리어 시 알림) = false
 	"isRepeatable": boolean,							//반복 허용 여부 = false
 	"minLimitLv": Integer								//최소 레벨 제한 = 1
 	"maxLimitLv": Integer								//최대 레벨 제한 = 999
@@ -243,16 +242,17 @@ CloseRate : 0~10000
 	"title": List<String>,							//칭호 이름 = []
 	"job": Map<JOB, Integer>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Integer>>,	//STAT1, {STAT2, 스텟} = {}
-	"resistStat": Map<TYPE, Integer>				//TYPE, 저항 스텟 = {}
+	"resistStat": Map<TYPE, Integer>,				//TYPE, 저항 스텟 = {}
 	"inventory": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
 	"equiped": Map<ETYPE, Integer>,					//ETYPE, 장비 id = {}
 	"nowQuest": Map<Integer, Integer>,				//퀘스트 id, 엔피시 id = {}
-	"clearedQuest": Map<Integer, Integer>			// 퀘스트 id, 클리어 횟수 = {}
+	"clearedQuest": Map<Integer, Integer>,			//퀘스트 id, 클리어 횟수 = {}
 	"closeRate": Map<Integer, Integer>,				//엔피시 id, 친밀도 = {}
-	"log": Map<String, Integer>						//특정 행동(ex 기부), 행동 횟수 = {}
+	"log": Map<String, Integer>,					//특정 행동(ex 기부), 행동 횟수 = {}
+	"isClearedOnce": <Integer, Integer>,			//퀘스트 최초(지급 후) 클리어 여부 = {}
 	"buff": Map<Long, Map<STAT2, Integer>>,			//종료시간, {STAT2, 증가 스텟}
 	"debuff": Map<Long, Map<STAT2, Integer>,		//종료시간, {STAT2, 감소 스텟}
-	"type": Map<Long, Map<TYPE, Integer>>,			//종료시간, {TYPE, 단계}
+	"type": Map<Long, Map<TYPE, Integer>>			//종료시간, {TYPE, 단계}
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
