@@ -102,11 +102,11 @@
 }
 
 "Coordinate": {
-	"x": Integer,			//X 좌표(Unsigned)(가로) = 0
-	"y": Integer			//Y 좌표(Unsigned)(세로) = 0
+	"x": Number,			//X 좌표(Unsigned)(가로) = 0
+	"y": Number				//Y 좌표(Unsigned)(세로) = 0
 	//-----------------------------------------------
 	getter/setter/adder
-	getDistance(Coordinate)	//길찾기 알고리즘 이용 + 마을마다 - Integer(거리)
+	getDistance(Coordinate)	//길찾기 알고리즘 이용 + 마을마다 - Number(거리)
 	//-----------------------------------------------
 }
 
@@ -115,144 +115,144 @@ JobLv : 1~100
 CloseRate : 0~10000
 
 "Chat": {
-	"id": Integer,								//인식 정보
+	"id": Number,								//인식 정보
 	"totalPercent": Intger,						//확률 총 합(분모)
-	"pause": Integer,							//채팅 후 멈춤 시간 = 0(ms)
-	"quest": Integer,							//퀘스트 id = 0(없음)
-	"money": Long,								//지급 돈 = 0
+	"pause": Number,							//채팅 후 멈춤 시간 = 0(ms)
+	"quest": Number,							//퀘스트 id = 0(없음)
+	"money": Number,							//지급 돈 = 0
 	"teleport": Coordinate,						//텔레포트 좌표 = null
 	"text": List<Text>,							//챗 텍스트 = []
 	"wait": List<WAIT_RESPONSE>					//대답 가능 목록 = [WAIT_RESPONSE.nothing]
-	"chat": Map<String, Integer>				//대답에 연결된 채팅 = {}
-	"stat": Map<STAT2, Integer>,				//STAT2, 스텟 = {}
-	"item": Map<Integer, Integer>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
+	"chat": Map<String, Number>					//대답에 연결된 채팅 = {}
+	"stat": Map<STAT2, Number>,					//STAT2, 스텟 = {}
+	"item": Map<Number, Number>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
 	//-----------------------------------------------
 	getter/setter
-	sendText(Integer, String, String)			//플레이어 id, npc 이름, 방 이름
+	sendText(Number, String, String)			//플레이어 id, npc 이름, 방 이름
 }
 
 "Npc": {
-	"id": Integer,															//인식 정보
+	"id": Number,															//인식 정보
 	"name": String,															//npc 이름
 	"coord": Coordinate														//Coordinate = new Coordinate()
-	"job": Map<JOB, Integer>,												//JOB, 직업 레벨 = {}
+	"job": Map<JOB, Number>,												//JOB, 직업 레벨 = {}
 	"chat": [
 		{
-			"chat": Integer,												//챗 id,
-			"percent": Integer												//확률 (-1 : 무조건 실행)
-			"minLv": Integer,												//최소 레벨 제한 = 1
-			"minCloseRate": Integer,										//최소 친밀도 제한 = 0
-			"minStat": Map<STAT2, Integer>,									//STAT2, 최소 스텟 제한 = {}
-			"minQuest": Map<Integer, Integer>,								//퀘스트 id, 최소 클리어 횟수 제한
-			"maxLv": Integer,												//최대 레벨 제한 = 999
-			"maxCloseRate": Integer,										//최대 친밀도 제한 = 10000
-			"maxStat": Map<STAT2, Integer>,									//STAT2, 최대 스텟 제한
-			"maxQuest": Map<Integer, Integer>								//퀘스트 id, 최대 클리어 횟수 제한
+			"chat": Number,													//챗 id,
+			"percent": Number												//확률 (-1 : 무조건 실행)
+			"minLv": Number,												//최소 레벨 제한 = 1
+			"minCloseRate": Number,											//최소 친밀도 제한 = 0
+			"minStat": Map<STAT2, Number>,									//STAT2, 최소 스텟 제한 = {}
+			"minQuest": Map<Number, Number>,								//퀘스트 id, 최소 클리어 횟수 제한
+			"maxLv": Number,												//최대 레벨 제한 = 999
+			"maxCloseRate": Number,											//최대 친밀도 제한 = 10000
+			"maxStat": Map<STAT2, Number>,									//STAT2, 최대 스텟 제한
+			"maxQuest": Map<Number, Number>									//퀘스트 id, 최대 클리어 횟수 제한
 		}
 	]
- 	"selling": Map<JOB, Map<Integer, Map<Integer, Map<Integer, Integer>>>>,	//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
+ 	"selling": Map<JOB, Map<Number, Map<Number, Map<Number, Number>>>>,		//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
 	//-----------------------------------------------
 	getter/setter
-	getAvailableChat(Integer) - List<Integer>								//플레이어 id - 챗 id
-	getAvailableSelling(JOB, Integer) - Map<Integer, Integer>				//플레이어 id - 아이템 id, 아이템 갯수
-	executeChat(Integer)							//플레이어 id
+	getAvailableChat(Number) - List<Number>									//플레이어 id - 챗 id
+	getAvailableSelling(JOB, Number) - Map<Number, Number>					//플레이어 id - 아이템 id, 아이템 갯수
+	executeChat(Number)							//플레이어 id
 }
 
 "Quest": {
-	"id": Integer,										//인식 정보
+	"id": Number,										//인식 정보
 	"name": String,										//이름
 	"isRepeatable": boolean,							//반복 허용 여부 = false
-	"minLimitLv": Integer								//최소 레벨 제한 = 1
-	"maxLimitLv": Integer								//최대 레벨 제한 = 999
-	"needMoney": Integer,								//클리어 요구 돈(클리어 시 돈-) = 0
-	"needExp": Integer,									//클리어 요구 경험치(클리어 시 경험치-) = 0
-	"needAdv": Integer,									//클리어 요구 모험(클리어 시 모험-) = 0
-	"rewardExp": Long,									//보상 경험치 = 0
-	"rewardAdv": Integer,								//보상 모험 = 0
-	"rewardMoney": Integer,								//보상 돈 = 0
-	"targetNpc": Integer,								//목표 엔피시 = 0(즉시 클리어)
-	"minLimitCloseRate": Map<Integer, Integer>,			//엔피시 id, 최소 친밀도 제한 = {}
-	"maxLimitCloseRate": Map<Integer, Integer>,			//엔피시 id, 최대 친밀도 제한 = {}
-	"minLimitStat": Map<STAT2, Integer>					//STAT2, 최소 스텟 제한 = {}
-	"maxLimitStat": Map<STAT2, Integer>					//STAT2, 최대 스텟 제한 = {}
-	"needItem": Map<Integer, Integer>,					//클리어 요구 아이템, 아이템 갯수(클리어 시 아이템-) = {}
-	"needCloseRate": Map<Integer, Integer>,				//클리어 요구 엔피시 id, 필요 친밀도 = {}
-	"needStat": Map<STAT2, Integer>,					//STAT2, 클리어 요구 스텟(클리어 시 스탯-)
-	"rewardItem": Map<Integer, Integer>,				//보상 아이템, 아이템 갯수 = {}
-	"rewardStat": Map<STAT2, Integer>,					//보상 스텟, 스텟 = {}
-	"rewardCloseRate": Map<Integer, Integer>			//엔피시 id, 보상 친밀도
+	"minLimitLv": Number								//최소 레벨 제한 = 1
+	"maxLimitLv": Number								//최대 레벨 제한 = 999
+	"needMoney": Number,								//클리어 요구 돈(클리어 시 돈-) = 0
+	"needExp": Number,									//클리어 요구 경험치(클리어 시 경험치-) = 0
+	"needAdv": Number,									//클리어 요구 모험(클리어 시 모험-) = 0
+	"rewardExp": Number,									//보상 경험치 = 0
+	"rewardAdv": Number,								//보상 모험 = 0
+	"rewardMoney": Number,								//보상 돈 = 0
+	"targetNpc": Number,								//목표 엔피시 = 0(즉시 클리어)
+	"minLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최소 친밀도 제한 = {}
+	"maxLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최대 친밀도 제한 = {}
+	"minLimitStat": Map<STAT2, Number>					//STAT2, 최소 스텟 제한 = {}
+	"maxLimitStat": Map<STAT2, Number>					//STAT2, 최대 스텟 제한 = {}
+	"needItem": Map<Number, Number>,					//클리어 요구 아이템, 아이템 갯수(클리어 시 아이템-) = {}
+	"needCloseRate": Map<Number, Number>,				//클리어 요구 엔피시 id, 필요 친밀도 = {}
+	"needStat": Map<STAT2, Number>,						//STAT2, 클리어 요구 스텟(클리어 시 스탯-)
+	"rewardItem": Map<Number, Number>,					//보상 아이템, 아이템 갯수 = {}
+	"rewardStat": Map<STAT2, Number>,					//보상 스텟, 스텟 = {}
+	"rewardCloseRate": Map<Number, Number>				//엔피시 id, 보상 친밀도
 	//-----------------------------------------------
 	getter/setter
 	checkClear(player id) - boolean(클리어 체크 여부) (플레이어가 특정 행동을 할 때마다 need에서 처리를 해 주고, 모두 0일 시 true 리턴해주면 됨)
 }
 
 "Item": {
-	"id": Integer,							//인식 정보
+	"id": Number,							//인식 정보
 	"name": String,							//이름
 	"description": String,					//설명
-	"handleLevel": Integer,					//아이템 등급
-	"value": Long,							//기본 가격 = -1(구매 불가)
+	"handleLevel": Number,					//아이템 등급
+	"value": Number,						//기본 가격 = -1(구매 불가)
 	"isWeapon": boolean						//무기인지 아이템인지 판별 - 수정 불가 = false
-	"recipe": List<Map<Integer, Integer>>	//[{아이템 id, 갯수}]
+	"recipe": List<Map<Number, Number>>		//[{아이템 id, 갯수}]
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
 }
 
 "Equipment": {
-	"id": Integer,									//인식 정보
+	"id": Number,									//인식 정보
 	"name": String,									//이름
 	"description": String,							//설명
 	"eType": ETYPE,									//ETYPE
-	"handleLevel": Integer,							//장비 등급
-	"value": Long,									//기본 가격 = -1(구매 불가)
-	"limitLv": Integer,								//레벨 제한 = 1
-	"maxReinforce": Integer,						//최대 강화 횟수 = 0
-	"nowReinforce": Integer,						//현재 강화 횟수 = 0
-	"lvDown": Integer								//레벨 제한 다운 수치 = 0
+	"handleLevel": Number,							//장비 등급
+	"value": Number,								//기본 가격 = -1(구매 불가)
+	"limitLv": Number,								//레벨 제한 = 1
+	"maxReinforce": Number,							//최대 강화 횟수 = 0
+	"nowReinforce": Number,							//현재 강화 횟수 = 0
+	"lvDown": Number								//레벨 제한 다운 수치 = 0
 	"isWeapon": boolean,							//무기인지 아이템인지 판별 - 수정불가 = true
-	"recipe": List<Map<Integer, Integer>>,			//[{아이템 id, 갯수}]
-	"stat": Map<STAT2, Integer>,					//STAT2, 스텟 = {}
-	"limitStat": Map<STAT2, Integer>				//STAT2, 스텟 제한 = {}
-	"type": Map<TYPE, Integer>,						//TYPE, 속성 레벨 = {}
-	"reinforce": Map<STAT2, Integer>				//STAT2, 강화 스텟 = {}
+	"recipe": List<Map<Number, Number>>,			//[{아이템 id, 갯수}]
+	"stat": Map<STAT2, Number>,						//STAT2, 스텟 = {}
+	"limitStat": Map<STAT2, Number>					//STAT2, 스텟 제한 = {}
+	"type": Map<TYPE, Number>,						//TYPE, 속성 레벨 = {}
+	"reinforce": Map<STAT2, Number>					//STAT2, 강화 스텟 = {}
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
 }
 
 "Player": {
-	"id": Integer,			//인식 정보 - 기본 키
+	"id": Number,			//인식 정보 - 기본 키
 	"nickName": String,		//닉네임 - 후보키
 	"name": String,			//카카오톡 이름 - 합성 키(image)
-	"image": Integer,		//카카오톡 프로필 - 합성 키(name)
-	"lastTime": Long,		//최종 접속 시간 = Date.now()
+	"image": Number,		//카카오톡 프로필 - 합성 키(name)
+	"lastTime": Number,		//최종 접속 시간 = Date.now()
 	"recentRoom": String,	//최근 채팅친 방
 	"coord": Coordinate		//현재 위치 = new Coordinate()
 	"nowTitle": String,		//현재 칭호 = ""
-	"money": Long,			//돈 = 1000
-	"lv": Integer,			//레벨 = 1
-	"exp": Long,			//경험치 = 0
-	"sp": Integer,			//잔여 레벨 스탯 = 10
-	"adv": Integer,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
+	"money": Number,		//돈 = 1000
+	"lv": Number,			//레벨 = 1
+	"exp": Number,			//경험치 = 0
+	"sp": Number,			//잔여 레벨 스탯 = 10
+	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
-	"nowChat": Integer		//챗 id(대답 대기용)
-	"achieve": List<Integer>,						//업적 id = []
-	"research": List<Integer>,						//연구 id = []
+	"nowChat": Number		//챗 id(대답 대기용)
+	"achieve": List<Number>,						//업적 id = []
+	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
-	"job": Map<JOB, Integer>,						//JOB, 직업 레벨 = {}
-	"mainStat": Map<STAT1, Map<STAT2, Integer>>,	//STAT1, {STAT2, 스텟} = {}
-	"resistStat": Map<TYPE, Integer>,				//TYPE, 저항 스텟 = {}
-	"inventory": Map<Integer, Integer>,				//아이템 id, 갯수 = {}
-	"equiped": Map<ETYPE, Integer>,					//ETYPE, 장비 id = {}
-	"nowQuest": Map<Integer, Integer>,				//퀘스트 id, 엔피시 id = {}
-	"clearedQuest": Map<Integer, Integer>,			//퀘스트 id, 클리어 횟수 = {}
-	"closeRate": Map<Integer, Integer>,				//엔피시 id, 친밀도 = {}
-	"log": Map<String, Integer>,					//특정 행동(ex 기부), 행동 횟수 = {}
-	"isClearedOnce": <Integer, Integer>,			//퀘스트 최초(지급 후) 클리어 여부 = {}
-	"buff": Map<Long, Map<STAT2, Integer>>,			//종료시간, {STAT2, 증가 스텟}
-	"debuff": Map<Long, Map<STAT2, Integer>,		//종료시간, {STAT2, 감소 스텟}
-	"type": Map<Long, Map<TYPE, Integer>>			//종료시간, {TYPE, 단계}
+	"job": Map<JOB, Number>,						//JOB, 직업 레벨 = {}
+	"mainStat": Map<STAT1, Map<STAT2, Number>>,		//STAT1, {STAT2, 스텟} = {}
+	"resistStat": Map<TYPE, Number>,				//TYPE, 저항 스텟 = {}
+	"inventory": Map<Number, Number>,				//아이템 id, 갯수 = {}
+	"equipped": Map<ETYPE, Number>,					//ETYPE, 장비 id = {}
+	"nowQuest": Map<Number, Number>,				//퀘스트 id, 엔피시 id = {}
+	"clearedQuest": Map<Number, Number>,			//퀘스트 id, 클리어 횟수 = {}
+	"closeRate": Map<Number, Number>,				//엔피시 id, 친밀도 = {}
+	"log": Map<String, Number>,						//특정 행동(ex 기부), 행동 횟수 = {}
+	"isClearedOnce": <Number, Boolean>,				//퀘스트 최초(지급 후) 클리어 여부 = {}
+	"buff": Map<Number, Map<STAT2, Number>>,		//종료시간, {STAT2, 증가 스텟}
+	"debuff": Map<Number, Map<STAT2, Number>,		//종료시간, {STAT2, 감소 스텟}
+	"type": Map<Number, Map<TYPE, Number>>			//종료시간, {TYPE, 단계}
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
