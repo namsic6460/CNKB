@@ -116,7 +116,6 @@ CloseRate : 0~10000
 
 "Chat": {
 	"id": Number,								//인식 정보
-	"totalPercent": Intger,						//확률 총 합(분모)
 	"pause": Number,							//채팅 후 멈춤 시간 = 0(ms)
 	"quest": Number,							//퀘스트 id = 0(없음)
 	"money": Number,							//지급 돈 = 0
