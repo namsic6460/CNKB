@@ -116,12 +116,18 @@ const FUNC = {
 		}
 	},
 
-	reply: function (player, text, more) {
-		var str = player.getFullName() + "\n" + text;
-		if (typeof more !== "undefined")
-			str += VAR.all + "----------\n" + more;
+	reply: function (playerId, text, more) {
+		var temp = this.checkNaN(playerId, 1, VAR.players.size);
 
-		Api.replyRoom(player.recentRoom, str, true);
+		if (temp !== null) {
+
+			var player = VAR.players.get(temp);
+			var str = player.getFullName() + "\n" + text;
+			if (typeof more !== "undefined")
+				str += VAR.all + "----------\n" + more;
+
+			Api.replyRoom(player.recentRoom, str.trim(), true);
+		}
 	},
 
 	time: function () {
@@ -261,7 +267,8 @@ const VAR = {
 	"researches": new Map(),
 	"names": new Map(),
 	"id": new Map(),
-	"all": "\n\n" + ("\u200b".repeat(500))
+	"all": "\n\n" + ("\u200b".repeat(500)),
+	"max": 999999999
 };
 
 function Coordinate(x, y) {
@@ -359,17 +366,17 @@ function Chat(chat) {
 		if (temp !== null) this.money = temp;
 	}
 	this.setTeleport = function (x, y) {
-		if (this.teleport === null) {
-			FUNC.log("setTeleport Error", ENUM.LOG.error);
-			return;
-		}
+		if (this.teleport === null)
+			this.teleport = new Coordinate(x, y);
 
-		var temp1 = FUNC.checkNaN(x, 0);
-		var temp2 = FUNC.checkNaN(y, 0);
+		else {
+			var temp1 = FUNC.checkNaN(x, 0);
+			var temp2 = FUNC.checkNaN(y, 0);
 
-		if (temp1 !== null && temp2 !== null) {
-			this.teleport.setX(temp1);
-			this.teleport.setY(temp2);
+			if (temp1 !== null && temp2 !== null) {
+				this.teleport.setX(temp1);
+				this.teleport.setY(temp2);
+			}
 		}
 	}
 	this.setChat = function (response, chatId, ignore) {
@@ -561,13 +568,13 @@ function Npc(name, npc) {
 
 							while (typeof (value3 = iterator3.next().value) !== "undefined") {
 								if (typeof value === "undefined") {
-									if (value3[1] != -1)
+									if (value3[1] !== -1)
 										output.set(value3[0], value3[1]);
 									else
-										output.set(value3[0], 999999999);
+										output.set(value3[0], VAR.max);
 								}
 
-								else if (value != 999999999)
+								else if (value < VAR.max)
 									output.set(value3[0], value + value3[1]);
 							}
 						}
@@ -731,6 +738,13 @@ function Npc(name, npc) {
 		var temp5 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && temp5 !== null) {
+			for (var i = 0; i < this.selling; i++) {
+				if (this.selling[i].percent == -1) {
+					FUNC.log("-1 percent already exists", ENUM.LOG.error);
+					return;
+				}
+			}
+
 			var value = this.getSelling(temp1, temp2, temp3, temp4);
 
 			if (typeof value !== "undefined") {
@@ -1737,7 +1751,9 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 
 	this.sendText = function (chatId, npcName) {
-		var temp1 = FUNC.checkNaN(chatId, 1, VAR.chats.get(chatId), VAR.chats.size);
+		this.doing = ENUM.DOING.chat;
+
+		var temp1 = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 		var temp2 = FUNC.checkType(String, npcName);
 
 		if (temp1 === null || temp2 === null) {
@@ -1747,79 +1763,88 @@ function Player(nickName, name, imageDB, room, player) {
 
 		var chat = VAR.id.get(temp1);
 		var length = chat.text.length;
-		for (var i = 0; i < length; i++) {
-			var value;
-			var iterator = chat.stat.entries();
-			while (typeof (value = iterator.next().value) !== "undefined") {
-				if (this.getInventory(value[0]) < (-1 * value[1])) {
-					FUNC.reply(this, "보유 아이템이 부족하여 대화가 중지됩니다");
-					return;
-				}
-			}
-
-			if (this.money < (-1 * chat.money)) {
-				FUNC.reply(this, "보유 금액이 부족하여 대화가 중지됩니다");
-				return;
-			}
-
-			var str = temp2 + " : \"" + chat.text + "\"";
-
-			if (i - 1 === length) {
-				var sub = "대화 전송이 종료되었습니다";
-
-				if (chat.wait.length !== 1 || chat.wait[0] !== ENUM.WAIT_RESPONSE.nothing) {
-					sub += "\n입력을 해야 대화가 종료됩니다";
-					this.setNowChat(chat.id);
-				}
-
-				var result = this.getFullName();
-				if (chat.teleport !== null) {
-					this.setCoord(chat.teleport.getX(), chat.teleport.getY());
-					result += "- 순간이동 완료\n";
-				}
-
-				iterator = chat.stat.entries();
-				var temp = false;
-				while (typeof (value = iterator.next().value) !== "undefined") {
-					if (!temp) {
-						result += "- 스텟 설정 완료\n";
-						temp = true;
-					}
-
-					this.addStat(ENUM.STAT1.actStat, value[0], value[1]);
-				}
-
-				iterator = chat.item.entries();
-				temp = false;
-				while (typeof (value = iterator.next().value) !== "undefined") {
-					if (!temp) {
-						result += "- 아이템 갯수 설정 완료\n";
-						temp = true;
-					}
-
-					if (value[1] !== 0)
-						this.addInventory(value[0], value[1]);
-					else
-						this.setInventory(value[0], 0);
-				}
-
-				if (chat.money !== 0) {
-					this.addMoney(chat.money);
-					result += "보유 금액 설정 완료\n";
-				}
-
-				FUNC.reply(this, str, sub);
-
-				result = result.substring(0, result.length - 1);
-				if (!result.includes("\n"))
-					FUNC.reply(this, result);
-
-				return;
-			}
-
-			FUNC.reply(this, str);
+		for (var i = 0; i < length - 1; i++) {
+			FUNC.reply(this.id, temp2 + " : \"" + chat.text[i] + "\"");
 			FUNC.sleep(chat.pause);
 		}
+
+		var text = temp2 + " : \"" + chat.text[length - 1] + "\"\n\n";
+		var more = "";
+		if (chat.wait.length !== 1 || chat.wait[0] !== ENUM.WAIT_RESPONSE.nothing) {
+			text += "입력을 해야 대화가 종료됩니다";
+			this.setNowChat(chat.id);
+		}
+
+		else
+			text += "대화가 종료되었습니다";
+
+		var value;
+		var iterator = chat.item.entries();
+		while (typeof (value = iterator.next().value) !== "undefined") {
+			if (this.getInventory(value[0]) < (-1 * value[1])) {
+				FUNC.reply(this.id, "보유 아이템이 부족하여 대화가 중지됩니다");
+				return;
+			}
+		}
+
+		if (chat.money * -1 > this.money) {
+			FUNC.reply(this.id, "보유 금액이 부족하여 대화가 중지됩니다");
+			return;
+		}
+
+		if (chat.quest != 0) {
+			if (!this.canAddQuest(chat.quest)) {
+				FUNC.reply(this.id, "퀘스트 추가가 불가능하여 대화가 중지됩니다");
+				return;
+			}
+
+			this.addQuest(chat.quest);
+			more += "퀘스트 추가 완료\n";
+		}
+
+		iterator = chat.stat.entries();
+		while (typeof (value = iterator.next().value) !== "undefined") {
+			if (this.getStat(value[0]) < (-1 * value[1])) {
+				FUNC.reply(this.id, "스텟이 부족하여 대화가 중지됩니다");
+				return;
+			}
+		}
+
+		iterator = chat.item.entries();
+		while (typeof (value = iterator.next().value) !== "undefined") {
+			if (this.getInventory(value[0]) < (-1 * value[1])) {
+				FUNC.reply(this.id, "아이템이 부족하여 대화가 중지됩니다");
+				return;
+			}
+		}
+
+		if (chat.money != 0) {
+			this.addMoney(chat.money);
+			more += "돈 추가 완료\n";
+		}
+
+		if (teleport !== null) {
+			this.setCoord(chat.teleport.getX(), chat.teleport.getY());
+			more += "순간이동 완료\n";
+		}
+
+		if (chat.stat.size > 0) {
+			iterator = chat.stat.entires();
+			while (typeof (value = iterator.next().value) !== "undefined")
+				this.addStat(ENUM.STAT1.actStat, value[0], value[1]);
+
+			more += "스텟 설정 완료\n";
+		}
+
+		if (chat.item.size > 0) {
+			iterator = chat.item.entires();
+			while (typeof (value = iterator.next().value) !== "undefined")
+				this.addInventory(value[0], value[1]);
+
+			more += "아이템 설정 완료";
+		}
+
+		FUNC.reply(this.id, text, more);
 	}
 
 	this.executeChat = function (npcId) {
@@ -1864,8 +1889,6 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 
 		var chat = VAR.chats.get(chatId);
-
-		this.setDoing(ENUM.DOING.chat);
 		this.sendText(chat.id, npc.name);
 	}
 
@@ -1887,7 +1910,7 @@ function Player(nickName, name, imageDB, room, player) {
 		if (this.getIsClearedOnce(temp) === false) {
 			this.setIsClearedOnce(temp, true);
 
-			FUNC.reply(player, "\"" + quest.name + "\" 퀘스트를 최초(퀘스트 지급 후) 클리어 하셨습니다",
+			FUNC.reply(this.id, "\"" + quest.name + "\" 퀘스트를 최초(퀘스트 지급 후) 클리어 하셨습니다",
 				"이 메세지는 반복 퀘스트와 상관 없이 최초 클리어 시 발송됩니다");
 		}
 
