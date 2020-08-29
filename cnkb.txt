@@ -224,7 +224,7 @@ CloseRate : 0~10000
 	"id": Number,			//인식 정보 - 기본 키
 	"nickName": String,		//닉네임 - 후보키
 	"name": String,			//카카오톡 이름 - 합성 키(image)
-	"image": Number,		//카카오톡 프로필 - 합성 키(name)
+	"image": String,		//카카오톡 프로필 - 합성 키(name)
 	"lastTime": Number,		//최종 접속 시간 = Date.now()
 	"recentRoom": String,	//최근 채팅친 방
 	"coord": Coordinate		//현재 위치 = new Coordinate()
@@ -239,19 +239,18 @@ CloseRate : 0~10000
 	"achieve": List<Number>,						//업적 id = []
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
+	"nowQuest": List<Number>,						//퀘스트 id, 엔피시 id = {}
 	"job": Map<JOB, Number>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Number>>,		//STAT1, {STAT2, 스텟} = {}
 	"resistStat": Map<TYPE, Number>,				//TYPE, 저항 스텟 = {}
 	"inventory": Map<Number, Number>,				//아이템 id, 갯수 = {}
 	"equipped": Map<ETYPE, Number>,					//ETYPE, 장비 id = {}
-	"nowQuest": Map<Number, Number>,				//퀘스트 id, 엔피시 id = {}
 	"clearedQuest": Map<Number, Number>,			//퀘스트 id, 클리어 횟수 = {}
 	"closeRate": Map<Number, Number>,				//엔피시 id, 친밀도 = {}
 	"log": Map<String, Number>,						//특정 행동(ex 기부), 행동 횟수 = {}
-	"isClearedOnce": <Number, Boolean>,				//퀘스트 최초(지급 후) 클리어 여부 = {}
-	"buff": Map<Number, Map<STAT2, Number>>,		//종료시간, {STAT2, 증가 스텟}
-	"debuff": Map<Number, Map<STAT2, Number>,		//종료시간, {STAT2, 감소 스텟}
-	"type": Map<Number, Map<TYPE, Number>>			//종료시간, {TYPE, 단계}
+	"isClearedOnce": <Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
+	"type": Map<TYPE, Number>,						//TYPE, 단계
+	"buff": Map<Number, Map<STAT2, Number>>			//종료시간, {STAT2, 증가 스텟}
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
