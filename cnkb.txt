@@ -270,5 +270,4 @@ CloseRate : 0~10000
 	handleResearch()
 	handleBuff()
 	updateStat()
-	update() - 버전 업데이트
 }

@@ -1917,6 +1917,29 @@ function Player(nickName, name, imageDB, room, player) {
 		return true;
 	}
 
+	this.getRequireExp = function () {
+		if (this.lv <= 100)
+			return 100 + (this.lv * 2);
+		else if (this.lv <= 200)
+			return 250 + (x * 4);
+		else if (this.lv <= 400)
+			return 1000 + (x * 10);
+		else if (this.lv <= 650)
+			return 8000 + Math.floor(Math.pow(x - 400, 17 / 9));
+		else if (this.lv <= 700)
+			return 25000 + (x * 30);
+		else if (this.lv <= 800)
+			return -290000 + (x * 500);
+		else if (this.lv <= 850)
+			return 120000 + Math.floor(Math.pow(x - 800, 10 / 3));
+		else if (this.lv <= 950)
+			return -16000000 + (20000 * x);
+		else if (this.lv <= 990)
+			return 2500000 + (1000 * x);
+		else
+			return -95000000 + (1000 * x);
+	}
+
 	this.getJob = function (jobEnum) {
 		var temp = FUNC.checkNaN(jobEnum);
 		return this.job.get(temp);
@@ -2024,6 +2047,9 @@ function Player(nickName, name, imageDB, room, player) {
 	this.setExp = function (exp) {
 		var temp = FUNC.checkNaN(exp, 0);
 		if (temp !== null) this.exp = temp;
+
+		if (this.exp > this.getRequireExp())
+			this.lvUp();
 	}
 	this.setSp = function (sp) {
 		var temp = FUNC.checkNaN(sp, 0);
@@ -2253,7 +2279,10 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 	}
 
-	//TODO : Add Adders
+	//TODO add addera
+	thid.addMoney = function (money) {
+
+	}
 }
 
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
