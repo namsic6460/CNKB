@@ -166,7 +166,7 @@ CloseRate : 0~10000
 	"needMoney": Number,								//클리어 요구 돈(클리어 시 돈-) = 0
 	"needExp": Number,									//클리어 요구 경험치(클리어 시 경험치-) = 0
 	"needAdv": Number,									//클리어 요구 모험(클리어 시 모험-) = 0
-	"rewardExp": Number,									//보상 경험치 = 0
+	"rewardExp": Number,								//보상 경험치 = 0
 	"rewardAdv": Number,								//보상 모험 = 0
 	"rewardMoney": Number,								//보상 돈 = 0
 	"targetNpc": Number,								//목표 엔피시 = 0(즉시 클리어)
@@ -250,11 +250,10 @@ CloseRate : 0~10000
 	"log": Map<String, Number>,						//특정 행동(ex 기부), 행동 횟수 = {}
 	"isClearedOnce": <Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
 	"type": Map<TYPE, Number>,						//TYPE, 단계
-	"buff": Map<Number, Map<STAT2, Number>>			//종료시간, {STAT2, 증가 스텟}
+	"buff": Map<STAT2, Map<Number, Number>>			//STAT2, {종료시간, 증가 스텟}
 	//-----------------------------------------------
 	getter/setter
 	getFullName()
-	getTotalExp()
 	getNeedExp()
 	checkLvUp()
 	levelUp()
