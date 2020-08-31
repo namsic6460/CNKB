@@ -2416,20 +2416,19 @@ function Player(nickName, name, imageDB, room, player) {
 			this.setCloseRate(temp1, value + temp2, true);
 		}
 	}
-	//TODO : FROM here
-	this.addLog = function (jobEnum, jobLv) {
-		var temp1 = FUNC.checkNaN(jobEnum);
-		var temp2 = FUNC.checkNaN(jobLv);
+	this.addLog = function (logName, logData) {
+		var temp1 = FUNC.checkNaN(logName);
+		var temp2 = FUNC.checkNaN(logData);
 
 		if (temp1 !== null && temp2 !== null) {
-			var value = this.getJob(temp1);
+			var value = this.getLog(temp1);
 
 			if (typeof value === "undefined") {
-				FUNC.log("addJob Warning", ENUM.LOG.warning);
+				FUNC.log("addLog Warning", ENUM.LOG.warning);
 				return;
 			}
 
-			this.setJob(temp1, value + temp2, true);
+			this.setLog(temp1, value + temp2, true);
 		}
 	}
 	this.changeIsClearedOnce = function (questId) {
