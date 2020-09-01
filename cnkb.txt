@@ -127,7 +127,6 @@ CloseRate : 0~10000
 	"item": Map<Number, Number>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
 	//-----------------------------------------------
 	getter/setter
-	sendText(Number, String, String)			//플레이어 id, npc 이름, 방 이름
 }
 
 "Npc": {
@@ -154,7 +153,6 @@ CloseRate : 0~10000
 	getter/setter
 	getAvailableChat(Number) - List<Number>									//플레이어 id - 챗 id
 	getAvailableSelling(JOB, Number) - Map<Number, Number>					//플레이어 id - 아이템 id, 아이템 갯수
-	executeChat(Number)							//플레이어 id
 }
 
 "Quest": {
@@ -182,7 +180,6 @@ CloseRate : 0~10000
 	"rewardCloseRate": Map<Number, Number>				//엔피시 id, 보상 친밀도
 	//-----------------------------------------------
 	getter/setter
-	checkClear(player id) - boolean(클리어 체크 여부) (플레이어가 특정 행동을 할 때마다 need에서 처리를 해 주고, 모두 0일 시 true 리턴해주면 됨)
 }
 
 "Item": {
@@ -253,10 +250,12 @@ CloseRate : 0~10000
 	"buff": Map<STAT2, Map<Number, Number>>			//STAT2, {종료시간, 증가 스텟}
 	//-----------------------------------------------
 	getter/setter
+	sendText(chatId, npcName)
+	executeChat(npcId)
+	checkClear(questId) - boolean(클리어 체크 여부)
 	getFullName()
-	getNeedExp()
-	checkLvUp()
-	levelUp()
+	getRequireExp()
+	lvUp()
 	canAddQuest(questid)
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
