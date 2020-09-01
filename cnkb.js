@@ -66,7 +66,7 @@ const FUNC = {
 			return null;
 		}
 
-		return Number(variable);
+		return Math.round(Number(varialbe));
 	},
 
 	getId: function (idType) {
@@ -91,18 +91,27 @@ const FUNC = {
 		return String(func).substring(9).split("(")[0]
 	},
 
-	check: function (original, comparing, checking, ignore) {	//checking이 small이라면 compare이 original에 비해 더 작을 때 true
+	check: function (original, comparing, checking, ignore, setZero) {	//checking이 small이라면 compare이 original에 비해 더 작을 때 true
 		ignore = typeof ignore !== "undefined" ? ignore : true;
+		setZero = typeof setZero !== "undefined" ? setZero : false;
 
 		var iterator = original.entries();
-		var value, compare;
+		var value, compare, compareValue;
 
 		while (typeof (value = iterator.next().value) !== "undefined") {
 			if (!comparing.has(value[0])) {
-				if (!ignore)
-					return false;
+				if (!ignore) {
+					if (!setZero)
+						return false;
+					else
+						compareValue = 0;
+				}
+
 				continue;
 			}
+
+			else
+				compareValue = comparing.get(value[0]);
 
 			if (value[1] > comparing.get(value[1]))
 				compare = ENUM.CHECKING.small;
@@ -128,6 +137,22 @@ const FUNC = {
 
 			Api.replyRoom(player.recentRoom, str.trim(), true);
 		}
+	},
+
+	system: function (room, text, more) {
+		var str = text;
+		if (typeof more !== "undefined")
+			str += VAR.all + "----------\n" + more;
+		Api.replyRoom(room, str.trim(), true);
+	},
+
+	systemAll: function (text, more) {
+		var str = text;
+		if (typeof more !== "undefined")
+			str += VAR.all + "----------\n" + more;
+
+		for (var s of VAR.rooms)
+			Api.replyRoom(s, str.trim(), true);
 	},
 
 	time: function () {
@@ -261,6 +286,7 @@ const ENUM = {
 
 const VAR = {
 	"log": "",
+	"rooms": new Array(),
 	"players": new Map(),
 	"chats": new Map(),
 	"npcs": new Map(),
@@ -271,12 +297,14 @@ const VAR = {
 	"names": new Map(),
 	"id": new Map(),
 	"all": "\n\n" + ("\u200b".repeat(500)),
-	"max": 999999999
+	"max": 999999999,
+	"spGive": 5,
+	"expBoost": 1
 };
 
 function Coordinate(x, y) {
-	this.x = this.setX(x);
-	this.y = this.setY(y);
+	this.x = x;
+	this.y = y;
 
 	this.getX = function () {
 		return this.x;
@@ -532,8 +560,8 @@ function Npc(name, npc) {
 			for (i = 0; i < length; i++) {
 				if (this.chat[i].get("minLv") <= lv && this.chat[i].get("maxLv") >= lv &&
 					this.chat[i].get("minCloseRate") <= closeRate && this.chat[i].get("maxCloseRate") >= closeRate &&
-					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big, false) &&
-					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big, false))
+					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
+					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big, false, true))
 					output.push(this.chat[i].get("chat"));
 			}
 		}
@@ -740,7 +768,7 @@ function Npc(name, npc) {
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null && temp4 !== null && temp5 !== null) {
 			for (var i = 0; i < this.selling; i++) {
-				if (this.selling[i].percent == -1) {
+				if (this.selling[i].percent === -1) {
 					FUNC.log("-1 percent already exists", ENUM.LOG.error);
 					return;
 				}
@@ -1048,7 +1076,7 @@ function Quest(name, quest) {
 	}
 	this.setRewardItem = function (itemId, itemCount, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(itemId);
+		var temp1 = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1086,7 +1114,7 @@ function Quest(name, quest) {
 	}
 	this.setRewardCloseRate = function (npcId, closeRate, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(closeRate, 0);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1145,7 +1173,7 @@ function Quest(name, quest) {
 		if (temp !== null) this.setRewardMoney(this.rewardMoney + temp);
 	}
 	this.addMinLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1160,7 +1188,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addMaxLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1205,7 +1233,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addNeedItem = function (itemId, itemCount) {
-		var temp1 = FUNC.checkNaN(itemId);
+		var temp1 = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1235,7 +1263,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addMinLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1250,7 +1278,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addMaxLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1265,7 +1293,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addRewardItem = function (itemId, itemCount) {
-		var temp1 = FUNC.checkNaN(itemId);
+		var temp1 = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1295,7 +1323,7 @@ function Quest(name, quest) {
 		}
 	}
 	this.addRewardCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -1751,6 +1779,7 @@ function Player(nickName, name, imageDB, room, player) {
 
 	VAR.players.set(this.id, this);
 
+	//[테스트 칭호] 남식
 	this.getFullName = function () {
 		return "[" + this.nowTitle + "] " + this.nickName;
 	}
@@ -1797,7 +1826,7 @@ function Player(nickName, name, imageDB, room, player) {
 			return;
 		}
 
-		if (chat.quest != 0) {
+		if (chat.quest !== 0) {
 			if (!this.canAddQuest(chat.quest)) {
 				FUNC.reply(this.id, "퀘스트 추가가 불가능하여 대화가 중지됩니다");
 				return;
@@ -1823,7 +1852,7 @@ function Player(nickName, name, imageDB, room, player) {
 			}
 		}
 
-		if (chat.money != 0) {
+		if (chat.money !== 0) {
 			this.addMoney(chat.money);
 			more += "돈 추가 완료\n";
 		}
@@ -1901,15 +1930,15 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
 		if (temp === null) {
-			FUNC.log("checkClear Error", VAR.npcs.size);
+			FUNC.log("checkClear Error", ENUM.LOG.error);
 			return;
 		}
 
 		var quest = VAR.quests.get(temp);
 
 		if (this.money < quest.needMoney || this.getTotalExp() < quest.needExp || this.adv < quest.needAdv ||
-			FUNC.check(quest.needCloseRate, this.closeRate, ENUM.CHECKING.big, false) ||
-			FUNC.check(quest.needItem, this.inventory, ENUM.CHECKING.big, false))
+			FUNC.check(quest.needCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) ||
+			FUNC.check(quest.needItem, this.inventory, ENUM.CHECKING.big, false, true))
 			return false;
 
 		if (this.getIsClearedOnce(temp) === false) {
@@ -1943,6 +1972,40 @@ function Player(nickName, name, imageDB, room, player) {
 			return 2500000 + (1000 * x);
 		else
 			return -95000000 + (1000 * x);
+	}
+
+	this.lvUp = function () {
+		this.setExp(0);
+		this.addLv(1);
+		this.addSp(VAR.spGive);
+
+		var str = this.getFullName() + "님이 " + this.lv + " 레벨을 달성하였습니다";
+		if (this.lv % 100 !== 0)
+			FUNC.system(this.recentRoom, str);
+		else
+			FUNC.systemAll(str);
+	}
+
+	this.canAddQuest = function (questId) {
+		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
+
+		if (temp === null)
+			return false;
+
+		var quest = VAR.quests.get(temp);
+		if (quest.minLimitLv > this.lv || quest.maxLimitLv < this.lv ||
+			FUNC.check(quest.maxLimitCloseRate, this.closeRate, ENUM.CHECKING.small, false, true) ||
+			FUNC.check(quest.minLimitCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) ||
+			FUNC.check(quest.maxLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.small, false, true) ||
+			FUNC.check(quest.minLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			return false;
+
+		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined")
+			return false;
+		if (!quest.isRepeatable && typeof this.getClearedQuest(temp) !== "undefined")
+			return false;
+
+		return true;
 	}
 
 	this.getJob = function (jobEnum) {
@@ -2132,7 +2195,7 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.setInventory = function (itemId, itemCount, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(itemId);
+		var temp1 = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2152,7 +2215,7 @@ function Player(nickName, name, imageDB, room, player) {
 	this.setEquipped = function (eTypeEnum, equipmentId, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
 		var temp1 = FUNC.checkNaN(eTypeEnum);
-		var temp2 = FUNC.checkNaN(equipmentId);
+		var temp2 = FUNC.checkNaN(equipmentId, 1, VAR.items.size);
 
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getEqiupped(temp1) !== "undefined") {
@@ -2170,7 +2233,7 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.setClearedQuest = function (questId, clearCount, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(questId);
+		var temp1 = FUNC.checkNaN(questId, 1, VAR.quests.size);
 		var temp2 = FUNC.checkNaN(clearCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2189,8 +2252,8 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.setCloseRate = function (npcId, closeRate, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(npcId);
-		var temp2 = FUNC.checkNaN(closeRate);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
+		var temp2 = FUNC.checkNaN(closeRate, 0, 10000);
 
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getCloseRate(temp1) !== "undefined") {
@@ -2227,7 +2290,7 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.setIsClearedOnce = function (questId, cleared, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(questId);
+		var temp1 = FUNC.checkNaN(questId, 1, VAR.quests.size);
 		var temp2 = FUNC.checkNaN(cleared);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2293,7 +2356,7 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp !== null) this.setLv(this.lv + temp);
 	}
 	this.addExp = function (exp) {
-		var temp = FUNC.checkNaN(exp);
+		var temp = VAR.expBoost * FUNC.checkNaN(exp);
 		if (temp !== null) this.setExp(this.exp + temp);
 	}
 	this.addSp = function (sp) {
@@ -2372,7 +2435,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 	}
 	this.addInventory = function (itemId, itemCount) {
-		var temp1 = FUNC.checkNaN(itemId);
+		var temp1 = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2387,7 +2450,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 	}
 	this.addClearedQuest = function (questId, clearCount) {
-		var temp1 = FUNC.checkNaN(questId);
+		var temp1 = FUNC.checkNaN(questId, 1, VAR.quests.size);
 		var temp2 = FUNC.checkNaN(clearCount);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2402,7 +2465,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 	}
 	this.addCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId);
+		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		var temp2 = FUNC.checkNaN(closeRate);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -2432,7 +2495,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 	}
 	this.changeIsClearedOnce = function (questId) {
-		var temp = FUNC.checkNaN(questId);
+		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
 		if (temp !== null) {
 			var value = this.getIsClearedOnce(temp);
@@ -2484,10 +2547,11 @@ function Player(nickName, name, imageDB, room, player) {
 }
 
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
-	if (isGroupChat)
-		return;
+	if (typeof FUNC.findValue(VAR.rooms, room) === "undefined")
+		this.rooms.push(room);
 
-
+	var split = msg.split(" ");
+	eval(msg);
 }
 
 
