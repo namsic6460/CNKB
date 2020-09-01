@@ -2008,6 +2008,16 @@ function Player(nickName, name, imageDB, room, player) {
 		return true;
 	}
 
+	this.canAddAchieve(achieveId) {
+		var temp = FUNC.checkNaN(achieve, 1, VAR.achieves.size);
+
+		if (temp === null)
+			return false;
+
+		var achieve = VAR.achieves.get(temp);
+
+	}
+
 	this.getJob = function (jobEnum) {
 		var temp = FUNC.checkNaN(jobEnum);
 		return this.job.get(temp);
