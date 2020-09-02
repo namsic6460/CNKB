@@ -221,17 +221,30 @@ handleLevel : 1~10
 Achieve: {
 	"id": Number,							//인식 정보 - 기본 키
 	"name": String,							//이름
-	"limitMoney": Number,					//해금 조건 금액 = 0
+	"needMoney": Number,					//해금 요구 돈 = 0
 	"limitLv": Number,						//해금 조건 레벨 = 999
 	"rewardMoney": Number,					//보상 금액 = 0
 	"rewardExp": Number,					//보상 경험치 = 0
 	"rewardAdv": Number,					//보상 모험 = 0
-	"limitStat": Map<STAT2, Number>,		//해금 조건 스텟 = {}
-	"limitCloseRate": Map<Number, Number>,	//해금 조건 친밀도 = {}
-	"otherLimit": Map<String, Number>,		//기타 해금 조건 = {}
-	"rewardStat": Map<STAT2, Number>,		//보상 스텟 = {}
-	"rewardCloseRate": Map<Number, Number>,	//보상 친밀도 = {}
-	"rewardItem": Map<Number, Number>		//보상 아이템 = {}
+	"limitStat": Map<STAT2, Number>,		//STAT2, 스텟 = {}
+	"limitCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
+	"otherLimit": Map<String, Number>,		//특정 행동(ex 기부), 행동 횟수  = {}
+	"rewardCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
+	"rewardItem": Map<Number, Number>		//아이템 id, 갯수 = {}
+	//-----------------------------------------------
+	getter/setter
+}
+
+Research: {
+	"id": Number,							//인식 정보 - 기본 키
+	"name": String,							//이름
+	"needMoney": Number,					//해금 요구 돈 = 0
+	"limitLv": Number,						//해금 조건 레벨 = 999
+	"rewardExp": Number,					//보상 경험치 = 0
+	"needItem": Map<Number, Number>,		//아이템 id, 갯수 = {}
+	"rewardStat": Map<STAT2, Number>,		//STAT2, 스텟 = {}
+	//-----------------------------------------------
+	getter/setter
 }
 
 "Player": {
