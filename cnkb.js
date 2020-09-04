@@ -290,6 +290,25 @@ const ENUM = {
 		"item": 4,
 		"achieve": 5,
 		"research": 6
+	},
+	"LOGDATA": {
+		"chat": 0,
+		"npcChat": 1,
+		"questReceived": 2,
+		"questCleared": 3,
+		"maxMoney": 4,
+		"maxPayment": 5,
+		"moveDistance": 6,
+		"mined": 7,
+		"ate": 8,
+		"bought": 9,
+		"gottenItem": 10,
+		"usedItem": 11,
+		"reinforceTried": 12,
+		"totalExp": 13,
+		"buffReceived": 14,
+		"maxCloseRate": 15,
+		"totalCloseRate": 16
 	}
 };
 
@@ -1115,21 +1134,11 @@ function Quest(name, quest) {
 
 	this.addMinLimitLv = function (lv) {
 		var temp = FUNC.checkNaN(lv);
-
-		if (temp !== null) {
-			var value = this.minLimitLv + temp;
-			if (value <= this.maxLimitLv)
-				this.setMinLimitLv(value);
-		}
+		if (temp !== null) this.setMinLimitLv(value);
 	}
 	this.addMaxLimitLv = function (lv) {
 		var temp = FUNC.checkNaN(lv);
-
-		if (temp !== null) {
-			var value = this.maxLimitLv + temp;
-			if (value <= this.minLimitLv)
-				this.setMinLimitLv(value);
-		}
+		if (temp !== null) this.maxLimitLv(value);
 	}
 	this.addNeedMoney = function (money) {
 		var temp = FUNC.checkNaN(money);
@@ -1345,10 +1354,13 @@ function Item(name, item) {
 	}
 	this.addRecipe = function (recipe) {
 		var temp = FUNC.checkType(Map, recipe);
-		if (temp !== null && typeof FUNC.findValue(this.recipe, temp) !== "undefined")
-			this.recipe.push(temp);
-		else
-			FUNC.log("addRecipe Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.recipe, temp) !== "undefined")
+				this.recipe.push(temp);
+			else
+				FUNC.log("addRecipe Error", ENUM.LOG.error);
+		}
 	}
 }
 
@@ -1569,10 +1581,13 @@ function Equipment(name, description, eTypeEnum, equipment) {
 	}
 	this.addRecipe = function (recipe) {
 		var temp = FUNC.checkType(Map, recipe);
-		if (temp !== null && typeof FUNC.findValue(this.recipe, temp) !== "undefined")
-			this.recipe.push(temp);
-		else
-			FUNC.log("addRecipe Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.recipe, temp) !== "undefined")
+				this.recipe.push(temp);
+			else
+				FUNC.log("addRecipe Error", ENUM.LOG.error);
+		}
 	}
 	this.addStat = function (stat2Enum, stat) {
 		var temp1 = FUNC.checkNaN(stat2Enum);
@@ -1581,12 +1596,10 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setStat(temp1, temp2, true);
+			else
+				this.setStat(temp1, value + temp2, true);
 		}
 	}
 	this.addLimitStat = function (stat2Enum, stat) {
@@ -1596,12 +1609,10 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getLimitStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addLimitStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setLimitStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setLimitStat(temp1, temp2, true);
+			else
+				this.setLimitStat(temp1, value + temp2, true);
 		}
 	}
 	this.addType = function (typeEnum, type) {
@@ -1611,12 +1622,10 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getType(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addType Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setType(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setType(temp1, temp2, true);
+			else
+				this.setType(temp1, value + temp2, true);
 		}
 	}
 	this.addReinforce = function (stat2Enum, stat) {
@@ -1626,12 +1635,10 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getReinforce(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addReinforce Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setReinforce(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setReinforce(temp1, temp2, true);
+			else
+				this.setReinforce(temp1, value + temp2, true);
 		}
 	}
 }
@@ -1846,12 +1853,10 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getLimitStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addLimitStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setLimitStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setLimitStat(temp1, temp2, true);
+			else
+				this.setLimitStat(temp1, value + temp2, true);
 		}
 	}
 	this.addLimitCloseRate = function (npcId, closeRate) {
@@ -1861,12 +1866,10 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getLimitCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addLimitCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setLimitCloseRate(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setLimitCloseRate(temp1, temp2, true);
+			else
+				this.setLimitCloseRate(temp1, value + temp2, true);
 		}
 	}
 	this.addOtherLimit = function (logName, logData) {
@@ -1876,12 +1879,10 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getOtherLimit(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addOtherLimit Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setOtherLimit(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setOtherLimit(temp1, temp2, true);
+			else
+				this.setOtherLimit(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardCloseRate = function (npcId, closeRate) {
@@ -1891,12 +1892,10 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardCloseRate(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardCloseRate(temp1, temp2, true);
+			else
+				this.setRewardCloseRate(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardItem = function (itemId, itemCount) {
@@ -1906,12 +1905,10 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardItem(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardItem Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardItem(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardItem(temp1, temp2, true);
+			else
+				this.setRewardItem(temp1, value + temp2, true);
 		}
 	}
 }
@@ -2031,12 +2028,10 @@ function Research(name, research) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getNeedItem(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addNeedItem Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setNeedItem(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setNeedItem(temp1, temp2, true);
+			else
+				this.setNeedItem(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardStat = function (stat2Enum, stat) {
@@ -2046,12 +2041,10 @@ function Research(name, research) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardStat(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardStat(temp1, temp2, true);
+			else
+				this.setRewardStat(temp1, value + temp2, true);
 		}
 	}
 }
@@ -2296,7 +2289,6 @@ function Player(nickName, name, imageDB, room, player) {
 		var quest = VAR.quests.get(temp);
 
 		if (this.money < quest.needMoney || this.getTotalExp() < quest.needExp || this.adv < quest.needAdv ||
-			FUNC.check(quest.needCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) ||
 			FUNC.check(quest.needItem, this.inventory, ENUM.CHECKING.big, false, true))
 			return false;
 
@@ -2789,24 +2781,33 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.addAchieve = function (achieveId) {
 		var temp = FUNC.checkNaN(achieveId, 1, VAR.achieves.size);
-		if (temp !== null && typeof FUNC.findValue(this.achieve, temp) !== "undefined")
-			this.achieve.push(temp);
-		else
-			FUNC.log("addAchieve Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+				this.achieve.push(temp);
+			else
+				FUNC.log("addAchieve Error", ENUM.LOG.error);
+		}
 	}
 	this.addResearch = function (researchId) {
 		var temp = FUNC.checkNaN(researchId, 1, VAR.researches.size);
-		if (temp !== null && typeof FUNC.findValue(this.achieve, temp) !== "undefined")
-			this.research.push(temp);
-		else
-			FUNC.log("addResearch Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+				this.research.push(temp);
+			else
+				FUNC.log("addResearch Error", ENUM.LOG.error);
+		}
 	}
 	this.addTitle = function (title) {
 		var temp = FUNC.checkType(String, title);
-		if (temp !== null && typeof FUNC.findValue(this.achieve, temp) !== "undefined")
-			this.title.push(temp);
-		else
-			FUNC.log("addTitle Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+				this.title.push(temp);
+			else
+				FUNC.log("addTitle Error", ENUM.LOG.error);
+		}
 	}
 	this.addJob = function (jobEnum, jobLv) {
 		var temp1 = FUNC.checkNaN(jobEnum);
@@ -2815,12 +2816,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getJob(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addJob Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setJob(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setJob(temp1, temp2);
+			else
+				this.setJob(temp1, value + temp2, true);
 		}
 	}
 	this.addMainStat = function (stat1Enum, stat2Enum, stat) {
@@ -2831,12 +2830,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null && temp3 !== null) {
 			var value = this.getMainStat(temp1, temp2);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addMainStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMainStat(temp1, temp2, value + temp3, true);
+			if (typeof value === "undefined")
+				this.setMainStat(temp1, temp2);
+			else
+				this.setMainStat(temp1, value + temp2, true);
 		}
 	}
 	this.addResistStat = function (typeEnum, type) {
@@ -2846,12 +2843,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getResistStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addResistType Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setResistStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setResistStat(temp1, temp2);
+			else
+				this.setResistStat(temp1, value + temp2, true);
 		}
 	}
 	this.addInventory = function (itemId, itemCount) {
@@ -2861,12 +2856,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getInventory(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addInventory Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setInventory(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setInventory(temp1, temp2);
+			else
+				this.setInventory(temp1, value + temp2, true);
 		}
 	}
 	this.addClearedQuest = function (questId, clearCount) {
@@ -2876,12 +2869,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getClearedQuest(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addClearedQuest Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setClearedQuest(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setClearedQuest(temp1, temp2);
+			else
+				this.setClearedQuest(temp1, value + temp2, true);
 		}
 	}
 	this.addCloseRate = function (npcId, closeRate) {
@@ -2891,12 +2882,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addJob Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setCloseRate(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setCloseRate(temp1, temp2);
+			else
+				this.setCloseRate(temp1, value + temp2, true);
 		}
 	}
 	this.addLog = function (logName, logData) {
@@ -2906,12 +2895,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getLog(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addLog Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setLog(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setLog(temp1, temp2);
+			else
+				this.setLog(temp1, value + temp2, true);
 		}
 	}
 	this.changeIsClearedOnce = function (questId) {
@@ -2940,12 +2927,10 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getType(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addType Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setType(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setType(temp1, temp2);
+			else
+				this.setType(temp1, value + temp2, true);
 		}
 	}
 	this.addBuff = function (stat1Enum, stat2Enum, stat) {
@@ -2955,13 +2940,10 @@ function Player(nickName, name, imageDB, room, player) {
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null) {
 			var value = this.getMainStat(temp1, temp2);
-
-			if (typeof value === "undefined") {
-				FUNC.log("addBuff Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setBuff(temp1, temp2, value + temp3, true);
+			if (typeof value === "undefined")
+				this.setBuff(temp1, temp2);
+			else
+				this.setBuff(temp1, value + temp2, true);
 		}
 	}
 }
