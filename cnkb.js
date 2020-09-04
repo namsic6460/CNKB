@@ -92,6 +92,12 @@ const FUNC = {
 	},
 
 	check: function (original, comparing, checking, ignore, setZero) {	//checking이 small이라면 compare이 original에 비해 더 작을 때 true
+		var temp1 = this.checkType(Map, original);
+		var temp2 = this.checkType(Map, comparing);
+
+		if (temp1 === null || temp2 === null)
+			return false;
+
 		ignore = typeof ignore !== "undefined" ? ignore : true;
 		setZero = typeof setZero !== "undefined" ? setZero : false;
 
@@ -107,15 +113,16 @@ const FUNC = {
 						compareValue = 0;
 				}
 
-				continue;
+				else
+					continue;
 			}
 
 			else
 				compareValue = comparing.get(value[0]);
 
-			if (value[1] > comparing.get(value[1]))
+			if (value[1] > compareValue)
 				compare = ENUM.CHECKING.small;
-			else if (value[1] < com)
+			else if (value[1] < compareValue)
 				compare = ENUM.CHECKING.big;
 			else
 				continue;
@@ -123,6 +130,8 @@ const FUNC = {
 			if (compare !== checking)
 				return false;
 		}
+
+		return true;
 	},
 
 	reply: function (playerId, text, more) {
@@ -303,8 +312,16 @@ const VAR = {
 };
 
 function Coordinate(x, y) {
-	this.x = x;
-	this.y = y;
+
+	if (typeof x !== "undefined")
+		this.x = x;
+	else
+		this.x = 0;
+
+	if (typeof y !== "undefined")
+		this.y = y;
+	else
+		this.y = 0;
 
 	this.getX = function () {
 		return this.x;
@@ -469,17 +486,23 @@ function Chat(chat) {
 	}
 	this.addText = function (text) {
 		var temp = FUNC.checkType(String, text);
-		if (temp !== null && typeof FUNC.findValue(this.text, temp) !== "undefined")
-			this.text.push(temp);
-		else
-			FUNC.log("addText Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.text, temp) === "undefined")
+				this.text.push(temp);
+			else
+				FUNC.log("addText Error", ENUM.LOG.error);
+		}
 	}
 	this.addWait = function (waitEnum) {
 		var temp = FUNC.checkNaN(waitEnum);
-		if (temp !== null && typeof FUNC.findValue(this.wait, temp) !== "undefined")
-			this.wait.push(temp);
-		else
-			FUNC.log("addWait Warning", ENUM.LOG.warning);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.wait, temp) === "undefined")
+				this.wait.push(temp);
+			else
+				FUNC.log("addWait Error", ENUM.LOG.error);
+		}
 	}
 	this.addStat = function (stat2Enum, stat) {
 		var temp1 = FUNC.checkNaN(stat2Enum);
@@ -488,12 +511,10 @@ function Chat(chat) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setStat(temp1, temp2, true);
+			else
+				this.setStat(temp1, value + temp2, true);
 		}
 	}
 	this.addItem = function (itemId, itemCount) {
@@ -501,16 +522,12 @@ function Chat(chat) {
 		var temp2 = FUNC.checkNaN(itemCount);
 
 		if (temp1 !== null && temp2 !== null) {
-			var value = this.getStat(temp1);
+			var value = this.getItem(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addItem Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			var result = value + temp2;
-			result = result < 0 ? 0 : result;
-			this.setItem(temp1, result, true);
+			if (typeof value === "undefined")
+				this.setItem(temp1, temp2, true);
+			else
+				this.setItem(temp1, value + temp2, true);
 		}
 	}
 }
@@ -710,12 +727,10 @@ function Npc(name, npc) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getJob(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addJobLv Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setJob(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setJob(temp1, temp2, true);
+			else
+				this.setJob(temp1, value + temp2, true);
 		}
 	}
 	this.addChat = function (chatId, percent, minLv, minCloseRate, minStat, minQuest, maxLv, maxCloseRate, maxStat, maxQuest) {
@@ -734,13 +749,6 @@ function Npc(name, npc) {
 			temp6 !== null && temp7 !== null && temp8 !== null && temp9 !== null && temp10 !== null &&
 			temp3 <= temp7 && temp4 <= temp8 && FUNC.check(temp5, temp9, ENUM.CHECKING.big) &&
 			FUNC.check(temp6, temp10, ENUM.CHECKING.big)) {
-			var value = this.getChat(temp1);
-
-			if (typeof value !== "undefined") {
-				FUNC.log("addChat Warning", ENUM.LOG.warning);
-				return;
-			}
-
 			var map = new Map();
 			map.set("chat", temp1);
 			map.set("percent", temp2);
@@ -776,12 +784,10 @@ function Npc(name, npc) {
 
 			var value = this.getSelling(temp1, temp2, temp3, temp4);
 
-			if (typeof value !== "undefined") {
-				FUNC.log("addSelling Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setSelling(temp1, temp2, temp3, temp4, temp5, true);
+			if (typeof value === "undefined")
+				this.setSelling(temp1, temp2, temp3, temp4, temp5, true);
+			else
+				this.setSelling(temp1, temp2, temp3, temp4, value + temp5, true);
 		}
 	}
 }
@@ -806,7 +812,6 @@ function Quest(name, quest) {
 		this.maxLimitStat = new Map();
 		this.needItem = new Map();
 		this.needStat = new Map();
-		this.needCloseRate = new Map();
 		this.rewardItem = new Map();
 		this.rewardStat = new Map();
 		this.rewardCloseRate = new Map();
@@ -838,7 +843,6 @@ function Quest(name, quest) {
 		this.maxLimitStat = quest.minLimitStat;
 		this.needItem = quest.needItem;
 		this.needStat = quest.needStat
-		this.needCloseRate = quest.needCloseRate;
 		this.rewardItem = quest.rewardItem;
 		this.rewardStat = quest.rewardStat;
 		this.rewardCloseRate = quest.rewardCloseRate;
@@ -867,10 +871,6 @@ function Quest(name, quest) {
 	this.getNeedItem = function (itemId) {
 		var temp = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		return this.needItem.get(temp);
-	}
-	this.getNeedCloseRate = function (npcId) {
-		var temp = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
-		return this.needCloseRate.get(temp);
 	}
 	this.getNeedStat = function (stat2Enum) {
 		var temp = FUNC.checkNaN(stat2Enum, 1);
@@ -1036,25 +1036,6 @@ function Quest(name, quest) {
 			this.needItem.set(temp1, temp2);
 		}
 	}
-	this.setNeedCloseRate = function (npcId, closeRate, ignore) {
-		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(npcId, 1);
-		var temp2 = FUNC.checkNaN(closeRate, 0, 10000);
-
-		if (temp1 !== null && temp2 !== null) {
-			if (typeof this.getNeedCloseRate(temp1) !== "undefined") {
-				if (temp2 === 0) {
-					this.needCloseRate.remove(temp1);
-					return;
-				}
-
-				if (!ignore)
-					return;
-			}
-
-			this.needCloseRate.set(temp1, temp2);
-		}
-	}
 	this.setNeedStat = function (stat2Enum, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
 		var temp1 = FUNC.checkNaN(stat2Enum);
@@ -1137,7 +1118,8 @@ function Quest(name, quest) {
 
 		if (temp !== null) {
 			var value = this.minLimitLv + temp;
-			if (value <= this.maxLimitLv) this.setMinLimitLv(value);
+			if (value <= this.maxLimitLv)
+				this.setMinLimitLv(value);
 		}
 	}
 	this.addMaxLimitLv = function (lv) {
@@ -1145,7 +1127,8 @@ function Quest(name, quest) {
 
 		if (temp !== null) {
 			var value = this.maxLimitLv + temp;
-			if (value <= this.minLimitLv) this.setMinLimitLv(value);
+			if (value <= this.minLimitLv)
+				this.setMinLimitLv(value);
 		}
 	}
 	this.addNeedMoney = function (money) {
@@ -1179,12 +1162,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMinLimitCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addMinLimitCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMinLimitCloseRate(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setMinLimitCloseRate(temp1, temp2, true);
+			else
+				this.setMinLimitCloseRate(temp1, value + temp2, true);
 		}
 	}
 	this.addMaxLimitCloseRate = function (npcId, closeRate) {
@@ -1194,12 +1175,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMaxLimitCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addMaxLimitCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMaxLimitCloseRate(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setMaxLimitCloseRate(temp1, temp2, true);
+			else
+				this.setMaxLimitCloseRate(temp1, value + temp2, true);
 		}
 	}
 	this.addMinLimitStat = function (stat2Enum, stat) {
@@ -1209,12 +1188,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMinLimitStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addMinLimitStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMinLimitStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setMinLimitStat(temp1, temp2, true);
+			else
+				this.setMinLimitStat(temp1, value + temp2, true);
 		}
 	}
 	this.addMaxLimitStat = function (stat2Enum, stat) {
@@ -1224,12 +1201,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getMaxLimitStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addMaxLimitStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMaxLimitStat(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setMaxLimitStat(temp1, temp2, true);
+			else
+				this.setMaxLimitStat(temp1, value + temp2, true);
 		}
 	}
 	this.addNeedItem = function (itemId, itemCount) {
@@ -1239,12 +1214,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getNeedItem(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addNeedItem Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setNeedItem(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setNeedItem(temp1, temp2, true);
+			else
+				this.setNeedItem(temp1, value + temp2, true);
 		}
 	}
 	this.addNeedStat = function (stat2Enum, stat) {
@@ -1254,42 +1227,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getNeedStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addNeedStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setNeedStat(temp1, value + temp2, true);
-		}
-	}
-	this.addMinLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
-		var temp2 = FUNC.checkNaN(closeRate);
-
-		if (temp1 !== null && temp2 !== null) {
-			var value = this.getMinLimitCloseRate(temp1);
-
-			if (typeof value === "undefined") {
-				FUNC.log("addMinLimitCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMinLimitCloseRate(temp1, value + temp2, true);
-		}
-	}
-	this.addMaxLimitCloseRate = function (npcId, closeRate) {
-		var temp1 = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
-		var temp2 = FUNC.checkNaN(closeRate);
-
-		if (temp1 !== null && temp2 !== null) {
-			var value = this.getMaxLimitCloseRate(temp1);
-
-			if (typeof value === "undefined") {
-				FUNC.log("addMaxLimitCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setMaxLimitCloseRate(temp1, value + temp2, true);
+			if (typeof value === "undefined")
+				this.setNeedStat(temp1, temp2, true);
+			else
+				this.setNeedStat(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardItem = function (itemId, itemCount) {
@@ -1299,12 +1240,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardItem(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardItem Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardItem(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardItem(temp1, temp2, true);
+			else
+				this.setRewardItem(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardStat = function (stat2Enum, stat) {
@@ -1314,12 +1253,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardStat(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardStat Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardStat(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardStat(temp1, temp2, true);
+			else
+				this.setRewardStat(temp1, value + temp2, true);
 		}
 	}
 	this.addRewardCloseRate = function (npcId, closeRate) {
@@ -1329,12 +1266,10 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			var value = this.getRewardCloseRate(temp1);
 
-			if (typeof value === "undefined") {
-				FUNC.log("addRewardCloseRate Warning", ENUM.LOG.warning);
-				return;
-			}
-
-			this.setRewardCloseRate(temp1, value + temp2);
+			if (typeof value === "undefined")
+				this.setRewardCloseRate(temp1, temp2, true);
+			else
+				this.setRewardCloseRate(temp1, value + temp2, true);
 		}
 	}
 }
@@ -2346,6 +2281,8 @@ function Player(nickName, name, imageDB, room, player) {
 
 		var chat = VAR.chats.get(chatId);
 		this.sendText(chat.id, npc.name);
+
+		this.addLog("chat", 1)
 	}
 
 	this.checkClear = function (questId) {
@@ -2411,15 +2348,17 @@ function Player(nickName, name, imageDB, room, player) {
 	this.canAddQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
-		if (temp === null)
+		if (temp === null) {
+			FUNC.log("canAddQuest Warning", ENUM.LOG.warning);
 			return false;
+		}
 
 		var quest = VAR.quests.get(temp);
 		if (quest.minLimitLv > this.lv || quest.maxLimitLv < this.lv ||
-			FUNC.check(quest.maxLimitCloseRate, this.closeRate, ENUM.CHECKING.small, false, true) ||
-			FUNC.check(quest.minLimitCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) ||
-			FUNC.check(quest.maxLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.small, false, true) ||
-			FUNC.check(quest.minLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			FUNC.check(quest.maxLimitCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) ||
+			FUNC.check(quest.minLimitCloseRate, this.closeRate, ENUM.CHECKING.small, false, true) ||
+			FUNC.check(quest.maxLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true) ||
+			FUNC.check(quest.minLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.small, false, true))
 			return false;
 
 		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined")
@@ -2433,11 +2372,60 @@ function Player(nickName, name, imageDB, room, player) {
 	this.canAddAchieve = function (achieveId) {
 		var temp = FUNC.checkNaN(achieveId, 1, VAR.achieves.size);
 
-		if (temp === null)
+		if (temp === null) {
+			FUNC.log("canAddAchieve Warning", ENUM.LOG.warning);
 			return false;
+		}
 
 		var achieve = VAR.achieves.get(temp);
 
+		if (achieve.needMoney <= this.money && achieve.limitLv <= this.lv &&
+			FUNC.check(achieve.limitStat, this.mainStat.get(ENUM.STAT1.mainStat), ENUM.CHECKING.big, false, true) &&
+			FUNC.check(achieve.limitCloseRate, this.closeRate, ENUM.CHECKING.big, false, true) &&
+			FUNC.check(achieve.otherLimit, this.log, ENUM.CHECKING.big, false, true))
+			return true;
+		return false;
+	}
+
+	this.canAddResearch = function (researchId) {
+		var temp = FUNC.checkNaN(researchId, 1, VAR.researches.size);
+
+		if (temp === null) {
+			FUNC.log("canAddResearch Warning", ENUM.LOG.warning);
+			return false;
+		}
+
+		var research = VAR.researches.get(temp);
+
+		if (research.needMoney <= this.money && research.limitLv <= this.lv &&
+			FUNC.check(research.needItem, this.inventory, ENUM.CHECKING.big, false, true) &&
+			FUNC.check(research.rewardStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			return true;
+		return false;
+	}
+
+	this.canAddTitle = function (title) {
+		var temp = FUNC.checkType(String, title);
+
+		if (temp === null) {
+			FUNC.log("canAddTitle Warning", ENUM.LOG.warning);
+			return false;
+		}
+
+		var value = FUNC.findValue(this.title, temp);
+
+		if (typeof value === "undefined")
+			return true;
+		return false;
+	}
+
+	this.clearQuest = function (questId) {
+		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
+
+		if (temp === null) {
+			FUNC.log("clearQuest Warning", ENUM.LOG.warning);
+			return false;
+		}
 	}
 
 	this.getJob = function (jobEnum) {
@@ -2942,7 +2930,7 @@ function Player(nickName, name, imageDB, room, player) {
 				return;
 			}
 
-			this.setJob(temp1, true, true);
+			this.setIsClearedOnce(temp, true, true);
 		}
 	}
 	this.addType = function (typeEnum, type) {
@@ -2969,11 +2957,11 @@ function Player(nickName, name, imageDB, room, player) {
 			var value = this.getMainStat(temp1, temp2);
 
 			if (typeof value === "undefined") {
-				FUNC.log("addMainStat Warning", ENUM.LOG.warning);
+				FUNC.log("addBuff Warning", ENUM.LOG.warning);
 				return;
 			}
 
-			this.setMainStat(temp1, temp2, value + temp3, true);
+			this.setBuff(temp1, temp2, value + temp3, true);
 		}
 	}
 }
