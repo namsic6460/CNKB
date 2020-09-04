@@ -123,7 +123,7 @@ handleLevel : 1~10
 	"teleport": Coordinate,						//텔레포트 좌표 = null
 	"text": List<Text>,							//챗 텍스트 = []
 	"wait": List<WAIT_RESPONSE>					//대답 가능 목록 = [WAIT_RESPONSE.nothing]
-	"chat": Map<String, Number>					//대답에 연결된 채팅 = {}
+	"chat": Map<String, Number>					//대답(WAIT_RESPONSE.anything), 챗 id = {}
 	"stat": Map<STAT2, Number>,					//STAT2, 스텟 = {}
 	"item": Map<Number, Number>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
 	//-----------------------------------------------
@@ -174,7 +174,6 @@ handleLevel : 1~10
 	"minLimitStat": Map<STAT2, Number>					//STAT2, 최소 스텟 제한 = {}
 	"maxLimitStat": Map<STAT2, Number>					//STAT2, 최대 스텟 제한 = {}
 	"needItem": Map<Number, Number>,					//클리어 요구 아이템, 아이템 갯수(클리어 시 아이템-) = {}
-	"needCloseRate": Map<Number, Number>,				//클리어 요구 엔피시 id, 필요 친밀도 = {}
 	"needStat": Map<STAT2, Number>,						//STAT2, 클리어 요구 스텟(클리어 시 스탯-)
 	"rewardItem": Map<Number, Number>,					//보상 아이템, 아이템 갯수 = {}
 	"rewardStat": Map<STAT2, Number>,					//보상 스텟, 스텟 = {}
