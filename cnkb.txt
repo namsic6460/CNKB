@@ -168,7 +168,6 @@ handleLevel : 1~10
 	"rewardExp": Number,								//보상 경험치 = 0
 	"rewardAdv": Number,								//보상 모험 = 0
 	"rewardMoney": Number,								//보상 돈 = 0
-	"targetNpc": Number,								//목표 엔피시 = 0(즉시 클리어)
 	"minLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최소 친밀도 제한 = {}
 	"maxLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최대 친밀도 제한 = {}
 	"minLimitStat": Map<STAT2, Number>					//STAT2, 최소 스텟 제한 = {}
@@ -220,14 +219,13 @@ handleLevel : 1~10
 Achieve: {
 	"id": Number,							//인식 정보 - 기본 키
 	"name": String,							//이름
-	"needMoney": Number,					//해금 요구 돈 = 0
 	"limitLv": Number,						//해금 조건 레벨 = 999
 	"rewardMoney": Number,					//보상 금액 = 0
 	"rewardExp": Number,					//보상 경험치 = 0
 	"rewardAdv": Number,					//보상 모험 = 0
 	"limitStat": Map<STAT2, Number>,		//STAT2, 스텟 = {}
 	"limitCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
-	"otherLimit": Map<String, Number>,		//특정 행동(ex 기부), 행동 횟수  = {}
+	"otherLimit": Map<Number, Number>,		//특정 행동, 행동 횟수  = {}
 	"rewardCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
 	"rewardItem": Map<Number, Number>		//아이템 id, 갯수 = {}
 	//-----------------------------------------------
@@ -265,7 +263,7 @@ Research: {
 	"achieve": List<Number>,						//업적 id = []
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
-	"nowQuest": List<Number>,						//퀘스트 id, 엔피시 id = {}
+	"nowQuest": Map<Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
 	"job": Map<JOB, Number>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Number>>,		//STAT1, {STAT2, 스텟} = {}
 	"resistStat": Map<TYPE, Number>,				//TYPE, 저항 스텟 = {}
@@ -273,7 +271,7 @@ Research: {
 	"equipped": Map<ETYPE, Number>,					//ETYPE, 장비 id = {}
 	"clearedQuest": Map<Number, Number>,			//퀘스트 id, 클리어 횟수 = {}
 	"closeRate": Map<Number, Number>,				//엔피시 id, 친밀도 = {}
-	"log": Map<String, Number>,						//특정 행동(ex 기부), 행동 횟수 = {}
+	"log": Map<Number, Number>,						//특정 행동, 행동 횟수 = {}
 	"isClearedOnce": <Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
 	"type": Map<TYPE, Number>,						//TYPE, 단계
 	"buff": Map<STAT2, Map<Number, Number>>			//STAT2, {종료시간, 증가 스텟}
@@ -281,7 +279,6 @@ Research: {
 	getter/setter
 	sendText(chatId, npcName)
 	executeChat(npcId)
-	checkClear(questId) - boolean(클리어 체크 여부)
 	getFullName()
 	getRequireExp()
 	lvUp()
@@ -289,12 +286,10 @@ Research: {
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
 	canAddTitle(title)
-	clearQuest(questid)
 	canEquip(equipid)
 	equip(equipid)
 	handleQuest()
 	handleAchieve()
-	handleResearch()
 	handleBuff()
 	updateStat()
 }
