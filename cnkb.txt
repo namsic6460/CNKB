@@ -98,6 +98,30 @@
 		"item",				//아이템, 장비
 		"achieve",			//업적
 		"research"			//연구
+	},
+	"LOGDATA": {
+		"chat": 0,
+		"npcChat": 1,
+		"questReceived": 2,
+		"questCleared": 3,
+		"maxMoney": 4,
+		"maxPayment": 5,
+		"moveDistance": 6,
+		"mined": 7,
+		"ate": 8,
+		"bought": 9,
+		"gottenItem": 10,
+		"usedItem": 11,
+		"reinforceTried": 12,
+		"totalExp": 13,
+		"buffReceived": 14,
+		"maxCloseRate": 15,
+		"totalCloseRate": 16,
+		"statUpdated": 17,
+		"emoteSent": 18,
+		"createdTime": 19,
+		"lastTime": 20,
+		"playedDay": 21
 	}
 }
 
@@ -263,7 +287,7 @@ Research: {
 	"achieve": List<Number>,						//업적 id = []
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
-	"nowQuest": Map<Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
+	"nowQuest": List<Number>,						//퀘스트 id = []
 	"job": Map<JOB, Number>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Number>>,		//STAT1, {STAT2, 스텟} = {}
 	"resistStat": Map<TYPE, Number>,				//TYPE, 저항 스텟 = {}
@@ -286,6 +310,7 @@ Research: {
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
 	canAddTitle(title)
+	clearQuest(questId)
 	canEquip(equipid)
 	equip(equipid)
 	handleQuest()

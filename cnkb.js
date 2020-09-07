@@ -175,8 +175,14 @@ const FUNC = {
 	formatImage: function (imageDB) {
 		return Number(String(ImageDB.getProfildImage()).hashcode());
 	},
+
 	findValue: function (array, value) {
 		return array.find(element => JSON.stringify(element) === JSON.stringify(value));
+	},
+
+	removeValue: function (array, value) {
+		var index = array.findIndex(element => JSON.stringify(element) === JSON.stringify(value));
+		array.splice(index, 1);
 	}
 };
 
@@ -2058,7 +2064,7 @@ function Player(nickName, name, imageDB, room, player) {
 		this.achieve = new Array();
 		this.research = new Array();
 		this.title = new Array();
-		this.nowQuest = new Map();
+		this.nowQuest = new Array();
 		this.job = new Map();
 		this.mainStat = new Map();
 		this.resistStat = new Map();
@@ -2314,7 +2320,7 @@ function Player(nickName, name, imageDB, room, player) {
 			FUNC.check(quest.minLimitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.small, false, true))
 			return false;
 
-		if (typeof this.getNowQuest(temp) !== "undefined")
+		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined")
 			return false;
 		if (!quest.isRepeatable && typeof this.getClearedQuest(temp) !== "undefined")
 			return false;
@@ -2367,10 +2373,17 @@ function Player(nickName, name, imageDB, room, player) {
 	this.clearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
-		if (temp === null) {
-			FUNC.log("clearQuest Warning", ENUM.LOG.warning);
+		if (temp === null)
 			return false;
+
+		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined") {
+			FUNC.removeValue(this.nowQuest, temp);
+			this.addLog(ENUM.LOGDATA.questCleared, 1);
+
+			return true;
 		}
+
+		return false;
 	}
 
 	this.getJob = function (jobEnum) {
@@ -2507,25 +2520,6 @@ function Player(nickName, name, imageDB, room, player) {
 	this.setNowChat = function (chatId) {
 		var temp = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 		if (temp !== null) this.nowChat = temp;
-	}
-	this.setNowQuest = function (questId, isClearedOnce, ignore) {
-		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkNaN(questId);
-		var temp2 = FUNC.checkNaN(isClearedOnce);
-
-		if (temp1 !== null && temp2 !== null) {
-			if (typeof this.getNowQuest(temp1) !== "undefined") {
-				if (temp2 === 0) {
-					this.nowQuest.remove(temp1);
-					return;
-				}
-
-				if (!ignore)
-					return;
-			}
-
-			this.nowQuest.set(temp1, temp2);
-		}
 	}
 	this.setJob = function (jobEnum, jobLv, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
@@ -2777,8 +2771,15 @@ function Player(nickName, name, imageDB, room, player) {
 				FUNC.log("addTitle Error", ENUM.LOG.error);
 		}
 	}
-	this.addNowQuest = function (questId, isClearedOnce) {
+	this.addNowQuest = function (questId) {
+		var temp = FUNC.checkNaN(questId);
 
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.nwoQuest, temp) !== "undefined")
+				this.nowQuest.push(temp);
+			else
+				FUNC.log("addNowQuest Error", ENUM.LOG.error);
+		}
 	}
 	this.addJob = function (jobEnum, jobLv) {
 		var temp1 = FUNC.checkNaN(jobEnum);
