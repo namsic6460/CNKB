@@ -2775,8 +2775,11 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkNaN(questId);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.nwoQuest, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.nwoQuest, temp) !== "undefined") {
 				this.nowQuest.push(temp);
+				this.addLog(ENUM.LOGDATA.questReceived, 1);
+			}
+
 			else
 				FUNC.log("addNowQuest Error", ENUM.LOG.error);
 		}
