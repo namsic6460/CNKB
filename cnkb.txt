@@ -310,6 +310,7 @@ Research: {
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
 	canAddTitle(title)
+	canClearQuest(questId)
 	clearQuest(questId)
 	canEquip(equipid)
 	equip(equipid)

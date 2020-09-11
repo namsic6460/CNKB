@@ -2370,6 +2370,13 @@ function Player(nickName, name, imageDB, room, player) {
 		return false;
 	}
 
+	this.canClearQuest = function (questId) {
+		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
+
+		if (temp === null)
+			return false;
+	}
+
 	this.clearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
@@ -2377,6 +2384,8 @@ function Player(nickName, name, imageDB, room, player) {
 			return false;
 
 		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined") {
+
+
 			FUNC.removeValue(this.nowQuest, temp);
 			this.addLog(ENUM.LOGDATA.questCleared, 1);
 
