@@ -130,7 +130,7 @@
 	"y": Number				//Y 좌표(Unsigned)(세로) = 0
 	//-----------------------------------------------
 	getter/setter/adder
-	getDistance(Coordinate)	//길찾기 알고리즘 이용 + 마을마다 - Number(거리)
+	getDistance(Coordinate)	//A* 알고리즘 이용 + 마을마다 - Number(거리)
 	//-----------------------------------------------
 }
 
