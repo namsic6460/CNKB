@@ -311,7 +311,7 @@ const ENUM = {
 		"gottenItem": 10,
 		"usedItem": 11,
 		"reinforceTried": 12,
-		"totalExp": 13,
+		// "totalExp": 13,
 		"buffReceived": 14,
 		"maxCloseRate": 15,
 		"totalCloseRate": 16,
@@ -2057,6 +2057,7 @@ function Player(nickName, name, imageDB, room, player) {
 		this.money = 1000;
 		this.lv = 1;
 		this.exp = 0;
+		this.totalExp = 0;
 		this.sp = 10;
 		this.adv = 0;
 		this.doing = ENUM.DOING.none;
@@ -2271,39 +2272,81 @@ function Player(nickName, name, imageDB, room, player) {
 		this.addLog(ENUM.LOGDATA.npcChat, 1);
 	}
 
-	this.getRequireExp = function () {
-		if (this.lv <= 100)
-			return 100 + (this.lv * 2);
-		else if (this.lv <= 200)
-			return 250 + (x * 4);
-		else if (this.lv <= 400)
-			return 1000 + (x * 10);
-		else if (this.lv <= 650)
-			return 8000 + Math.floor(Math.pow(x - 400, 17 / 9));
-		else if (this.lv <= 700)
-			return 25000 + (x * 30);
-		else if (this.lv <= 800)
-			return -290000 + (x * 500);
-		else if (this.lv <= 850)
-			return 120000 + Math.floor(Math.pow(x - 800, 10 / 3));
-		else if (this.lv <= 950)
-			return -16000000 + (20000 * x);
-		else if (this.lv <= 990)
-			return 2500000 + (1000 * x);
-		else
-			return -95000000 + (1000 * x);
+	this.getRequireExp = function (lv) {
+		var temp = FUNC.checkNaN(lv, 1, 998);
+
+		if (temp !== null) {
+			if (temp <= 100)
+				return 100 + (temp * 2);
+			else if (temp <= 200)
+				return 250 + (x * 4);
+			else if (temp <= 400)
+				return 1000 + (x * 10);
+			else if (temp <= 650)
+				return 8000 + Math.floor(Math.pow(x - 400, 17 / 9));
+			else if (temp <= 700)
+				return 25000 + (x * 30);
+			else if (temp <= 800)
+				return -290000 + (x * 500);
+			else if (temp <= 850)
+				return 120000 + Math.floor(Math.pow(x - 800, 10 / 3));
+			else if (temp <= 950)
+				return -16000000 + (20000 * x);
+			else if (temp <= 990)
+				return 2500000 + (1000 * x);
+			else
+				return -95000000 + (1000 * x);
+		}
 	}
 
-	this.lvUp = function () {
-		this.setExp(0);
-		this.addLv(1);
-		this.addSp(VAR.spGive);
+	this.tuneExp = function (changeExp) {
+		var temp = FUNC.checkNaN(changeExp);
 
-		var str = this.getFullName() + "님이 " + this.lv + " 레벨을 달성하였습니다";
-		if (this.lv % 100 !== 0)
-			FUNC.system(this.recentRoom, str);
-		else
-			FUNC.systemAll(str);
+		if (temp !== null) {
+			var notice = temp > 0 ? true : false;
+			var noticeLv = 0;
+			var lvChanged = false;
+
+			if (temp < 0) {
+				this.lv = 0;
+				this.exp = 0;
+				temp = this.totalExp + temp + this.exp;
+			} `	`
+
+			var func = function () {
+				var needExp = this.getRequireExp(this.lv) - this.exp;
+
+				if (temp >= needExp) {
+					this.lv += 1;
+					this.exp = 0;
+					temp -= needExp;
+
+					if (notice) {
+						if (this.lv % 100 === 0)
+							noticeLv = this.lv;
+						this.addSp(VAR.spGive);
+					}
+
+					lvChanged = true;
+
+					return true;
+				}
+
+				if (lvChanged) {
+					var str = this.getFullName() + "님이 " + this.lv + " 레벨을 달성하였습니다";
+					FUNC.system(this.recentRoom, str);
+
+					if (notice && noticeLv !== 0)
+						FUNC.systemAll(str);
+				}
+
+				this.exp = temp;
+
+				return false;
+			}
+
+			while (func());
+		}
 	}
 
 	this.canAddQuest = function (questId) {
@@ -2375,6 +2418,13 @@ function Player(nickName, name, imageDB, room, player) {
 
 		if (temp === null)
 			return false;
+
+		var value = FUNC.findValue(this.nowQuest, temp);
+		if (typeof value !== "undefined") {
+			if (value.needMoney <= this.money && )
+		}
+
+		return false;
 	}
 
 	this.clearQuest = function (questId) {
@@ -2498,18 +2548,6 @@ function Player(nickName, name, imageDB, room, player) {
 	this.setLv = function (lv) {
 		var temp = FUNC.checkNaN(lv, 1, 999);
 		if (temp !== null) this.lv = temp;
-	}
-	this.setExp = function (exp) {
-		var temp = FUNC.checkNaN(exp, 0);
-		if (temp !== null) {
-			this.exp = temp;
-
-			if (this.exp > this.getRequireExp())
-				this.lvUp();
-
-			this.handleQuest();
-			this.handleAchieve();
-		}
 	}
 	this.setSp = function (sp) {
 		var temp = FUNC.checkNaN(sp, 0);
@@ -2740,7 +2778,14 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 	this.addExp = function (exp) {
 		var temp = VAR.expBoost * FUNC.checkNaN(exp);
-		if (temp !== null) this.setExp(this.exp + temp);
+
+		if (temp !== null) {
+			this.tuneExp(temp);
+			this.totalExp += temp;
+
+			this.handleQuest();
+			this.handleAchieve();
+		}
 	}
 	this.addSp = function (sp) {
 		var temp = FUNC.checkNaN(sp);
