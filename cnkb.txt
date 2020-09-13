@@ -280,6 +280,7 @@ Research: {
 	"money": Number,		//돈 = 1000
 	"lv": Number,			//레벨 = 1
 	"exp": Number,			//경험치 = 0
+	"totalExp": Number,		//총 경험치 = 0
 	"sp": Number,			//잔여 레벨 스탯 = 10
 	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
@@ -305,7 +306,7 @@ Research: {
 	executeChat(npcId)
 	getFullName()
 	getRequireExp()
-	lvUp()
+	tuneExp(exp)
 	canAddQuest(questid)
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
