@@ -2311,7 +2311,7 @@ function Player(nickName, name, imageDB, room, player) {
 				this.lv = 0;
 				this.exp = 0;
 				temp = this.totalExp + temp + this.exp;
-			} `	`
+			}
 
 			var func = function () {
 				var needExp = this.getRequireExp(this.lv) - this.exp;
@@ -2396,8 +2396,7 @@ function Player(nickName, name, imageDB, room, player) {
 		var research = VAR.researches.get(temp);
 
 		if (research.needMoney <= this.money && research.limitLv <= this.lv &&
-			FUNC.check(research.needItem, this.inventory, ENUM.CHECKING.big, false, true) &&
-			FUNC.check(research.rewardStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			FUNC.check(research.needItem, this.inventory, ENUM.CHECKING.big, false, true))
 			return true;
 		return false;
 	}
@@ -2419,11 +2418,12 @@ function Player(nickName, name, imageDB, room, player) {
 		if (temp === null)
 			return false;
 
-		var value = FUNC.findValue(this.nowQuest, temp);
-		if (typeof value !== "undefined") {
-			if (value.needMoney <= this.money && )
-		}
-
+		var quest = FUNC.findValue(this.nowQuest, temp);
+		if (typeof quest === "undefined" && quest.needMoney <= this.money &&
+			quest.needExp <= this.totalExp && quest.needAdv <= this.adv &&
+			FUNC.check(quest.needItem, this.inventory, ENUM.CHECKING.big, false, true) &&
+			FUNC.check(quest.needStat, this.mainStat.get(ENUM.STAT1.totalStat), false, true))
+			return true;
 		return false;
 	}
 
@@ -2434,7 +2434,7 @@ function Player(nickName, name, imageDB, room, player) {
 			return false;
 
 		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined") {
-
+			
 
 			FUNC.removeValue(this.nowQuest, temp);
 			this.addLog(ENUM.LOGDATA.questCleared, 1);

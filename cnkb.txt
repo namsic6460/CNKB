@@ -186,9 +186,9 @@ handleLevel : 1~10
 	"isRepeatable": boolean,							//반복 허용 여부 = false
 	"minLimitLv": Number								//최소 레벨 제한 = 1
 	"maxLimitLv": Number								//최대 레벨 제한 = 999
-	"needMoney": Number,								//클리어 요구 돈(클리어 시 돈-) = 0
-	"needExp": Number,									//클리어 요구 경험치(클리어 시 경험치-) = 0
-	"needAdv": Number,									//클리어 요구 모험(클리어 시 모험-) = 0
+	"needMoney": Number,								//클리어 요구 돈 = 0
+	"needExp": Number,									//클리어 요구 경험치 = 0
+	"needAdv": Number,									//클리어 요구 모험 = 0
 	"rewardExp": Number,								//보상 경험치 = 0
 	"rewardAdv": Number,								//보상 모험 = 0
 	"rewardMoney": Number,								//보상 돈 = 0
@@ -197,7 +197,7 @@ handleLevel : 1~10
 	"minLimitStat": Map<STAT2, Number>					//STAT2, 최소 스텟 제한 = {}
 	"maxLimitStat": Map<STAT2, Number>					//STAT2, 최대 스텟 제한 = {}
 	"needItem": Map<Number, Number>,					//클리어 요구 아이템, 아이템 갯수(클리어 시 아이템-) = {}
-	"needStat": Map<STAT2, Number>,						//STAT2, 클리어 요구 스텟(클리어 시 스탯-)
+	"needStat": Map<STAT2, Number>,						//STAT2, 클리어 요구 스텟
 	"rewardItem": Map<Number, Number>,					//보상 아이템, 아이템 갯수 = {}
 	"rewardStat": Map<STAT2, Number>,					//보상 스텟, 스텟 = {}
 	"rewardCloseRate": Map<Number, Number>				//엔피시 id, 보상 친밀도
