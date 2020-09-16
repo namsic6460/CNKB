@@ -31,31 +31,31 @@
 		"acc"		//정확성
 	},
 	"ETYPE": {
-		"helmet",		//투구
-		"chestplate",	//갑옷(상의)
-		"leggings",		//갑옷(하의)
-		"shoes",		//신발
-		"ring",			//반지
-		"earring",		//귀걸이
-		"necklace",		//목걸이
-		"gem1",			//보석1
-		"gem2",			//보석2
-		"gem3",			//보석3
-		"heartgem",		//보석 심장 - 보석 1~3이 모두 있을 시, 보석 1~3의 스텟에 영향을 받아 자동 생성 됨
-		"amulet"		//부적 - 특별한 효과들이 담겨있다
+		"helmet",			//투구
+		"chestplate",		//갑옷(상의)
+		"leggings",			//갑옷(하의)
+		"shoes",			//신발
+		"ring",				//반지
+		"earring",			//귀걸이
+		"necklace",			//목걸이
+		"gem1",				//보석1
+		"gem2",				//보석2
+		"gem3",				//보석3
+		"heartgem",			//보석 심장 - 보석 1~3이 모두 있을 시, 보석 1~3의 스텟에 영향을 받아 자동 생성 됨
+		"amulet"			//부적 - 특별한 효과들이 담겨있다
 	},
 	"TYPE": {
-		"fire",			//도트데미지 - 일정 시간 후 자동 해제
-		"poison",		//도트데미지 - 기본 영구 지속
-		"grass",		//회복
-		"water",		//디버프 해제
-		"ice",			//기절
-		"dirt",			//데미지 감소
-		"stone",		//데미지 반사
-		"iron",			//추가 물리 데미지
-		"energy",		//추가 마법 데미지
-		"dark",			//침묵
-		"mirror"		//디버프 반사
+		"fire",				//도트데미지 - 일정 시간 후 자동 해제
+		"poison",			//도트데미지 - 기본 영구 지속
+		"grass",			//회복
+		"water",			//디버프 해제
+		"ice",				//기절
+		"dirt",				//데미지 감소
+		"stone",			//데미지 반사
+		"iron",				//추가 물리 데미지
+		"energy",			//추가 마법 데미지
+		"dark",				//침묵
+		"mirror"			//디버프 반사
 	},
 	"JOB": {
 		"merchant",			//일반 상인
@@ -107,13 +107,13 @@
 		"maxMoney": 4,
 		"maxPayment": 5,
 		"moveDistance": 6,
-		"mined": 7,
-		"ate": 8,
-		"bought": 9,
+		"mined": 7,						//추후 작성 필요
+		"ate": 8,						//추후 작성 필요
+		"bought": 9,					//추후 작성 필요
 		"gottenItem": 10,
 		"usedItem": 11,
-		"reinforceTried": 12,
-		"totalExp": 13,
+		"reinforceTried": 12,			//추후 작성 필요
+		"totalExp": 13,					//사용 안함
 		"buffReceived": 14,
 		"maxCloseRate": 15,
 		"totalCloseRate": 16,
@@ -189,9 +189,9 @@ handleLevel : 1~10
 	"needMoney": Number,								//클리어 요구 돈 = 0
 	"needExp": Number,									//클리어 요구 경험치 = 0
 	"needAdv": Number,									//클리어 요구 모험 = 0
+	"rewardMoney": Number,								//보상 돈 = 0
 	"rewardExp": Number,								//보상 경험치 = 0
 	"rewardAdv": Number,								//보상 모험 = 0
-	"rewardMoney": Number,								//보상 돈 = 0
 	"minLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최소 친밀도 제한 = {}
 	"maxLimitCloseRate": Map<Number, Number>,			//엔피시 id, 최대 친밀도 제한 = {}
 	"minLimitStat": Map<STAT2, Number>					//STAT2, 최소 스텟 제한 = {}

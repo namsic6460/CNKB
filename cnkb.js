@@ -2210,7 +2210,7 @@ function Player(nickName, name, imageDB, room, player) {
 		if (chat.stat.size > 0) {
 			iterator = chat.stat.entires();
 			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addStat(ENUM.STAT1.actStat, value[0], value[1]);
+				this.addMainStat(ENUM.STAT1.actStat, value[0], value[1]);
 
 			more += "스텟 설정 완료\n";
 		}
@@ -2434,12 +2434,39 @@ function Player(nickName, name, imageDB, room, player) {
 			return false;
 
 		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined") {
-			
+			if (this.canClearQuest(temp)) {
+				var quest = VAR.quests.get(temp);
 
-			FUNC.removeValue(this.nowQuest, temp);
-			this.addLog(ENUM.LOGDATA.questCleared, 1);
+				this.addMoney((-1 * quest.needMoney) + quest.rewardMoney);
+				this.addExp((-1 * quest.needExp) + quest.rewardExp);
+				this.addAdv((-1 * quest.needAdv) + quest.rewardAdv);
 
-			return true;
+				var iterator = quest.needItem.entries();
+				var value;
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addInventory(value[0], -1 * value[1]);
+
+				iterator = quest.needStat.entires();
+				while (typeof (value = iterator.next()) !== "undefined")
+					this.addMainStat(ENUM.STAT1.actStat, value[0], -1 * value[1]);
+
+				iterator = quest.rewardItem.entries();
+				while (typeof (value = iterator.next()) !== "undefined")
+					this.addInventory(value[0], value[1]);
+
+				iterator = quest.rewardStat.entries();
+				while (typeof (value = iterator.next()) !== "undefined")
+					this.addStat(ENUM.STAT1.actStat, value[0], value[1]);
+
+				iterator = quest.rewardCloseRate.entries();
+				while (typeof (value = iterator.next()) !== "undefined")
+					this.addCloseRate(value[0], value[1]);
+
+				FUNC.removeValue(this.nowQuest, temp);
+				this.addLog(ENUM.LOGDATA.questCleared, 1);
+
+				return true;
+			}
 		}
 
 		return false;
@@ -2529,8 +2556,14 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp2 = FUNC.checkNaN(y, 0);
 
 		if (temp1 !== null && temp2 !== null) {
+			var x = this.coord.getX();
+			var y = this.coord.getY();
+
 			this.coord.setX(temp1);
 			this.coord.setY(temp2);
+
+			var distance = Math.sqrt(Math.pow(x + temp1, 2) + Math.pow(y + temp2, 2));
+			this.addLog(ENUM.LOGDATA.moveDistance, distance);
 		}
 	}
 	this.setNowTitle = function (nowTitle) {
@@ -2542,6 +2575,21 @@ function Player(nickName, name, imageDB, room, player) {
 
 		if (temp !== null) {
 			this.money = temp;
+
+			var value;
+
+			if (temp > 0) {
+				value = this.getLog(ENUM.LOGDATA.maxMoney);
+				if (temp > value)
+					this.setLog(ENUM.LOGDATA.maxMoney, temp);
+			}
+
+			else {
+				value = this.getLog(ENUM.LOGDATA.maxPayment);
+				if (temp < value)
+					this.setLog(ENUM.LOGDATA.maxPayment, temp);
+			}
+
 			this.handleQuest();
 		}
 	}
@@ -2646,6 +2694,9 @@ function Player(nickName, name, imageDB, room, player) {
 			}
 
 			this.inventory.set(temp1, temp2);
+
+			//TODO : add Log
+
 			this.handleQuest();
 		}
 	}
@@ -2708,22 +2759,11 @@ function Player(nickName, name, imageDB, room, player) {
 			this.handleAchieve();
 		}
 	}
-	this.setLog = function (logName, logData, ignore) {
-		ignore = typeof ignore === "undefined" ? false : true;
+	this.setLog = function (logName, logData) {
 		var temp1 = FUNC.checkNaN(logName);
 		var temp2 = FUNC.checkNaN(logData);
 
 		if (temp1 !== null && temp2 !== null) {
-			if (typeof this.getLog(temp1) !== "undefined") {
-				if (temp2 === 0) {
-					this.log.remove(temp1);
-					return;
-				}
-
-				if (!ignore)
-					return;
-			}
-
 			this.log.set(temp1, temp2);
 			this.handleAchieve();
 		}
@@ -2927,7 +2967,7 @@ function Player(nickName, name, imageDB, room, player) {
 			if (typeof value === "undefined")
 				this.setLog(temp1, temp2);
 			else
-				this.setLog(temp1, value + temp2, true);
+				this.setLog(temp1, value + temp2);
 		}
 	}
 	this.addType = function (typeEnum, type) {
