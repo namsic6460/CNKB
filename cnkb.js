@@ -88,7 +88,7 @@ const FUNC = {
 	},
 
 	getFuncName: function (func) {
-		return String(func).substring(9).split("(")[0]
+		return String(func).substr(9).split("(")[0]
 	},
 
 	check: function (original, comparing, checking, ignore, setZero) {	//checking이 small이라면 compare이 original에 비해 더 작을 때 true
@@ -172,7 +172,7 @@ const FUNC = {
 		java.lang.Thread.sleep(millis);
 	},
 
-	formatImage: function (imageDB) {
+	formatImage: function (ImageDB) {
 		return Number(String(ImageDB.getProfildImage()).hashcode());
 	},
 
@@ -183,6 +183,19 @@ const FUNC = {
 	removeValue: function (array, value) {
 		var index = array.findIndex(element => JSON.stringify(element) === JSON.stringify(value));
 		array.splice(index, 1);
+	},
+
+	findPlayer: function (sender, ImageDB) {
+		var image = this.formatImage(ImageDB);
+		var iterator = VAR.players.entries();
+		var value;
+
+		while (typeof (value = iterator.next().value) !== "undefined") {
+			if (value.sender === sender && value.image === image)
+				return value;
+		}
+
+		return undefined;
 	}
 };
 
@@ -200,10 +213,11 @@ const ENUM = {
 		"basicStat": 0,			//전직 떄에만 가변, 기본 불변
 		"levelStat": 1,			//SP로 증가 가능, 감소 불가능
 		"equipStat": 2,			//장비 변경 시 증감
-		"quickStat": 3,			//일시적으로 저장되는 스텟
-		"actStat": 4,			//활동으로 얻는 스텟(퀘스트, 대화, 연구, 업적 등등)
-		"increStat": 5,			//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + 액트 스텟
-		"totalStat": 6,			//베이직 스텟 + 인크리 스텟
+		"buffStat": 3,			//버프로 얻는 스텟
+		"quickStat": 4,			//일시적으로 저장되는(버프 제외) 스텟
+		"actStat": 5,			//활동으로 얻는 스텟
+		"increStat": 6,			//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + 액트 스텟
+		"totalStat": 7,			//베이직 스텟 + 인크리 스텟
 	},
 	"STAT2": {
 		"maxhp": 0,				//최대 체력
@@ -577,8 +591,8 @@ function Npc(name, npc) {
 		this.id = FUNC.getId(ENUM.ID.npc);
 		this.name = name;
 		this.coord = new Coordinate();
-		this.job = new Map();
 		this.chat = new Array();
+		this.job = new Map();
 		this.selling = new Map();
 
 		FUNC.log("Created New Npc - (id : " + this.id + ", name : " + this.name + ")");
@@ -613,13 +627,12 @@ function Npc(name, npc) {
 			var stat = player.mainStat.get(ENUM.STAT1.totalStat);
 			var quest = player.clearedQuest;
 
-			var length = this.chat.length;
-			for (i = 0; i < length; i++) {
-				if (this.chat[i].get("minLv") <= lv && this.chat[i].get("maxLv") >= lv &&
-					this.chat[i].get("minCloseRate") <= closeRate && this.chat[i].get("maxCloseRate") >= closeRate &&
-					FUNC.check(this.chat[i].get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
-					FUNC.check(this.chat[i].get("minQuest"), quest, ENUM.CHECKING.big, false, true))
-					output.push(this.chat[i].get("chat"));
+			for (var c of this.chat) {
+				if (this.c.get("minLv") <= lv && this.c.get("maxLv") >= lv &&
+					this.c.get("minCloseRate") <= closeRate && this.c.get("maxCloseRate") >= closeRate &&
+					FUNC.check(this.c.get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
+					FUNC.check(this.c.get("minQuest"), quest, ENUM.CHECKING.big, false, true))
+					output.push(this.c.get("chat"));
 			}
 		}
 
@@ -669,22 +682,21 @@ function Npc(name, npc) {
 		return output;
 	}
 
-	this.getJob = function (jobEnum) {
-		var temp = FUNC.checkNaN(jobEnum);
-		return this.job.get(temp);
-	}
 	this.getChat = function (chatId) {
 		var temp = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 
 		if (temp !== null) {
-			var length = this.chat.length;
-			for (var i = 0; i < length; i++) {
-				if (this.chat[i].get("chat") === temp)
-					return this.chat[i];
+			for (var c of this.chat) {
+				if (c.get("chat") === temp)
+					return c;
 			}
 		}
 
 		return undefined;
+	}
+	this.getJob = function (jobEnum) {
+		var temp = FUNC.checkNaN(jobEnum);
+		return this.job.get(temp);
 	}
 	this.getSelling = function (jobEnum, jobLv, minCloseRate, itemId) {
 		var temp1 = FUNC.checkNaN(jobEnum);
@@ -764,19 +776,6 @@ function Npc(name, npc) {
 		}
 	}
 
-	this.addJobLv = function (jobEnum, jobLv) {
-		var temp1 = FUNC.checkNaN(jobEnum);
-		var temp2 = FUNC.checkNaN(jobLv, 1, 100);
-
-		if (temp1 !== null && temp2 !== null) {
-			var value = this.getJob(temp1);
-
-			if (typeof value === "undefined")
-				this.setJob(temp1, temp2, true);
-			else
-				this.setJob(temp1, value + temp2, true);
-		}
-	}
 	this.addChat = function (chatId, percent, minLv, minCloseRate, minStat, minQuest, maxLv, maxCloseRate, maxStat, maxQuest) {
 		var temp1 = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 		var temp2 = FUNC.checkNaN(percent, -1);
@@ -805,10 +804,23 @@ function Npc(name, npc) {
 			map.set("maxStat", temp9);
 			map.set("maxQuest", temp10);
 
-			if (typeof FUNC.findValue(this.chat, map) !== "undefined")
+			if (typeof FUNC.findValue(this.chat, map) === "undefined")
 				this.chat.push(map);
 			else
 				FUNC.log("addChat Warning", ENUM.LOG.warning);
+		}
+	}
+	this.addJob = function (jobEnum, jobLv) {
+		var temp1 = FUNC.checkNaN(jobEnum);
+		var temp2 = FUNC.checkNaN(jobLv, 1, 100);
+
+		if (temp1 !== null && temp2 !== null) {
+			var value = this.getJob(temp1);
+
+			if (typeof value === "undefined")
+				this.setJob(temp1, temp2, true);
+			else
+				this.setJob(temp1, value + temp2, true);
 		}
 	}
 	this.addSelling = function (jobEnum, jobLv, minCloseRate, itemId, itemCount) {
@@ -1385,7 +1397,7 @@ function Item(name, item) {
 		var temp = FUNC.checkType(Map, recipe);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.recipe, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.recipe, temp) === "undefined")
 				this.recipe.push(temp);
 			else
 				FUNC.log("addRecipe Error", ENUM.LOG.error);
@@ -1620,7 +1632,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		var temp = FUNC.checkType(Map, recipe);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.recipe, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.recipe, temp) === "undefined")
 				this.recipe.push(temp);
 			else
 				FUNC.log("addRecipe Error", ENUM.LOG.error);
@@ -2090,12 +2102,12 @@ function Research(name, research) {
 	}
 }
 
-function Player(nickName, name, imageDB, room, player) {
+function Player(nickName, name, ImageDB, room, player) {
 	if (typeof equipment !== "undefined") {
 		this.id = FUNC.getId(ENUM.ID.player);
 		this.nickName = nickName;
 		this.name = name;
-		this.image = FUNC.formatImage(imageDB);
+		this.image = FUNC.formatImage(ImageDB);
 		this.lastTime = FUNC.time();
 		this.recentRoom = room;
 		this.coord = new Coordinate();
@@ -2138,7 +2150,7 @@ function Player(nickName, name, imageDB, room, player) {
 		this.id = player.id;
 		this.nickName = player.nickName;
 		this.name = player.name;
-		this.image = player.FUNC.formatImage(imageDB);
+		this.image = player.image;
 		this.lastTime = player.FUNC.time();
 		this.recentRoom = player.room;
 		this.coord = player.coord;
@@ -2254,7 +2266,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 
 		if (chat.stat.size > 0) {
-			iterator = chat.stat.entires();
+			iterator = chat.stat.entries();
 			while (typeof (value = iterator.next().value) !== "undefined")
 				this.addMainStat(ENUM.STAT1.actStat, value[0], value[1]);
 
@@ -2262,7 +2274,7 @@ function Player(nickName, name, imageDB, room, player) {
 		}
 
 		if (chat.item.size > 0) {
-			iterator = chat.item.entires();
+			iterator = chat.item.entries();
 			while (typeof (value = iterator.next().value) !== "undefined")
 				this.addInventory(value[0], value[1]);
 
@@ -2285,16 +2297,14 @@ function Player(nickName, name, imageDB, room, player) {
 		var totalPercent = 0;
 		var chatId = -1;
 
-		var value;
-		var length = availableChat.length;
-		for (var i = 0; i < length; i++) {
-			value = availableChat[i].get("percent");
+		for (var chat of availableChat) {
+			value = chat.get("percent");
 
 			if (value !== -1)
 				totalPercent += value;
 
 			else {
-				chatId = availableChat[i].get("chat");
+				chatId = chat.get("chat");
 				break;
 			}
 		}
@@ -2303,11 +2313,11 @@ function Player(nickName, name, imageDB, room, player) {
 			var random = FUNC.random(totalPercent);
 
 			var value = 0;
-			for (var i = 0; i < length; i++) {
-				value += availableChat[i].get("percent");
+			for (var chat of availableChat) {
+				value += chat.get("percent");
 
 				if (value >= random) {
-					chatId = availableChat[i].get("chat");
+					chatId = chat.get("chat");
 					break;
 				}
 			}
@@ -2387,11 +2397,13 @@ function Player(nickName, name, imageDB, room, player) {
 				}
 
 				this.exp = temp;
-
 				return false;
 			}
 
-			while (func());
+			for (var i = 0; i < 1000; i++) {
+				if (!func())
+					break;
+			}
 		}
 	}
 
@@ -2476,10 +2488,7 @@ function Player(nickName, name, imageDB, room, player) {
 	this.clearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size);
 
-		if (temp === null)
-			return false;
-
-		if (typeof FUNC.findValue(this.nowQuest, temp) !== "undefined") {
+		if (temp !== null) {
 			var quest = VAR.quests.get(temp);
 
 			this.addMoney((-1 * quest.needMoney) + quest.rewardMoney);
@@ -2491,7 +2500,7 @@ function Player(nickName, name, imageDB, room, player) {
 			while (typeof (value = iterator.next().value) !== "undefined")
 				this.addInventory(value[0], -1 * value[1]);
 
-			iterator = quest.needStat.entires();
+			iterator = quest.needStat.entries();
 			while (typeof (value = iterator.next()) !== "undefined")
 				this.addMainStat(ENUM.STAT1.actStat, value[0], -1 * value[1]);
 
@@ -2509,53 +2518,87 @@ function Player(nickName, name, imageDB, room, player) {
 
 			FUNC.removeValue(this.nowQuest, temp);
 			this.addLog(ENUM.LOGDATA.questCleared, 1);
-
-			return true;
 		}
-
-		return false;
 	}
 
 	this.canEquip = function (equipmentId) {
-
+		//TODO : 장착 가능 여부 판단 코드 작성
 	}
 
 	this.equip = function (equipmentId) {
-
+		//TODO : 장착 코드 작성
 	}
 
 	this.handleQuest = function () {
+		var quest;
 
+		for (var id of nowQuest) {
+			if (this.canClearQuest(id)) {
+				quest = VAR.quests.get(id);
+
+				FUNC.reply(this.id, "\"" + quest.name + "\" 퀘스트를 클리어하였습니다!");
+				this.clearQuest(id);
+			}
+		}
 	}
 
 	this.handleAchieve = function () {
+		var iterator = VAR.achieves.values();
+		var value;
 
+		while (typeof (value = iterator.next().value) !== "undefined") {
+			if (achieve.includes(value.id))
+				continue;
+
+			if (this.canAddAchieve(value.id))
+				this.addAchieve(achieveId.id);
+		}
 	}
 
 	this.handleBuff = function () {
+		var time = FUNC.time();
+		var iterator1 = this.buff.entries();
+		var iterator2;
+		var value1, value2, stat2;
 
+		while (typeof (value1 = iterator1.next().value) !== "undefined") {
+			stat2 = value1[0];
+
+			while (typeof (value2 = iterator2.next().value) !== "undefined") {
+				if (value2[0] < time) {
+					this.addMainStat(ENUM.STAT1.buffStat, stat2, -1 * value2[1]);
+					this.buff.delete(value2[0]);
+				}
+			}
+
+			if (this.buff.value1[0].size == 0)
+				this.buff.delete(value1[0]);
+		}
 	}
 
 	this.updateStat = function () {
 		this.handleBuff();
 
-		var basicStat, levelStat, equipStat, quickStat, actStat, increStat;
-		for (var i = 0; i < ENUM.STAT2.max; i++) {
-			basicStat = this.getMainStat(ENUM.STAT1.basicStat, i);
-			levelStat = this.getMainStat(ENUM.STAT1.levelStat, i);
-			equipStat = this.getMainStat(ENUM.STAT1.equipStat, i);
-			quickStat = this.getMainStat(ENUM.STAT1.quickStat, i);
-			actStat = this.getMainStat(ENUM.STAT1.actStat, i);
+		var basicStat, levelStat, equipStat, buffStat, quickStat, actStat, increStat;
+		for (var stat2 = 0; stat2 < ENUM.STAT2.max; stat2++) {
+			basicStat = this.getMainStat(ENUM.STAT1.basicStat, stat2);
+			levelStat = this.getMainStat(ENUM.STAT1.levelStat, stat2);
+			equipStat = this.getMainStat(ENUM.STAT1.equipStat, stat2);
+			buffStat = this.getMainStat(ENUM.STAT1.buffStat, stat2);
+			quickStat = this.getMainStat(ENUM.STAT1.quickStat, stat2);
+			actStat = this.getMainStat(ENUM.STAT1.actStat, stat2);
 
 			basicStat = typeof basicStat === "undefined" ? 0 : levelStat;
 			levelStat = typeof levelStat === "undefined" ? 0 : levelStat;
 			equipStat = typeof equipStat === "undefined" ? 0 : equipStat;
+			buffStat = typeof buffStat === "undefined" ? 0 : buffStat;
 			quickStat = typeof quickStat === "undefined" ? 0 : quickStat;
 			actStat = typeof actStat === "undefined" ? 0 : actStat;
-			increStat = levelStat + equipStat + quickStat + actStat;
+			increStat = levelStat + equipStat + buffStat + quickStat + actStat;
 
-			this.mainStat.get(ENUM.STAT1.increStat).set(i, increStat);
-			this.mainStat.get(ENUM.STAT1.totalStat).set(i, mainStat + increStat);
+			this.mainStat.get(ENUM.STAT1.increStat).set(stat2, increStat);
+			this.mainStat.get(ENUM.STAT1.totalStat).set(stat2, basicStat + increStat);
+			this.addLog(ENUM.LOGDATA.statUpdated, 1);
 		}
 	}
 
@@ -2864,6 +2907,13 @@ function Player(nickName, name, imageDB, room, player) {
 			}
 
 			this.closeRate.set(temp1, temp2);
+
+			var maxCloseRate = this.getLog(ENUM.LOGDATA.maxCloseRate);
+			maxCloseRate = typeof maxCloseRate === "undefined" ? 0 : maxCloseRate;
+			if (temp2 > maxCloseRate)
+				this.setLog(ENUM.LOGDATA.maxCloseRate, temp2);
+			this.addLog(ENUM.LOGDATA.totalCloseRate, temp2);
+
 			this.handleQuest();
 			this.handleAchieve();
 		}
@@ -2901,12 +2951,15 @@ function Player(nickName, name, imageDB, room, player) {
 	this.setBuff = function (stat2Enum, remainTime, stat, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
 		var temp1 = FUNC.checkNaN(stat2Enum);
-		var temp2 = FUNC.checkNaN(remainTime, 1) + FUNC.time();
+		var temp2 = FUNC.checkNaN(remainTime, 0) + FUNC.time();
 		var temp3 = FUNC.checkNaN(stat);
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null) {
-			if (typeof this.getBuff(temp1, temp2, temp2) !== "undefined") {
+			var value = this.getBuff(temp1, temp2, temp2);
+
+			if (typeof value !== "undefined") {
 				if (temp3 === 0) {
+					this.addMainStat(ENUM.STAT1.buffStat, temp1, -1 * value);
 					this.buff.get(temp1).remove(temp2);
 					return;
 				}
@@ -2917,7 +2970,9 @@ function Player(nickName, name, imageDB, room, player) {
 				}
 			}
 
+			this.addMainStat(ENUM.STAT1.buffStat, temp1, temp3);
 			this.buff.get(temp1).set(temp2, temp3);
+			this.addLog(ENUM.LOGDATA.buffReceived, 1);
 		}
 	}
 
@@ -2952,8 +3007,27 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkNaN(achieveId, 1, VAR.achieves.size);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.achieve, temp) === "undefined") {
+				var achieve = VAR.achieves.get(temp);
+
+				this.addMoney(achieve.rewardMoney);
+				this.addExp(achieve.rewardExp);
+				this.addAdv(achieve.rewardAdv);
+
+				var iterator = achieve.rewardCloseRate.entries();
+				var value;
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addCloseRate(value[0], value[1]);
+
+				iterator = achieve.rewardItem.entries();
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addInventory(value[0], value[1]);
+
 				this.achieve.push(temp);
+
+				FUNC.reply(this.id, "\"" + value.name + "\" 업적을 달성하였습니다!");
+			}
+
 			else
 				FUNC.log("addAchieve Error", ENUM.LOG.error);
 		}
@@ -2962,8 +3036,26 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkNaN(researchId, 1, VAR.researches.size);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.achieve, temp) === "undefined") {
+				var research = VAR.researches.get(temp);
+
+				this.addMoney(-1 * research.needMoney);
+				this.addExp(research.rewardExp);
+
+				var iterator = research.needItem.entries();
+				var value;
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addInventory(value[0], -1 * value[1]);
+
+				iterator = research.rewardStat.entries();
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addMainStat(ENUM.STAT1.actStat, value[0], value[1]);
+
 				this.research.push(temp);
+
+				FUNC.reply(this.id, "\"" + value.name + "\" 연구를 마쳤습니다!");
+			}
+
 			else
 				FUNC.log("addResearch Error", ENUM.LOG.error);
 		}
@@ -2972,7 +3064,7 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkType(String, title);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.achieve, temp) !== "undefined")
+			if (typeof FUNC.findValue(this.achieve, temp) === "undefined")
 				this.title.push(temp);
 			else
 				FUNC.log("addTitle Error", ENUM.LOG.error);
@@ -2982,7 +3074,7 @@ function Player(nickName, name, imageDB, room, player) {
 		var temp = FUNC.checkNaN(questId);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.nwoQuest, temp) !== "undefined") {
+			if (typeof FUNC.findValue(this.nwoQuest, temp) === "undefined") {
 				this.nowQuest.push(temp);
 				this.addLog(ENUM.LOGDATA.questReceived, 1);
 			}
@@ -3111,16 +3203,79 @@ function Player(nickName, name, imageDB, room, player) {
 	}
 }
 
+var evalNumber = 0;
+var evalError = 0;
+var evalTime;
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
 	try {
 		if (typeof FUNC.findValue(VAR.rooms, room) === "undefined")
 			this.rooms.push(room);
 
-		var split = msg.split(" ");
-		eval(msg);
+		if (msg.startsWith("..")) {
+			var player = FUNC.findPlayer(sender, ImageDB);
+
+			if (typeof player === "undefined")
+				isNotPlayer(msg);
+			else
+				isPlayer(msg);
+		}
+
+		else {
+			if (msg.startsWith("neval ")) {
+				var split = msg.split(" ");
+
+				if (split[1] === "start") {
+					evalNumber = (Math.random() * 899999) + 100000;
+					evalTime = FUNC.time();
+
+					Api.makeNoti("Eval Number", String(evalNumber), 1);
+				}
+
+				else if (split[1] === "end")
+					evalNumber = 0;
+
+				else if (split[1] === "eval") {
+					if (evalNumber === 0)
+						replier.reply("Eval Number를 생성해주십시오");
+
+					else if (evalTime > FUNC.time() + 300000) {
+						replier.reply("Eval Number이 이미 만료되었습니다");
+						evalNumber = 0;
+					}
+
+					else {
+						if (split[2] === String(evalNumber)) {
+							evalTime = FUNC.time();
+							eval(msg.substr(18));
+						}
+
+						else {
+							evalError++;
+
+							if (evalError >= 5) {
+								evalNumber = 0;
+								evalError = 0;
+								replier.reply("Eval Number를 5회 이상 틀려 만료시킵니다");
+							}
+
+							else
+								replier.reply("Eval Number를 틀리셨습니다 - [틀린 횟수 : " + evalError + "]");
+						}
+					}
+				}
+			}
+		}
 	} catch (e) {
 		FUNC.log("<RUNTIME> - " + e, ENUM.LOG.error);
 	}
+}
+
+function isNotPlayer(msg) {
+
+}
+
+function isPlayer(msg) {
+
 }
 
 

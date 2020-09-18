@@ -2,33 +2,34 @@
 
 "ENUM": {
 	"STAT1": {
-		"basicStat",	//전직 떄에만 가변, 기본 불변
-		"levelStat",	//SP로 증가 가능, 감소 불가능
-		"equipStat",	//장비 변경 시 증감
-		"quickStat",	//일시적으로 저장되는 스텟
-		"actStat",		//활동으로 얻는 스텟(퀘스트, 대화, 연구, 업적 등등)
-		"increStat",	//레벨 스텟 + 이큅 스텟 + 퀵 스텟 + 액트 스텟
-		"totalStat"		//베이직 스텟 + 인크리 스텟 - 수동 조작 불가
+		"basicStat",		//전직 떄에만 가변, 기본 불변
+		"levelStat",		//SP로 증가 가능, 감소 불가능
+		"equipStat",		//장비 변경 시 증감
+		"buffStat",			//버프로 얻는 스텟
+		"quickStat",		//일시적으로 저장되는(버프 제외) 스텟 - 스레드/행동 으로 관리하기에 함께 관리 가능(단, 리로드/off 대비 코드 필요)(스킬, 지역 축복 등등)
+		"actStat",			//활동으로 얻는 스텟(퀘스트, 대화, 연구 등등)
+		"increStat",		//레벨 스텟 + 이큅 스텟 + 버프 스텟 + 퀵 스텟 + 액트 스텟
+		"totalStat"			//베이직 스텟 + 인크리 스텟 - 수동 조작 불가
 	},
 	"STAT2": {
-		"maxhp",	//최대 체력
-		"hp",		//현재 체력
-		"maxmn",	//최대 마나
-		"mn",		//현재 마나
-		"maxeg",	//최대 활동력
-		"eg",		//현재 활동력
-		"atk",		//공격력
-		"matk",		//마법 공격력
-		"def",		//방어력
-		"mdef",		//마법 방어력
-		"bre",		//관통력
-		"mbre",		//마법 관통력
-		"dra",		//흡수력
-		"mdra",		//마법 흡수력
-		"cd",		//쿨감
-		"spd",		//이속
-		"eva",		//회피
-		"acc"		//정확성
+		"maxhp",			//최대 체력
+		"hp",				//현재 체력
+		"maxmn",			//최대 마나
+		"mn",				//현재 마나
+		"maxeg",			//최대 활동력
+		"eg",				//현재 활동력
+		"atk",				//공격력
+		"matk",				//마법 공격력
+		"def",				//방어력
+		"mdef",				//마법 방어력
+		"bre",				//관통력
+		"mbre",				//마법 관통력
+		"dra",				//흡수력
+		"mdra",				//마법 흡수력
+		"cd",				//쿨감
+		"spd",				//이속
+		"eva",				//회피
+		"acc"				//정확성
 	},
 	"ETYPE": {
 		"helmet",			//투구
@@ -158,7 +159,6 @@ handleLevel : 1~10
 	"id": Number,															//인식 정보
 	"name": String,															//npc 이름
 	"coord": Coordinate														//Coordinate = new Coordinate()
-	"job": Map<JOB, Number>,												//JOB, 직업 레벨 = {}
 	"chat": [
 		{
 			"chat": Number,													//챗 id,
@@ -173,6 +173,7 @@ handleLevel : 1~10
 			"maxQuest": Map<Number, Number>									//퀘스트 id, 최대 클리어 횟수 제한
 		}
 	]
+	"job": Map<JOB, Number>,												//JOB, 직업 레벨 = {}
  	"selling": Map<JOB, Map<Number, Map<Number, Map<Number, Number>>>>,		//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
 	//-----------------------------------------------
 	getter/setter
@@ -310,6 +311,7 @@ Research: {
 	canAddQuest(questid)
 	canAddAchieve(achieveid)
 	canAddResearch(researchid)
+	research(researchId)
 	canAddTitle(title)
 	canClearQuest(questId)
 	clearQuest(questId)
