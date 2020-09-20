@@ -121,7 +121,7 @@
 		"statUpdated": 17,
 		"emoteSent": 18,
 		"createdTime": 19,
-		"lastTime": 20,
+		"lastTime": 20,					//사용 안함
 		"playedDay": 21
 	}
 }

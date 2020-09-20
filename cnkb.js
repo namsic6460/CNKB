@@ -83,8 +83,8 @@ const FUNC = {
 		}
 	},
 
-	random: function (max) {
-		return Math.random() * max + 1;
+	random: function (min, max) {
+		return (Math.random() * (max - min)) + min;
 	},
 
 	getFuncName: function (func) {
@@ -331,7 +331,7 @@ const ENUM = {
 		"statUpdated": 17,
 		"emoteSent": 18,
 		"createdTime": 19,
-		"lastTime": 20,
+		// "lastTime": 20,
 		"playedDay": 21
 	}
 };
@@ -478,7 +478,7 @@ function Chat(chat) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getChat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.chat.remove(temp1);
+					this.chat.delete(temp1);
 					return;
 				}
 
@@ -499,7 +499,7 @@ function Chat(chat) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.stat.remove(temp1);
+					this.stat.delete(temp1);
 					return;
 				}
 
@@ -520,7 +520,7 @@ function Chat(chat) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getItem(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.item.remove(temp1);
+					this.item.delete(temp1);
 					return;
 				}
 
@@ -732,7 +732,7 @@ function Npc(name, npc) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getJob(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.job.remove(temp1);
+					this.job.delete(temp1);
 					return;
 				}
 
@@ -993,7 +993,7 @@ function Quest(name, quest) {
 
 			if (typeof value !== "undefined") {
 				if (temp2 === 0) {
-					this.minLimitCloseRate.remove(temp1);
+					this.minLimitCloseRate.delete(temp1);
 					return;
 				}
 
@@ -1014,7 +1014,7 @@ function Quest(name, quest) {
 
 			if (typeof value !== "undefined") {
 				if (temp2 === 0) {
-					this.maxLimitCloseRate.remove(temp1);
+					this.maxLimitCloseRate.delete(temp1);
 					return;
 				}
 
@@ -1035,7 +1035,7 @@ function Quest(name, quest) {
 
 			if (typeof value !== "undefined") {
 				if (temp2 === 0) {
-					this.minLimitStat.remove(temp1);
+					this.minLimitStat.delete(temp1);
 					return;
 				}
 
@@ -1056,7 +1056,7 @@ function Quest(name, quest) {
 
 			if (typeof value !== "undefined") {
 				if (temp2 === 0) {
-					this.maxLimitStat.remove(temp1);
+					this.maxLimitStat.delete(temp1);
 					return;
 				}
 
@@ -1075,7 +1075,7 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getNeedItem(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.needItem.remove(temp1);
+					this.needItem.delete(temp1);
 					return;
 				}
 
@@ -1096,7 +1096,7 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getNeedStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.needStat.remove(temp1);
+					this.needStat.delete(temp1);
 					return;
 				}
 
@@ -1117,7 +1117,7 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardItem(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardItem.remove(temp1);
+					this.rewardItem.delete(temp1);
 					return;
 				}
 
@@ -1138,7 +1138,7 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardStat.remove(temp1);
+					this.rewardStat.delete(temp1);
 					return;
 				}
 
@@ -1159,7 +1159,7 @@ function Quest(name, quest) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardCloseRate(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardCloseRate.remove(temp1);
+					this.rewardCloseRate.delete(temp1);
 					return;
 				}
 
@@ -1433,7 +1433,8 @@ function Equipment(name, description, eTypeEnum, equipment) {
 			return null;
 		}
 
-		this.id = equipment.id;
+		//장비의 경우, 원형을 복사하더라도 신규 아이템 취급
+		this.id = FUNC.getId(ENUM.ID.item);
 		this.name = equipment.iname;
 		this.description = equipment.description;
 		this.eType = equipment.eType;
@@ -1528,7 +1529,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.stat.remove(temp1);
+					this.stat.delete(temp1);
 					return;
 				}
 
@@ -1549,7 +1550,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getLimitStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.limitStat.remove(temp1);
+					this.limitStat.delete(temp1);
 					return;
 				}
 
@@ -1570,7 +1571,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getType(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.type.remove(temp1);
+					this.type.delete(temp1);
 					return;
 				}
 
@@ -1591,7 +1592,7 @@ function Equipment(name, description, eTypeEnum, equipment) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getReinforce(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.reinforce.remove(temp1);
+					this.reinforce.delete(temp1);
 					return;
 				}
 
@@ -1781,7 +1782,7 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getLimitStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.limitStat.remove(temp1);
+					this.limitStat.delete(temp1);
 					return;
 				}
 
@@ -1802,7 +1803,7 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getLimitCloseRate(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.limitStat.remove(temp1);
+					this.limitStat.delete(temp1);
 					return
 				}
 
@@ -1823,7 +1824,7 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getOtherLimit(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.otherLimit.remove(temp1);
+					this.otherLimit.delete(temp1);
 					return
 				}
 
@@ -1844,7 +1845,7 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardCloseRate(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardCloseRate.remove(temp1);
+					this.rewardCloseRate.delete(temp1);
 					return;
 				}
 
@@ -1865,7 +1866,7 @@ function Achieve(name, achieve) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardItem(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardItem.remove(temp1);
+					this.rewardItem.delete(temp1);
 					return;
 				}
 
@@ -2027,7 +2028,7 @@ function Research(name, research) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getNeedItem(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.needItem.remove(temp1);
+					this.needItem.delete(temp1);
 					return;
 				}
 
@@ -2048,7 +2049,7 @@ function Research(name, research) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getRewardStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.rewardStat.remove(temp1);
+					this.rewardStat.delete(temp1);
 					return;
 				}
 
@@ -2103,7 +2104,7 @@ function Research(name, research) {
 }
 
 function Player(nickName, name, ImageDB, room, player) {
-	if (typeof equipment !== "undefined") {
+	if (typeof player !== "undefined") {
 		this.id = FUNC.getId(ENUM.ID.player);
 		this.nickName = nickName;
 		this.name = name;
@@ -2310,7 +2311,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		}
 
 		if (chatId === -1) {
-			var random = FUNC.random(totalPercent);
+			var random = FUNC.random(1, totalPercent);
 
 			var value = 0;
 			for (var chat of availableChat) {
@@ -2522,11 +2523,54 @@ function Player(nickName, name, ImageDB, room, player) {
 	}
 
 	this.canEquip = function (equipmentId) {
-		//TODO : 장착 가능 여부 판단 코드 작성
+		var temp = FUNC.checkNaN(equipmentId, 1, VAR.items.size);
+
+		if (temp === null)
+			return false;
+
+		var equipment = this.getInventory(temp);
+		if (typeof equipment === "undefined")
+			return false;
+
+		if (!equipment.isWeapon) {
+			FUNC.log("canEquip Error", ENUM.LOG.error);
+			return false;
+		}
+
+		if (equipment.limitLv <= this.lv &&
+			FUNC.check(equipment.limitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			return true;
+		return false;
 	}
 
 	this.equip = function (equipmentId) {
-		//TODO : 장착 코드 작성
+		var temp = FUNC.checkNaN(equipmentId, 1, VAR.items.size);
+
+		if (temp !== null) {
+			var equipment = this.getInventory(temp);
+			var equipped = this.getEqiupped(equipment.eType);
+
+			var iterator = equipment.stat.entries();
+			var value;
+			while (typeof (value = iterator.next().value) !== "undefined")
+				this.addMainStat(ENUM.STAT1.equipStat, value[0], value[1]);
+
+			iterator = equipment.type.entries();
+			while (typeof (value = iterator.next().value) !== "undefined")
+				this.addType(value[0], value[1]);
+
+			if (typeof equipped !== "undefined") {
+				iterator = equipped.stat.entries();
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addMainStat(ENUM.STAT1.equipStat, value[0], -1 * value[1]);
+
+				iterator = equipped.type.entries();
+				while (typeof (value = iterator.next().value) !== "undefined")
+					this.addType(value[0], -1 * value[1]);
+			}
+
+			this.setEquipped(equipment.eType, temp, true);
+		}
 	}
 
 	this.handleQuest = function () {
@@ -2571,7 +2615,7 @@ function Player(nickName, name, ImageDB, room, player) {
 				}
 			}
 
-			if (this.buff.value1[0].size == 0)
+			if (this.buff.value1[0].size === 0)
 				this.buff.delete(value1[0]);
 		}
 	}
@@ -2754,7 +2798,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getJob(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.job.remove(temp1);
+					this.job.delete(temp1);
 					return;
 				}
 
@@ -2776,7 +2820,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null && temp3 !== null && temp1 !== ENUM.STAT1.totalStat) {
 			if (typeof this.getMainStat(temp1, temp2) !== "undefined") {
 				if (temp3 === 0) {
-					this.mainStat.get(temp1).remove(temp2);
+					this.mainStat.get(temp1).delete(temp2);
 					return;
 				}
 
@@ -2800,7 +2844,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getResistStat(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.resistStat.remove(temp1);
+					this.resistStat.delete(temp1);
 					return;
 				}
 
@@ -2824,7 +2868,7 @@ function Player(nickName, name, ImageDB, room, player) {
 
 			if (typeof value !== "undefined") {
 				if (temp2 === 0) {
-					this.inventory.remove(temp1);
+					this.inventory.delete(temp1);
 					this.addLog(ENUM.LOGDATA.usedItem, value);
 
 					return;
@@ -2854,7 +2898,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getEqiupped(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.equipped.remove(temp1);
+					this.equipped.delete(temp1);
 					return;
 				}
 
@@ -2875,7 +2919,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getClearedQuest(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.clearedQuest.remove(temp1);
+					this.clearedQuest.delete(temp1);
 					return;
 				}
 
@@ -2896,7 +2940,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getCloseRate(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.closeRate.remove(temp1);
+					this.closeRate.delete(temp1);
 					return;
 				}
 
@@ -2935,7 +2979,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof this.getType(temp1) !== "undefined") {
 				if (temp2 === 0) {
-					this.type.remove(temp1);
+					this.type.delete(temp1);
 					return;
 				}
 
@@ -2960,7 +3004,7 @@ function Player(nickName, name, ImageDB, room, player) {
 			if (typeof value !== "undefined") {
 				if (temp3 === 0) {
 					this.addMainStat(ENUM.STAT1.buffStat, temp1, -1 * value);
-					this.buff.get(temp1).remove(temp2);
+					this.buff.get(temp1).delete(temp2);
 					return;
 				}
 
@@ -3215,9 +3259,24 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 			var player = FUNC.findPlayer(sender, ImageDB);
 
 			if (typeof player === "undefined")
-				isNotPlayer(msg);
-			else
-				isPlayer(msg);
+				nonPlayerFunc(msg);
+
+			else {
+				player.addLog(ENUM.LOGDATA.chat, 1);
+				if (msg === "이모티콘을 보냈습니다.")
+					player.addLog(ENUM.LOGDATA.emoteSent, 1);
+
+				if (playerFunc(msg)) {
+					var time = new Date();
+					var lastTime = new Date(player.lastTime);
+
+					if (time.getDate() !== lastTime.getDate())
+						player.addLog(ENUM.LOGDATA.playedDay, 1);
+
+					player.setLastTime(time);
+					player.setRecentRoom(room);
+				}
+			}
 		}
 
 		else {
@@ -3225,7 +3284,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 				var split = msg.split(" ");
 
 				if (split[1] === "start") {
-					evalNumber = (Math.random() * 899999) + 100000;
+					evalNumber = FUNC.random(100000, 999999);
 					evalTime = FUNC.time();
 
 					Api.makeNoti("Eval Number", String(evalNumber), 1);
@@ -3239,7 +3298,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 						replier.reply("Eval Number를 생성해주십시오");
 
 					else if (evalTime > FUNC.time() + 300000) {
-						replier.reply("Eval Number이 이미 만료되었습니다");
+						replier.reply("Eval Number는 이미 만료되었습니다");
 						evalNumber = 0;
 					}
 
@@ -3270,12 +3329,12 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 	}
 }
 
-function isNotPlayer(msg) {
+function nonPlayerFunc(msg) {
 
 }
 
-function isPlayer(msg) {
-
+function playerFunc(msg) {
+	return false;
 }
 
 
