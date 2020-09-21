@@ -139,7 +139,6 @@ VAR: {
 	"items": new Map(),
 	"achieves": new Map(),
 	"researches": new Map(),
-	"names": new Map(),
 	"id": new Map(),
 	"all": "\n\n" + ("\u200b".repeat(500)),
 	"max": 999999999,

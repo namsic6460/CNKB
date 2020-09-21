@@ -277,7 +277,7 @@ const FUNC = {
 			researchData.id = research.id;
 			researchData.name = research.name;
 			researchData.needMoney = research.needMoney;
-			researchData.llimitLv = research.limitLv;
+			researchData.limitLv = research.limitLv;
 			researchData.rewardExp = research.rewardExp;
 			researchData.needItem = this.mapToObj(research.needItem);
 			researchData.rewardItem = this.mapToObj(research.rewardStat);
@@ -935,11 +935,13 @@ function Npc(name, npc, isNew) {
 			var quest = player.clearedQuest;
 
 			for (var c of this.chat) {
-				if (this.c.get("minLv") <= lv && this.c.get("maxLv") >= lv &&
-					this.c.get("minCloseRate") <= closeRate && this.c.get("maxCloseRate") >= closeRate &&
-					FUNC.check(this.c.get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
-					FUNC.check(this.c.get("minQuest"), quest, ENUM.CHECKING.big, false, true))
-					output.push(this.c.get("chat"));
+				if (c.get("minLv") <= lv && c.get("maxLv") >= lv &&
+					c.get("minCloseRate") <= closeRate && c.get("maxCloseRate") >= closeRate &&
+					FUNC.check(c.get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
+					FUNC.check(c.get("maxStat"), stat, ENUM.CHECKING.small, false, true) &&
+					FUNC.check(c.get("minQuest"), quest, ENUM.CHECKING.big, false, true) &&
+					FUNC.check(c.get("maxQuest"), quest, ENUM.CHECKING.small, false, true))
+					output.push(c.get("chat"));
 			}
 		}
 
@@ -957,22 +959,22 @@ function Npc(name, npc, isNew) {
 			var jobLv = this.getJob(temp2);
 			var value;
 
-			for (var [k1, v1] of map) {
-				if (k1 <= jobLv) {
-					for (var [k2, v2] of v1) {
-						if (k2 <= closeRate) {
-							for (var [k3, v3] of v2) {
-								value = output.get(k3);
+			for (var [jobLv, closeRateMap] of map) {
+				if (jobLv <= jobLv) {
+					for (var [closeRate, itemMap] of closeRateMap) {
+						if (closeRate <= closeRate) {
+							for (var [itemId, itemCount] of itemMap) {
+								value = output.get(itemId);
 
 								if (typeof value === "undefined") {
-									if (v3 !== -1)
-										output.set(k3, v3);
+									if (itemCount !== -1)
+										output.set(itemId, itemCount);
 									else
-										output.set(k3, VAR.max);
+										output.set(itemId, VAR.max);
 								}
 
 								else if (value < VAR.max)
-									output.set(k3, value + v3);
+									output.set(itemId, value + itemCount);
 							}
 						}
 					}
@@ -2545,15 +2547,15 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		else
 			text += "대화가 종료되었습니다";
 
-		for (var [k, v] of chat.item) {
-			if (this.getInventory(k) < (-1 * v)) {
+		for (var [itemId, itemCount] of chat.item) {
+			if (this.getInventory(itemId) < (-1 * itemCount)) {
 				FUNC.reply(this.id, "보유 아이템이 부족하여 대화가 중지됩니다");
 				return;
 			}
 		}
 
-		for (var [k, v] of chat.stat) {
-			if (this.getStat(k) < (-1 * v)) {
+		for (var [stat2Enum, stat] of chat.stat) {
+			if (this.getMainStat(ENUM.STAT1.totalStat, stat2Enum) < (-1 * stat)) {
 				FUNC.reply(this.id, "스텟이 부족하여 대화가 중지됩니다");
 				return;
 			}
@@ -2585,15 +2587,15 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		}
 
 		if (chat.stat.size > 0) {
-			for (var [k, v] of chat.stat)
-				this.addMainStat(ENUM.STAT1.actStat, k, v);
+			for (var [stat2Enum, stat] of chat.stat)
+				this.addMainStat(ENUM.STAT1.actStat, stat2Enum, stat);
 
 			more += "스텟 설정 완료\n";
 		}
 
 		if (chat.item.size > 0) {
-			for (var [k, v] of chat.item)
-				this.addInventory(k, v);
+			for (var [itemId, itemCount] of chat.item)
+				this.addInventory(itemId, itemCount);
 
 			more += "아이템 설정 완료";
 		}
@@ -2812,17 +2814,17 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.addExp((-1 * quest.needExp) + quest.rewardExp);
 			this.addAdv((-1 * quest.needAdv) + quest.rewardAdv);
 
-			for (var [k, v] of quest.needItem)
-				this.addInventory(k, -1 * v);
-			for (var [k, v] of quest.needStat)
-				this.addMainStat(ENUM.STAT1.actStat, k, -1 * v);
+			for (var [itemId, itemCount] of quest.needItem)
+				this.addInventory(itemId, -1 * itemCount);
+			for (var [stat2Enum, stat] of quest.needStat)
+				this.addMainStat(ENUM.STAT1.actStat, stat2Enum, -1 * stat);
 
-			for (var [k, v] of quest.rewardItem)
-				this.addInventory(k, v);
-			for (var [k, v] of quest.rewardStat)
-				this.addMainStat(ENUM.STAT1.actStat, k, v);
-			for (var [k, v] of quest.rewardCloseRate)
-				this.addCloseRate(k, v);
+			for (var [itemId, itemCount] of quest.rewardItem)
+				this.addInventory(itemId, itemCount);
+			for (var [stat2Enum, stat] of quest.rewardStat)
+				this.addMainStat(ENUM.STAT1.actStat, stat2Enum, stat);
+			for (var [npcId, closeRate] of quest.rewardCloseRate)
+				this.addCloseRate(npcId, closeRate);
 
 			FUNC.removeValue(this.nowQuest, temp);
 			this.addLog(ENUM.LOGDATA.questCleared, 1);
@@ -2857,16 +2859,16 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			var equipment = this.getInventory(temp);
 			var equipped = this.getEqiupped(equipment.eType);
 
-			for (var [k, v] of equipment.stat)
-				this.addMainStat(ENUM.STAT1.equipStat, k, v);
-			for (var [k, v] of equipment.type)
-				this.addType(k, v);
+			for (var [stat2Enum, stat] of equipment.stat)
+				this.addMainStat(ENUM.STAT1.equipStat, stat2Enum, stat);
+			for (var [typeEnum, type] of equipment.type)
+				this.addType(typeEnum, type);
 
 			if (typeof equipped !== "undefined") {
-				for (var [k, v] of equipped.stat)
-					this.addMainStat(ENUM.STAT1.equipStat, k, -1 * v);
-				for (var [k, v] of equipped.type)
-					this.addType(k, -1 * v);
+				for (var [stat2Enum, stat] of equipped.stat)
+					this.addMainStat(ENUM.STAT1.equipStat, stat2Enum, -1 * stat);
+				for (var [typeEnum, type] of equipped.type)
+					this.addType(typeEnum, -1 * type);
 			}
 
 			this.setEquipped(equipment.eType, temp, true);
@@ -2876,12 +2878,12 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 	this.handleQuest = function () {
 		var quest;
 
-		for (var id of nowQuest) {
-			if (this.canClearQuest(id)) {
-				quest = VAR.quests.get(id);
+		for (var questId of nowQuest) {
+			if (this.canClearQuest(questId)) {
+				quest = VAR.quests.get(questId);
 
 				FUNC.reply(this.id, "\"" + quest.name + "\" 퀘스트를 클리어하였습니다!");
-				this.clearQuest(id);
+				this.clearQuest(questId);
 			}
 		}
 	}
@@ -2899,18 +2901,18 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		var time = FUNC.time();
 		var stat2;
 
-		for (var [k1, v1] of this.buff) {
-			stat2 = k1;
+		for (var [stat2Enum, buffMap] of this.buff) {
+			stat2 = stat2Enum;
 
-			for (var [k2, v2] of v1) {
-				if (k2 < time) {
-					this.addMainStat(ENUM.STAT1.buffStat, stat2, -1 * v2);
-					this.buff.delete(k2);
+			for (var [endTime, stat] of buffMap) {
+				if (endTime < time) {
+					this.addMainStat(ENUM.STAT1.buffStat, stat2, -1 * stat);
+					this.buff.delete(endTime);
 				}
 			}
 
-			if (this.buff.get(k1).size === 0)
-				this.buff.delete(k1);
+			if (this.buff.get(stat2Enum).size === 0)
+				this.buff.delete(stat2Enum);
 		}
 	}
 
@@ -2998,9 +3000,9 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null && this.buff.has(temp1)) {
 			var map = this.buff.get(temp1);
-			for (var [k, v] of map) {
-				if (k >= temp1 && k <= temp2)
-					output += v;
+			for (var [endTime, stat] of map) {
+				if (endTime >= temp1 && endTime <= temp2)
+					output += stat;
 			}
 		}
 
@@ -3370,10 +3372,10 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 				this.addExp(achieve.rewardExp);
 				this.addAdv(achieve.rewardAdv);
 
-				for (var [k, v] of achieve.rewardCloseRate)
-					this.addCloseRate(k, v);
-				for (var [k, v] of achieve.rewardItem)
-					this.addInventory(k, v);
+				for (var [npcId, closeRate] of achieve.rewardCloseRate)
+					this.addCloseRate(npcId, closeRate);
+				for (var [itemId, itemCount] of achieve.rewardItem)
+					this.addInventory(itemId, itemCount);
 
 				this.achieve.push(temp);
 
@@ -3394,11 +3396,11 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 				this.addMoney(-1 * research.needMoney);
 				this.addExp(research.rewardExp);
 
-				for (var [k, v] of research.needItem)
-					this.addInventory(k, -1 * v);
+				for (var [itemId, itemCount] of research.needItem)
+					this.addInventory(itemId, -1 * itemCount);
 
-				for (var [k, v] of research.rewardStat)
-					this.addMainStat(ENUM.STAT1.actStat, k, v);
+				for (var [stat2Enum, stat] of research.rewardStat)
+					this.addMainStat(ENUM.STAT1.actStat, stat2Enum, stat);
 
 				this.research.push(temp);
 
