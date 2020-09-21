@@ -126,6 +126,27 @@
 	}
 }
 
+VAR: {
+	"log": "",
+	"logCount": 0,
+	"msgCount": 0,
+	"ddosTime": 1000,
+	"rooms": new Array(),
+	"players": new Map(),
+	"chats": new Map(),
+	"npcs": new Map(),
+	"quests": new Map(),
+	"items": new Map(),
+	"achieves": new Map(),
+	"researches": new Map(),
+	"names": new Map(),
+	"id": new Map(),
+	"all": "\n\n" + ("\u200b".repeat(500)),
+	"max": 999999999,
+	"spGive": 5,
+	"expBoost": 1
+};
+
 "Coordinate": {
 	"x": Number,			//X 좌표(Unsigned)(가로) = 0
 	"y": Number				//Y 좌표(Unsigned)(세로) = 0
