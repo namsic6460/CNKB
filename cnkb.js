@@ -21,7 +21,278 @@ const LOGPATH = FOLPATH + "Log/";
 
 const FUNC = {
 	loadDB: function () {
+		var key1, key2, key3, key4;
+		var value;
+		var map;
 
+		//플레이어 데이터 파싱
+		var playerDatas = this.getDB(PLAYERPATH);
+		var player;
+		for (var playerData of playerDatas) {
+			player = new Player(null, null, null, null, null, false);
+			player.id = Number(playerData.id);
+			player.nickName = String(playerData.nickName);
+			player.name = String(playerData.name);
+			player.image = Number(playerData.image);
+			player.lastTime = Number(playerData.lastTime);
+			player.recentRoom = player.room;
+			player.coord = this.objToCoord(playerData.coord);
+			player.nowTitle = String(playerData.nowTitle);
+			player.money = Number(playerData.money);
+			player.lv = Number(layer.lv);
+			player.exp = Number(playerData.exp);
+			player.sp = Number(playerData.sp);
+			player.adv = Number(playerData.adv);
+			player.ddosCheck = Number(playerData.ddosCheck);
+			player.doing = Number(playerData.doing);
+			player.nowChat = Number(playerData.nowChat);
+			player.achieve = new Array(playerData.achieve);
+			player.research = new Array(playerData.research);
+			player.title = new Array(playerData.title);
+			player.nowQuest = new Array(playerData.nowQuest);
+			player.job = this.objToMap(playerData.job);
+			player.resistStat = this.objToMap(playerData.resistStat);
+			player.inventory = this.objToMap(playerData.inventory);
+			player.equipped = this.objToMap(playerData.equipped);
+			player.clearedQuest = this.objToMap(playerData.clearedQuest);
+			player.closeRate = this.objToMap(playerData.closeRate);
+			player.log = this.objToMap(playerData.log);
+			player.type = this.objToMap(playerData.type);
+
+			player.mainStat = new Map();
+			for (var obj of playerData.mainStat) {
+				key1 = String(obj);
+
+				player.mainStat.set(key1, new Map());
+				for (var stat2Map of obj.value) {
+					key2 = Number(stat2Map.key);
+					value = Number(stat2Map.value);
+
+					player.mainStat.get(key1).set(key2, value);
+				}
+			}
+
+			player.buff = new Map();
+			for (var obj of playerData.buff) {
+				key1 = Number(obj.key1);
+
+				player.buff.set(key1, new Map());
+				for (var buffMap of obj.value) {
+					key2 = Number(buffMap.key);
+					value = Number(buffMap.value);
+
+					player.buff.get(key1).set(key2, value);
+				}
+			}
+
+			VAR.players.set(player.id, player);
+		}
+
+
+		//채팅 데이터 파싱
+		var chatDatas = this.getDB(CHATPATH);
+		var chat;
+		for (var chatData of chatDatas) {
+			chat = new Chat(null, false);
+			chat.id = Number(chatData.id);
+			chat.pause = Number(chatData.pause);
+			chat.quest = Number(chatData.quest);
+			chat.money = Number(chatData.money);
+			chat.teleport = this.objToCoord(chatData.teleport);
+			chat.text = new Array(chatData.text);
+			chat.wait = new Array(chatData.wait);
+			chat.chat = this.objToMap(chatData.chat);
+			chat.stat = this.objToMap(chatData.stat);
+			chat.item = this.objToMap(chatData.item);
+
+			VAR.chats.set(chat.id, chat);
+		}
+
+
+		//엔피시 데이터 파싱
+		var npcDatas = this.getDB(NPCPATH);
+		var npc;
+		for (var npcData of npcDatas) {
+			npc = new Npc(null, null, false);
+			npc.id = Number(npcData.id);
+			npc.name = String(npcData.name);
+			npc.coord = this.objToCoord(npcData.coord);
+			npc.job = this.objToMap(npcData.job);
+
+			npc.chat = new Array();
+			for (var chat of npcData.chat) {
+				map = new Map();
+				map.set("chat", Number(chat.chat));
+				map.set("percent", Number(chat.percent));
+				map.set("minLv", Number(chat.minLv));
+				map.set("minCloseRate", Number(chat.minCloseRate));
+				map.set("minStat", this.objToMap(chat.minStat));
+				map.set("minQuest", this.objToMap(chat.minQuest));
+				map.set("maxLv", Number(chat.maxLv));
+				map.set("maxCloseRate", Number(chat.maxCloseRate));
+				map.set("maxStat", this.objToMap(chat.maxStat));
+				map.set("maxQuest", this.objToMap(chat.maxQuest));
+
+				npc.chat.push(map);
+			}
+
+			npc.selling = new Map();
+			for (var jobEnumMap of npcData.selling) {
+				key1 = Number(jobEnumMap.key);
+
+				npc.selling.set(key1, new Map());
+				for (var jobMap of jobEnumMap.value) {
+					key2 = Number(jobMap.key);
+
+					npc.selling.get(key1).set(key2, new Map());
+					for (var closeRateMap of jobMap.value) {
+						key3 = Number(closeRateMap.key);
+
+						npc.selling.get(key1).get(key2).set(key3, new Map());
+						for (var itemMap of closeRateMap.value) {
+							key4 = Number(itemMap.key);
+							value = Number(itemMap.value);
+
+							npc.selling.get(key1).get(key2).get(key3).set(key4, value);
+						}
+					}
+				}
+			}
+
+			VAR.npcs.set(npc.id, npc);
+		}
+
+
+		//퀘스트 데이터 파싱
+		var questDatas = this.getDB(QUESTPATH);
+		var quest;
+		for (var questData of questDatas) {
+			quest = new Quest(null, null, false);
+			quest.id = Number(questData.id);
+			quest.name = String(questData.name);
+			quest.isRepeatable = Boolean(questData.isRepeatable);
+			quest.minLimitLv = Number(questData.minLimitLv);
+			quest.maxLimitLv = Number(questData.maxLimitLv);
+			quest.needMoney = Number(questData.needMoney);
+			quest.needExp = Number(questData.needexp);
+			quest.needAdv = Number(questData.needAdv);
+			quest.rewardMoney = Number(questData.rewardMoney);
+			quest.rewardExp = Number(questData.rewardExp);
+			quest.rewardAdv = Number(questData.rewardAdv);
+			quest.minLimitCloseRate = this.objToMap(questData.minLimitCloseRate);
+			quest.maxLimitCloseRate = this.objToMap(questData.maxLimitCloseRate);
+			quest.minLimitStat = this.objToMap(questData.minLimitStat);
+			quest.maxLimitStat = this.objToMap(questData.maxLimitStat);
+			quest.needItem = this.objToMap(questData.needItem);
+			quest.needStat = this.objToMap(questData.needStat);
+			quest.rewardItem = this.objToMap(questData.rewardItem);
+			quest.rewardStat = this.objToMap(questData.rewardStat);
+			quest.rewardCloseRate = this.objToMap(questData.rewardCloseRate);
+
+			VAR.quests.set(quest.id, quest);
+		}
+
+
+		//아이템 데이터 파싱
+		var itemDatas = this.getDB(ITEMPATH);
+		var item, equipment;
+		for (var itemData of itemDatas) {
+			item = new Item(null, null, false);
+			item.id = Number(itemData.id);
+			item.name = String(itemData.name);
+			item.description = String(itemData.description);
+			item.handleLevel = Number(itemData.handleLevel);
+			item.value = Number(itemData.value);
+			item.isWeapon = false;
+
+			item.recipe = new Array();
+			for (var recipeMap of itemData.recipe) {
+				key1 = Number(recipeMap.key);
+				value = Number(recipeMap.value);
+
+				map = new Map();
+				map.set(key1, value);
+
+				item.recipe.push(map);
+			}
+
+			//장비 데이터 파싱
+			if (item.isWeapon) {
+				equipment = new Equipment(null, null, null, null, false);
+
+				equipment.id = item.id;
+				equipment.name = item.name;
+				equipment.description = item.description;
+				equipment.handleLevel = item.handleLevel;
+				equipment.value = item.value;
+				equipment.isWeapon = true;
+				equipment.recipe = item.recipe;
+				equipment.eType = Number(itemData.eType);
+				equipment.limitLv = Number(itemData.limitLv);
+				equipment.maxReinforce = Number(itemData.maxReinforce);
+				equipment.nowReinforce = Number(itemData.nowReinforce);
+				equipment.lvDown = Number(itemData.lvDown);
+				equipment.stat = this.objToMap(itemData.stat);
+				equipment.limitStat = this.objToMap(itemData.limitStat);
+				equipment.type = this.objToMap(itemData.type);
+				equipment.reinforce = this.objToMap(itemData.reinforce);
+
+				VAR.items.set(equipment.id, equipment);
+			}
+
+			else
+				VAR.items.set(item.id, item);
+		}
+
+
+		//업적 데이터 파싱
+		var achieveDatas = this.getDB(ACHIEVEPATH);
+		var achieve;
+		for (var achieveData of achieveDatas) {
+			achieve = new Achieve(null, null, false);
+			achieve.id = Number(achieveData.id);
+			achieve.name = String(achieveData.name);
+			achieve.limitLv = Number(achieveData.limitLv);
+			achieve.rewardMoney = Number(achieveData.rewardMoney);
+			achieve.rewardExp = Number(achieveData.rewardExp);
+			achieve.rewardAdv = Number(achieveData.rewardAdv);
+			achieve.limitStat = this.objToMap(achieveData.limitStat);
+			achieve.limitCloseRate = this.objToMap(achieveData.limitCloseRate);
+			achieve.otherLimit = this.objToMap(achieveData.otherLimit);
+			achieve.rewardCloseRate = this.objToMap(achieveData.rewardCloseRate);
+			achieve.rewardItem = this.objToMap(achieveData.rewardItem);
+
+			VAR.achieves.set(achieve.id, achieve);
+		}
+
+
+		//연구 데이터 파싱
+		var researchDatas = this.getDB(RESEARCHPATH);
+		var research;
+		for (var researchData of researchDatas) {
+			research = new Research(null, null, false);
+			research.id = Number(researchData.id);
+			research.name = String(researchData.name);
+			research.needMoney = Number(researchData.needMoney);
+			research.limitLv = Number(researchData.limitLv);
+			research.rewardExp = Number(researchData.rewardExp);
+			research.needItem = this.objToMap(researchData.needItem);
+			research.rewardItem = this.objToMap(researchData.rewardStat);
+
+			VAR.researches.set(research.id, research);
+		}
+
+
+		//변수 데이터 파싱
+		var varData = this.getDB(VARPATH);
+		VAR.ddosTime = varData.ddosTime;
+		VAR.rooms = varData.rooms;
+		VAR.id = this.objToMap(varData.id);
+		VAR.spGive = varData.spGive;
+		VAR.expBoost = varData.expBoost;
+
+
+		Api.makeNoti("Data Loaded", String(this.time()), 4);
 	},
 
 	saveDB: function () {
@@ -42,7 +313,7 @@ const FUNC = {
 			playerData.lastTime = player.lastTime;
 			playerData.recentRoom = player.room;
 			playerData.coord = this.coordToObj(player.coord);
-			playerData.nowTitle = player.ntle;
+			playerData.nowTitle = player.nowTitle;
 			playerData.money = player.money;
 			playerData.lv = player.lv;
 			playerData.exp = player.exp;
@@ -127,12 +398,12 @@ const FUNC = {
 				obj.percent = chat.get("percent");
 				obj.minLv = chat.get("minLv");
 				obj.minCloseRate = chat.get("minCloseRate");
-				obj.minStat = chat.get("minStat");
-				obj.minQuest = chat.get("minQuest");
+				obj.minStat = this.mapToObj(chat.get("minStat"));
+				obj.minQuest = this.mapToObj(chat.get("minQuest"));
 				obj.maxLv = chat.get("maxLv");
 				obj.maxCloseRate = chat.get("maxCloseRate");
-				obj.maxStat = chat.get("maxStat");
-				obj.maxQuest = chat.get("maxQuest");
+				obj.maxStat = this.mapToObj(chat.get("maxStat"));
+				obj.maxQuest = this.mapToObj(chat.get("maxQuest"));
 
 				npcData.chat.push(obj);
 			}
@@ -295,10 +566,13 @@ const FUNC = {
 		varData.spGive = VAR.spGive;
 		varData.expBoost = VAR.expBoost;
 		this.setDB(VARPATH, JSON.stringify(varData, null, "\t"));
+
+
+		Api.makeNoti("Data Saved", String(this.time()), 5);
 	},
 
 	getDB: function (path) {
-		return DB.getDataBase(path);
+		return JSON.parse(DB.getDataBase(path));
 	},
 
 	setDB: function (path, data) {
@@ -500,6 +774,17 @@ const FUNC = {
 		obj.x = coord.x;
 		obj.y = coord.y;
 		return obj;
+	},
+
+	objToMap: function (obj) {
+		var map = new Map();
+		for (var element of arr)
+			map.set(element.key, element.value);
+		return map;
+	},
+
+	objToCoord: function (obj) {
+		return new Coordinate(obj.x, obj.y);
 	}
 };
 
