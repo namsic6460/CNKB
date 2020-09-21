@@ -284,6 +284,7 @@ Research: {
 	"totalExp": Number,		//총 경험치 = 0
 	"sp": Number,			//잔여 레벨 스탯 = 10
 	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
+	"ddosCheck": Number		//디도스(도배) 체크 - 채팅 간격 설정
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
 	"nowChat": Number		//챗 id(대답 대기용)
 	"achieve": List<Number>,						//업적 id = []
@@ -321,4 +322,5 @@ Research: {
 	handleAchieve()
 	handleBuff()
 	updateStat()
+	isDdos()
 }

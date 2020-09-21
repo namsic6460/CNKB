@@ -5,9 +5,59 @@ const Kakao = new kalingModule;
 Kakao.init('0cbf070cc46c70fe11cfe7b90cd93874');
 Kakao.login("", "");
 
+const Thread = java.lang.Thread;
+const DB = DataBase;
+
+const FILEPATH = "CNKB/";
+const PLAYERPATH = FILEPATH + "Player/";
+const VARPATH = FILEPATH + "Var/";
+const LOGPATH = FILEPATH + "Log/";
+
 const FUNC = {
 	loadDB: function () {
+		var playerDatas = new Array();
+		var playerData;
 
+		for (var player of VAR.players.values()) {
+			playerData = new Object();
+			playerData.id = player.id;
+			playerData.nickName = player.nickName;
+			playerData.name = player.name;
+			playerData.image = player.image;
+			playerData.lastTime = player.lastTime;
+			playerData.recentRoom = player.room;
+			playerData.coord = player.coord;
+			playerData.nowTitle = player.ntle;
+			playerData.money = player.money;
+			playerData.lv = player.lv;
+			playerData.exp = player.exp;
+			playerData.sp = player.sp;
+			playerData.adv = player.adv;
+			playerData.ddosCheck = player.ddosCheck;
+			playerData.doing = player.doing;
+			playerData.nowChat = player.nowChat;
+
+			playerData.achieve = new Map();
+			for (var achieve of player.achieve)
+
+
+				playerData.achieve = player.achieve;
+			playerData.research = player.research;
+			playerData.title = player.title;
+			playerData.job = player.job;
+			playerData.mainStat = player.mainStat;
+			playerData.resistStat = player.resistStat;
+			playerData.inventory = player.inventory;
+			playerData.equipped = player.equipped;
+			playerData.nowQuest = player.nowQuest;
+			playerData.clearedQuest = player.clearedQuest;
+			playerData.closeRate = player.closeRate;
+			playerData.log = player.log;
+			playerData.buff = player.buff;
+			playerData.type = player.type;
+
+			playerDatas.push(playerData);
+		}
 	},
 
 	saveDB: function () {
@@ -15,15 +65,15 @@ const FUNC = {
 	},
 
 	getDB: function (path) {
-
+		return DB.getDataBase(path);
 	},
 
-	setDB: function (path, data) {
-
+	setDB: function (data, path) {
+		DB.setDataBase(data, path);
 	},
 
 	saveLog: function () {
-
+		FUNC.setDB(VAR.log, LOGPATH + String(this.time()) + ".txt");
 	},
 
 	log: function (logData, logType) {
@@ -45,6 +95,13 @@ const FUNC = {
 			new Packages.java.io.FileInputStream("err");
 		} catch (e) {
 			VAR.log += " (" + String(e.rhinoException.getScriptStack()[1]) + ") - " + logData + "\n";
+		}
+
+		VAR.logCount++;
+		if (VAR.logCount >= 100) {
+			this.saveLog();
+			Api.makeNoti("Log Saved", String(this.time()), 2);
+			VAR.log = "";
 		}
 	},
 
@@ -101,11 +158,10 @@ const FUNC = {
 		ignore = typeof ignore !== "undefined" ? ignore : true;
 		setZero = typeof setZero !== "undefined" ? setZero : false;
 
-		var iterator = original.entries();
-		var value, compare, compareValue;
+		for (var [k, v] of original) {
+			compareValue = comparing.get(k);
 
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (!comparing.has(value[0])) {
+			if (typeof compareValue === "undefined") {
 				if (!ignore) {
 					if (!setZero)
 						return false;
@@ -117,12 +173,9 @@ const FUNC = {
 					continue;
 			}
 
-			else
-				compareValue = comparing.get(value[0]);
-
-			if (value[1] > compareValue)
+			if (v > compareValue)
 				compare = ENUM.CHECKING.small;
-			else if (value[1] < compareValue)
+			else if (v < compareValue)
 				compare = ENUM.CHECKING.big;
 			else
 				continue;
@@ -138,7 +191,6 @@ const FUNC = {
 		var temp = this.checkNaN(playerId, 1, VAR.players.size);
 
 		if (temp !== null) {
-
 			var player = VAR.players.get(temp);
 			var str = player.getFullName() + "\n" + text;
 			if (typeof more !== "undefined")
@@ -160,8 +212,8 @@ const FUNC = {
 		if (typeof more !== "undefined")
 			str += VAR.all + "----------\n" + more;
 
-		for (var s of VAR.rooms)
-			Api.replyRoom(s, str.trim(), true);
+		for (var r of VAR.rooms)
+			Api.replyRoom(r, str.trim(), true);
 	},
 
 	time: function () {
@@ -169,11 +221,11 @@ const FUNC = {
 	},
 
 	sleep: function (millis) {
-		java.lang.Thread.sleep(millis);
+		Thread.sleep(millis);
 	},
 
 	formatImage: function (ImageDB) {
-		return Number(String(ImageDB.getProfildImage()).hashcode());
+		return Number(String(ImageDB.getProfileImage()).hashcode());
 	},
 
 	findValue: function (array, value) {
@@ -187,15 +239,27 @@ const FUNC = {
 
 	findPlayer: function (sender, ImageDB) {
 		var image = this.formatImage(ImageDB);
-		var iterator = VAR.players.entries();
-		var value;
 
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (value.sender === sender && value.image === image)
-				return value;
+		for (var player of VAR.players.values()) {
+			if (player.sender === sender && player.image === image)
+				return player;
 		}
 
 		return undefined;
+	},
+
+	mapToObj: function (map) {
+		var arr = new Array();
+		var obj;
+
+		for (var [k, v] of map) {
+			obj = new Object();
+			obj.key = k;
+			obj.value = v;
+			arr.push(obj);
+		}
+
+		return arr;
 	}
 };
 
@@ -338,6 +402,9 @@ const ENUM = {
 
 const VAR = {
 	"log": "",
+	"logCount": 0,
+	"msgCount": 0,
+	"ddosTime": 1000,
 	"rooms": new Array(),
 	"players": new Map(),
 	"chats": new Map(),
@@ -648,30 +715,24 @@ function Npc(name, npc) {
 			var player = VAR.players.get(temp1);
 			var closeRate = player.getCloseRate(this.id);
 			var jobLv = this.getJob(temp2);
+			var value;
 
-			var iterator1, iterator2, iterator3;
-			var value1, value2, value3, value;
+			for (var [k1, v1] of map) {
+				if (k1 <= jobLv) {
+					for (var [k2, v2] of v1) {
+						if (k2 <= closeRate) {
+							for (var [k3, v3] of v2) {
+								value = output.get(k3);
 
-			iterator1 = map.entries();
-
-			while (typeof (value1 = iterator1.next().value) !== "undefined") {
-				if (value1[0] <= jobLv) {
-					iterator2 = value1[1].entries();
-
-					while (typeof (value2 = iterator2.next().value) !== "undefined") {
-						if (value2[0] <= closeRate) {
-							itreator3 = value2[1].entries();
-
-							while (typeof (value3 = iterator3.next().value) !== "undefined") {
 								if (typeof value === "undefined") {
-									if (value3[1] !== -1)
-										output.set(value3[0], value3[1]);
+									if (v3 !== -1)
+										output.set(k3, v3);
 									else
-										output.set(value3[0], VAR.max);
+										output.set(k3, VAR.max);
 								}
 
 								else if (value < VAR.max)
-									output.set(value3[0], value + value3[1]);
+									output.set(k3, value + v3);
 							}
 						}
 					}
@@ -2119,6 +2180,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		this.totalExp = 0;
 		this.sp = 10;
 		this.adv = 0;
+		this.ddosCheck = 0;
 		this.doing = ENUM.DOING.none;
 		this.nowChat = 0;
 		this.achieve = new Array();
@@ -2152,7 +2214,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		this.nickName = player.nickName;
 		this.name = player.name;
 		this.image = player.image;
-		this.lastTime = player.FUNC.time();
+		this.lastTime = FUNC.time();
 		this.recentRoom = player.room;
 		this.coord = player.coord;
 		this.nowTitle = player.ntle;
@@ -2161,6 +2223,7 @@ function Player(nickName, name, ImageDB, room, player) {
 		this.exp = player.exp;
 		this.sp = player.sp;
 		this.adv = player.adv;
+		this.ddosCheck = player.ddosCheck;
 		this.doing = player.doing;
 		this.nowChat = player.nowChat;
 		this.achieve = player.achieve;
@@ -2216,11 +2279,16 @@ function Player(nickName, name, ImageDB, room, player) {
 		else
 			text += "대화가 종료되었습니다";
 
-		var value;
-		var iterator = chat.item.entries();
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (this.getInventory(value[0]) < (-1 * value[1])) {
+		for (var [k, v] of chat.item) {
+			if (this.getInventory(k) < (-1 * v)) {
 				FUNC.reply(this.id, "보유 아이템이 부족하여 대화가 중지됩니다");
+				return;
+			}
+		}
+
+		for (var [k, v] of chat.stat) {
+			if (this.getStat(k) < (-1 * v)) {
+				FUNC.reply(this.id, "스텟이 부족하여 대화가 중지됩니다");
 				return;
 			}
 		}
@@ -2240,22 +2308,6 @@ function Player(nickName, name, ImageDB, room, player) {
 			more += "퀘스트 추가 완료\n";
 		}
 
-		iterator = chat.stat.entries();
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (this.getStat(value[0]) < (-1 * value[1])) {
-				FUNC.reply(this.id, "스텟이 부족하여 대화가 중지됩니다");
-				return;
-			}
-		}
-
-		iterator = chat.item.entries();
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (this.getInventory(value[0]) < (-1 * value[1])) {
-				FUNC.reply(this.id, "아이템이 부족하여 대화가 중지됩니다");
-				return;
-			}
-		}
-
 		if (chat.money !== 0) {
 			this.addMoney(chat.money);
 			more += "돈 추가 완료\n";
@@ -2267,17 +2319,15 @@ function Player(nickName, name, ImageDB, room, player) {
 		}
 
 		if (chat.stat.size > 0) {
-			iterator = chat.stat.entries();
-			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addMainStat(ENUM.STAT1.actStat, value[0], value[1]);
+			for (var [k, v] of chat.stat)
+				this.addMainStat(ENUM.STAT1.actStat, k, v);
 
 			more += "스텟 설정 완료\n";
 		}
 
 		if (chat.item.size > 0) {
-			iterator = chat.item.entries();
-			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addInventory(value[0], value[1]);
+			for (var [k, v] of chat.item)
+				this.addInventory(k, v);
 
 			more += "아이템 설정 완료";
 		}
@@ -2496,26 +2546,17 @@ function Player(nickName, name, ImageDB, room, player) {
 			this.addExp((-1 * quest.needExp) + quest.rewardExp);
 			this.addAdv((-1 * quest.needAdv) + quest.rewardAdv);
 
-			var iterator = quest.needItem.entries();
-			var value;
-			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addInventory(value[0], -1 * value[1]);
+			for (var [k, v] of quest.needItem)
+				this.addInventory(k, -1 * v);
+			for (var [k, v] of quest.needStat)
+				this.addMainStat(ENUM.STAT1.actStat, k, -1 * v);
 
-			iterator = quest.needStat.entries();
-			while (typeof (value = iterator.next()) !== "undefined")
-				this.addMainStat(ENUM.STAT1.actStat, value[0], -1 * value[1]);
-
-			iterator = quest.rewardItem.entries();
-			while (typeof (value = iterator.next()) !== "undefined")
-				this.addInventory(value[0], value[1]);
-
-			iterator = quest.rewardStat.entries();
-			while (typeof (value = iterator.next()) !== "undefined")
-				this.addStat(ENUM.STAT1.actStat, value[0], value[1]);
-
-			iterator = quest.rewardCloseRate.entries();
-			while (typeof (value = iterator.next()) !== "undefined")
-				this.addCloseRate(value[0], value[1]);
+			for (var [k, v] of quest.rewardItem)
+				this.addInventory(k, v);
+			for (var [k, v] of quest.rewardStat)
+				this.addMainStat(ENUM.STAT1.actStat, k, v);
+			for (var [k, v] of quest.rewardCloseRate)
+				this.addCloseRate(k, v);
 
 			FUNC.removeValue(this.nowQuest, temp);
 			this.addLog(ENUM.LOGDATA.questCleared, 1);
@@ -2550,23 +2591,16 @@ function Player(nickName, name, ImageDB, room, player) {
 			var equipment = this.getInventory(temp);
 			var equipped = this.getEqiupped(equipment.eType);
 
-			var iterator = equipment.stat.entries();
-			var value;
-			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addMainStat(ENUM.STAT1.equipStat, value[0], value[1]);
-
-			iterator = equipment.type.entries();
-			while (typeof (value = iterator.next().value) !== "undefined")
-				this.addType(value[0], value[1]);
+			for (var [k, v] of equipment.stat)
+				this.addMainStat(ENUM.STAT1.equipStat, k, v);
+			for (var [k, v] of equipment.type)
+				this.addType(k, v);
 
 			if (typeof equipped !== "undefined") {
-				iterator = equipped.stat.entries();
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addMainStat(ENUM.STAT1.equipStat, value[0], -1 * value[1]);
-
-				iterator = equipped.type.entries();
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addType(value[0], -1 * value[1]);
+				for (var [k, v] of equipped.stat)
+					this.addMainStat(ENUM.STAT1.equipStat, k, -1 * v);
+				for (var [k, v] of equipped.type)
+					this.addType(k, -1 * v);
 			}
 
 			this.setEquipped(equipment.eType, temp, true);
@@ -2587,37 +2621,41 @@ function Player(nickName, name, ImageDB, room, player) {
 	}
 
 	this.handleAchieve = function () {
-		var iterator = VAR.achieves.values();
-		var value;
-
-		while (typeof (value = iterator.next().value) !== "undefined") {
-			if (achieve.includes(value.id))
+		for (var achieve of VAR.achieves.values()) {
+			if (this.achieve.includes(achieve.id))
 				continue;
-
-			if (this.canAddAchieve(value.id))
-				this.addAchieve(achieveId.id);
+			if (this.canAddAchieve(achieve.id))
+				this.addAchieve(achieve.id);
 		}
 	}
 
 	this.handleBuff = function () {
 		var time = FUNC.time();
-		var iterator1 = this.buff.entries();
-		var iterator2;
-		var value1, value2, stat2;
+		var stat2;
 
-		while (typeof (value1 = iterator1.next().value) !== "undefined") {
-			stat2 = value1[0];
+		for (var [k1, v1] of this.buff) {
+			stat2 = k1;
 
-			while (typeof (value2 = iterator2.next().value) !== "undefined") {
-				if (value2[0] < time) {
-					this.addMainStat(ENUM.STAT1.buffStat, stat2, -1 * value2[1]);
-					this.buff.delete(value2[0]);
+			for (var [k2, v2] of v1) {
+				if (k2 < time) {
+					this.addMainStat(ENUM.STAT1.buffStat, stat2, -1 * v2);
+					this.buff.delete(k2);
 				}
 			}
 
-			if (this.buff.value1[0].size === 0)
-				this.buff.delete(value1[0]);
+			if (this.buff.get(k1).size === 0)
+				this.buff.delete(k1);
 		}
+	}
+
+	this.isDdos = function () {
+		var time = FUNC.time();
+
+		if (time - this.ddosCheck < VAR.ddosTime)
+			return true;
+
+		this.ddosCheck = time;
+		return false;
 	}
 
 	this.updateStat = function () {
@@ -2693,13 +2731,22 @@ function Player(nickName, name, ImageDB, room, player) {
 		var output = 0;
 
 		if (temp1 !== null && temp2 !== null && temp3 !== null && this.buff.has(temp1)) {
-			var iterator = this.buff.get(temp1).entries();
-			var value;
-
-			while (typeof (value = iterator.next().value) !== "undefined") {
-				if (value[0] >= temp1 && value[0] <= temp2)
-					output += value[1];
+			var map = this.buff.get(temp1);
+			for (var [k, v] of map) {
+				if (k >= temp1 && k <= temp2)
+					output += v;
 			}
+		}
+
+		return output;
+	}
+	this.getBuffs = function (stat2Enum) {
+		var temp = FUNC.checkNaN(stat2Enum);
+		var output = 0;
+
+		if (temp !== null) {
+			for (var stat of this.buff.get(temp1).values())
+				output += stat;
 		}
 
 		return output;
@@ -3058,14 +3105,10 @@ function Player(nickName, name, ImageDB, room, player) {
 				this.addExp(achieve.rewardExp);
 				this.addAdv(achieve.rewardAdv);
 
-				var iterator = achieve.rewardCloseRate.entries();
-				var value;
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addCloseRate(value[0], value[1]);
-
-				iterator = achieve.rewardItem.entries();
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addInventory(value[0], value[1]);
+				for (var [k, v] of achieve.rewardCloseRate)
+					this.addCloseRate(k, v);
+				for (var [k, v] of achieve.rewardItem)
+					this.addInventory(k, v);
 
 				this.achieve.push(temp);
 
@@ -3086,14 +3129,11 @@ function Player(nickName, name, ImageDB, room, player) {
 				this.addMoney(-1 * research.needMoney);
 				this.addExp(research.rewardExp);
 
-				var iterator = research.needItem.entries();
-				var value;
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addInventory(value[0], -1 * value[1]);
+				for (var [k, v] of research.needItem)
+					this.addInventory(k, -1 * v);
 
-				iterator = research.rewardStat.entries();
-				while (typeof (value = iterator.next().value) !== "undefined")
-					this.addMainStat(ENUM.STAT1.actStat, value[0], value[1]);
+				for (var [k, v] of research.rewardStat)
+					this.addMainStat(ENUM.STAT1.actStat, k, v);
 
 				this.research.push(temp);
 
@@ -3250,7 +3290,8 @@ function Player(nickName, name, ImageDB, room, player) {
 var evalNumber = 0;
 var evalError = 0;
 var evalTime;
-function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
+var evalRoom;
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName) {
 	try {
 		if (typeof FUNC.findValue(VAR.rooms, room) === "undefined")
 			this.rooms.push(room);
@@ -3262,6 +3303,11 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 				nonPlayerFunc(msg);
 
 			else {
+				if (player.isDdos()) {
+					replier.reply("채팅의 간격은 최소 " + VAR.ddosTime + "ms 이어야 합니다");
+					return;
+				}
+
 				player.addLog(ENUM.LOGDATA.chat, 1);
 				if (msg === "이모티콘을 보냈습니다.")
 					player.addLog(ENUM.LOGDATA.emoteSent, 1);
@@ -3276,6 +3322,12 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 					player.setLastTime(time);
 					player.setRecentRoom(room);
 				}
+
+				VAR.msgCount++;
+				if (msgCount >= 100) {
+					Api.makeNoti("Data Saved", String(this.time()), 3);
+					FUNC.saveDB();
+				}
 			}
 		}
 
@@ -3286,6 +3338,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 				if (split[1] === "start") {
 					evalNumber = FUNC.random(100000, 999999);
 					evalTime = FUNC.time();
+					evalRoom = room;
 
 					Api.makeNoti("Eval Number", String(evalNumber), 1);
 				}
@@ -3305,6 +3358,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 					else {
 						if (split[2] === String(evalNumber)) {
 							evalTime = FUNC.time();
+							evalRoom = room;
 							eval(msg.substr(18));
 						}
 
@@ -3340,12 +3394,4 @@ function playerFunc(msg) {
 
 function onStartCompile() {
 	FUNC.loadDB();
-}
-function onCreate(savedInstanceState, activity) { }
-function onResume(activity) { }
-function onPause(activity) {
-	FUNC.saveDB();
-}
-function onStop(activity) {
-	FUNC.saveDB();
 }
