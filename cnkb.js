@@ -26,7 +26,7 @@ const FUNC = {
 		var map;
 
 		//플레이어 데이터 파싱
-		var playerDatas = this.getDB(PLAYERPATH);
+		var playerDatas = JSON.parse(this.getDB(PLAYERPATH));
 		var player;
 		for (var playerData of playerDatas) {
 			player = new Player(null, null, null, null, null, false);
@@ -90,7 +90,7 @@ const FUNC = {
 
 
 		//채팅 데이터 파싱
-		var chatDatas = this.getDB(CHATPATH);
+		var chatDatas = JSON.parse(this.getDB(CHATPATH));
 		var chat;
 		for (var chatData of chatDatas) {
 			chat = new Chat(null, false);
@@ -110,7 +110,7 @@ const FUNC = {
 
 
 		//엔피시 데이터 파싱
-		var npcDatas = this.getDB(NPCPATH);
+		var npcDatas = JSON.parse(this.getDB(NPCPATH));
 		var npc;
 		for (var npcData of npcDatas) {
 			npc = new Npc(null, null, false);
@@ -164,7 +164,7 @@ const FUNC = {
 
 
 		//퀘스트 데이터 파싱
-		var questDatas = this.getDB(QUESTPATH);
+		var questDatas = JSON.parse(this.getDB(QUESTPATH));
 		var quest;
 		for (var questData of questDatas) {
 			quest = new Quest(null, null, false);
@@ -194,7 +194,7 @@ const FUNC = {
 
 
 		//아이템 데이터 파싱
-		var itemDatas = this.getDB(ITEMPATH);
+		var itemDatas = JSON.parse(this.getDB(ITEMPATH));
 		var item, equipment;
 		for (var itemData of itemDatas) {
 			item = new Item(null, null, false);
@@ -246,7 +246,7 @@ const FUNC = {
 
 
 		//업적 데이터 파싱
-		var achieveDatas = this.getDB(ACHIEVEPATH);
+		var achieveDatas = JSON.parse(this.getDB(ACHIEVEPATH));
 		var achieve;
 		for (var achieveData of achieveDatas) {
 			achieve = new Achieve(null, null, false);
@@ -267,7 +267,7 @@ const FUNC = {
 
 
 		//연구 데이터 파싱
-		var researchDatas = this.getDB(RESEARCHPATH);
+		var researchDatas = JSON.parse(this.getDB(RESEARCHPATH));
 		var research;
 		for (var researchData of researchDatas) {
 			research = new Research(null, null, false);
@@ -284,7 +284,7 @@ const FUNC = {
 
 
 		//변수 데이터 파싱
-		var varData = this.getDB(VARPATH);
+		var varData = JSON.parse(this.getDB(VARPATH));
 		VAR.ddosTime = varData.ddosTime;
 		VAR.rooms = varData.rooms;
 		VAR.id = this.objToMap(varData.id);
@@ -572,7 +572,7 @@ const FUNC = {
 	},
 
 	getDB: function (path) {
-		return JSON.parse(DB.getDataBase(path));
+		return DB.getDataBase(path);
 	},
 
 	setDB: function (path, data) {
@@ -1771,7 +1771,7 @@ function Quest(name, quest, isNew) {
 	}
 	this.addMaxLimitLv = function (lv) {
 		var temp = FUNC.checkNaN(lv);
-		if (temp !== null) this.maxLimitLv(value);
+		if (temp !== null) this.setMaxLimitLv(value);
 	}
 	this.addNeedMoney = function (money) {
 		var temp = FUNC.checkNaN(money);
