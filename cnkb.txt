@@ -155,10 +155,11 @@ VAR: {
 	//-----------------------------------------------
 }
 
-Lv : 1~999
-JobLv : 1~100
-CloseRate : 0~10000
+lv : 1~999
+jobLv : 1~100
+closeRate : 0~10000
 handleLevel : 1~10
+typeLf : 0~5
 
 "Chat": {
 	"id": Number,								//인식 정보
@@ -306,7 +307,8 @@ Research: {
 	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"ddosCheck": Number		//디도스(도배) 체크 - 채팅 간격 설정
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
-	"nowChat": Number		//챗 id(대답 대기용)
+	"nowChat": Number,		//챗 id(대답 대기용)
+	"canCommand": Boolean,	//명령어를 실행할 지 여부 결정
 	"achieve": List<Number>,						//업적 id = []
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []

@@ -17,6 +17,7 @@ const ITEMPATH = FOLPATH + "items.json";
 const ACHIEVEPATH = FOLPATH + "achieves.json";
 const RESEARCHPATH = FOLPATH + "researches.json";
 const VARPATH = FOLPATH + "vars.json";
+const MAPPATH = FOLPATH + "map.json";
 const LOGPATH = FOLPATH + "Log/";
 
 const FUNC = {
@@ -29,6 +30,7 @@ const FUNC = {
 		var playerDatas = JSON.parse(this.getDB(PLAYERPATH));
 		if (playerDatas !== null) {
 			var player;
+
 			for (var playerData of playerDatas) {
 				player = new Player(null, null, null, null, null, false);
 				player.id = Number(playerData.id);
@@ -95,6 +97,7 @@ const FUNC = {
 		var chatDatas = JSON.parse(this.getDB(CHATPATH));
 		if (chatDatas !== null) {
 			var chat;
+
 			for (var chatData of chatDatas) {
 				chat = new Chat(null, false);
 				chat.id = Number(chatData.id);
@@ -117,6 +120,7 @@ const FUNC = {
 		var npcDatas = JSON.parse(this.getDB(NPCPATH));
 		if (npcDatas !== null) {
 			var npc;
+
 			for (var npcData of npcDatas) {
 				npc = new Npc(null, null, false);
 				npc.id = Number(npcData.id);
@@ -173,6 +177,7 @@ const FUNC = {
 		var questDatas = JSON.parse(this.getDB(QUESTPATH));
 		if (questDatas !== null) {
 			var quest;
+
 			for (var questData of questDatas) {
 				quest = new Quest(null, null, false);
 				quest.id = Number(questData.id);
@@ -205,6 +210,7 @@ const FUNC = {
 		var itemDatas = JSON.parse(this.getDB(ITEMPATH));
 		if (itemDatas !== null) {
 			var item, equipment;
+
 			for (var itemData of itemDatas) {
 				item = new Item(null, null, false);
 				item.id = Number(itemData.id);
@@ -258,6 +264,7 @@ const FUNC = {
 		var achieveDatas = JSON.parse(this.getDB(ACHIEVEPATH));
 		if (achieveDatas !== null) {
 			var achieve;
+
 			for (var achieveData of achieveDatas) {
 				achieve = new Achieve(null, null, false);
 				achieve.id = Number(achieveData.id);
@@ -281,6 +288,7 @@ const FUNC = {
 		var researchDatas = JSON.parse(this.getDB(RESEARCHPATH));
 		if (researchDatas !== null) {
 			var research;
+
 			for (var researchData of researchDatas) {
 				research = new Research(null, null, false);
 				research.id = Number(researchData.id);
@@ -306,7 +314,47 @@ const FUNC = {
 		}
 
 
-		Api.makeNoti("Data Loaded", String(this.time()), 4);
+		//맵 데이터 파싱
+		var mapData = JSON.parse(this.getDB(RESEARCHPATH));
+		if (mapData !== null) {
+			var map;
+
+			for (var yMap of mapData) {
+				var y = Number(yMap.y);
+				MAP.map.set(yield, new Map());
+
+				for (var xMap of yMap.value) {
+					var x = Number(xMap.x);
+
+					Map.map.get(y).set(x, new Map());
+					Map.map.get(y).get(x).set("name", String(xMap.value.name));
+					Map.map.get(y).get(x).set("difficulty", Number(xMap.value.difficulty));
+				}
+			}
+		}
+
+
+
+		var mapData = new Array();
+
+		for (var y = 0; y < MAP.yLimit; y++) {
+			obj1 = new Object();
+
+			obj1.y = y;
+			obj1.value = new Object();
+
+			for (var x = 0; x < MAP.xLimit; x++) {
+				obj1.value.x = x;
+				obj1.value.value = new Object();
+				obj1.value.value.name = MAP.map.get(y).get(x).get("name");
+				obj1.value.value.difficulty = MAP.map.get(y).get(x).get("difficulty");
+			}
+
+			mapData.push(obj1);
+		}
+
+
+		Api.makeNoti("Data Loaded", new Date(), 4);
 	},
 
 	saveDB: function () {
@@ -574,6 +622,7 @@ const FUNC = {
 
 		//변수 데이터 저장
 		var varData = new Object();
+		varData.lastSaveTime = new Date().toString();
 		varData.ddosTime = VAR.ddosTime;
 		varData.rooms = VAR.rooms;
 		varData.id = this.mapToObj(VAR.id);
@@ -582,7 +631,28 @@ const FUNC = {
 		this.setDB(VARPATH, JSON.stringify(varData, null, "\t"));
 
 
-		Api.makeNoti("Data Saved", String(this.time()), 5);
+		//맵 데이터 저장
+		var mapData = new Array();
+
+		for (var y = 0; y < MAP.yLimit; y++) {
+			obj1 = new Object();
+
+			obj1.y = y;
+			obj1.value = new Object();
+
+			for (var x = 0; x < MAP.xLimit; x++) {
+				obj1.value.x = x;
+				obj1.value.value = new Object();
+				obj1.value.value.name = MAP.map.get(y).get(x).get("name");
+				obj1.value.value.difficulty = MAP.map.get(y).get(x).get("difficulty");
+			}
+
+			mapData.push(obj1);
+		}
+		this.setDB(MAPPATH, JSON.stringify(mapData, null, "\t"));
+
+
+		Api.makeNoti("Data Saved", new Date(), 3);
 	},
 
 	getDB: function (path) {
@@ -621,7 +691,7 @@ const FUNC = {
 		VAR.logCount++;
 		if (VAR.logCount >= 100) {
 			this.saveLog();
-			Api.makeNoti("Log Saved", String(this.time()), 2);
+			Api.makeNoti("Log Saved", new Date(), 2);
 			VAR.log = "";
 		}
 	},
@@ -715,7 +785,7 @@ const FUNC = {
 			var player = VAR.players.get(temp);
 			var str = player.getFullName() + "\n" + text;
 			if (typeof more !== "undefined")
-				str += VAR.all + "----------\n" + more;
+				str += VAR.all + more;
 
 			Api.replyRoom(player.recentRoom, str.trim(), true);
 		}
@@ -724,17 +794,23 @@ const FUNC = {
 	system: function (room, text, more) {
 		var str = text;
 		if (typeof more !== "undefined")
-			str += VAR.all + "----------\n" + more;
+			str += VAR.all + more;
 		Api.replyRoom(room, str.trim(), true);
 	},
 
 	systemAll: function (text, more) {
 		var str = text;
 		if (typeof more !== "undefined")
-			str += VAR.all + "----------\n" + more;
+			str += VAR.all + more;
 
-		for (var r of VAR.rooms)
-			Api.replyRoom(r, str.trim(), true);
+		var deleteList = new Array();
+		for (var r of VAR.rooms) {
+			if (!Api.replyRoom(r, str.trim(), true))
+				deleteList.push(r);
+		}
+
+		for (var r of deleteList)
+			this.removeValue(VAR.rooms, r);
 	},
 
 	time: function () {
@@ -799,6 +875,27 @@ const FUNC = {
 
 	objToCoord: function (obj) {
 		return new Coordinate(obj.x, obj.y);
+	},
+
+	//실제 게임 구현부
+
+	showCommands: function (room) {
+		var str = "\"/\" 는 \"또는\"을 의미하고 \"{}\" 는 옵션을 의미하며\n명령어는 다음과 같습니다" + VAR.all +
+			"(..가입/..회원가입) [닉네임] - 회원가입\n" +
+			"(..명령어 / ..도움말 / ..help / ..h) - 명령어 목록 표시\n" +
+			"(..내정보 / ..me / ..정보확인 / ..info / ..i) {닉네임} - 플레이어 정보 확인\n" +
+			"(..이동 / ..move / ..m) [장소명] - 해당 장소까지의 최단 거리(육상 & 해상 & 안전육상 & 안전해상)\n" +
+			"(..이동 / ..move / ..m) [장소명] ((해상 / sea / s) / (육상 / ground / g)) {안전 / safe / s} - 해당 장소로 이동\n" +
+			"(..이동 / ..move / ..m) ((동 / east / e) / (서 / west / w) / (남 / south / s) / (북 / north / n)) - 선택한 방향으로 이동\n" +
+			"(..행동 / ..do / ..d) - 해당 장소에서 할 수 있는 주요 행동 실행(ex - 광질/낚시/벌목 등)\n" +
+			"(..사냥 / ..hunt / ..h) - <사냥지역> 사냥 시작\n" +
+			"(..탐험 / ..explore / ..e) - <필드> 필드 탐험 시작\n" +
+			"(..건물 / ..building / ..b) [건물명] - 입장 가능한 오브젝트가 있을 경우, 입장\n" +
+			"(..지역 / ..region / ..r) - 현재 위치의 지역 정보를 표시\n" +
+			"(..대화 / ..talk / ..t) [npc이름] - 현재 위치에 해당 엔피시가 있을 경우, 대화\n\n" +
+			"--- 그 외 명령어들은 상황에 따라 표시됩니다 ---";
+
+		Api.replyRoom(room, str, true);
 	}
 };
 
@@ -886,6 +983,7 @@ const ENUM = {
 		"archer": 11,			//궁수
 		"priest": 12,			//성직자
 		"dark_priest": 13,		//암흑 성직자
+		"max": 13
 	},
 	"WAIT_RESPONSE": {
 		"nothing": 0,			//대답 없음
@@ -953,11 +1051,17 @@ const VAR = {
 	"achieves": new Map(),
 	"researches": new Map(),
 	"id": new Map(),
-	"all": "\n\n" + ("\u200b".repeat(500)),
+	"all": "\n(자세한 내용은 전체보기를 확인해주세요)\n--------------------\n" + ("\u200b".repeat(500)),
 	"max": 999999999,
 	"spGive": 5,
 	"expBoost": 1
 };
+
+const MAP = {
+	"xLimit": 10,
+	"yLimit": 10,
+	"map": new Map()
+}
 
 function Coordinate(x, y) {
 
@@ -3317,6 +3421,10 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		var temp = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 		if (temp !== null) this.nowChat = temp;
 	}
+	this.setCanCommand = function (canCommand) {
+		var temp = FUNC.checkType(Boolean, canCommand);
+		if (temp !== null) this.canCommand = temp;
+	}
 	this.setJob = function (jobEnum, jobLv, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
 		var temp1 = FUNC.checkNaN(jobEnum);
@@ -3787,6 +3895,7 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.ddosCheck = 0;
 			this.doing = ENUM.DOING.none;
 			this.nowChat = 0;
+			this.canCommand = false;
 			this.achieve = new Array();
 			this.research = new Array();
 			this.title = new Array();
@@ -3802,10 +3911,58 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.type = new Map();
 			this.buff = new Map();
 
-			//TODO : 스텟 관련 초기화
+
+			//스텟 init
+			this.mainStat.set(ENUM.STAT1.actStat, new Map());
+			this.mainStat.set(ENUM.STAT1.basicStat, new Map());
+			this.mainStat.set(ENUM.STAT1.buffStat, new Map());
+			this.mainStat.set(ENUM.STAT1.equipStat, new Map());
+			this.mainStat.set(ENUM.STAT1.increStat, new Map());
+			this.mainStat.set(ENUM.STAT1.levelStat, new Map());
+			this.mainStat.set(ENUM.STAT1.quickStat, new Map());
+			this.mainStat.set(ENUM.STAT1.totalStat, new Map());
+
+			for (var i = 0; i <= ENUM.STAT2.max; i++) {
+				this.mainStat.get(ENUM.STAT1.actStat).set(i, 0);
+				this.mainStat.get(ENUM.STAT1.buffStat).set(i, 0);
+				this.mainStat.get(ENUM.STAT1.equipStat).set(i, 0);
+				this.mainStat.get(ENUM.STAT1.levelStat).set(i, 0);
+				this.mainStat.get(ENUM.STAT1.quickStat).set(i, 0);
+			}
+
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.acc, 5);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.atk, 1);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.bre, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.cd, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.def, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.dra, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eg, 100);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eva, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.hp, 10);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.matk, 1);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxeg, 100);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxhp, 10);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxmn, 100);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mbre, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdef, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdra, 0);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mn, 100);
+			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.spd, 100);
+
+			this.updateStat();
+
+			this.title.push("뉴비");
+			this.nowTitle = "뉴비";
+
+			for (var i = 0; i <= ENUM.JOB.max; i++)
+				this.job.set(i, 1);
+
+			for (var i = 0; i <= ENUM.TYPE.max; i++) {
+				this.type.set(i, 0);
+				this.resistStat.set(i, 0);
+			}
 
 			this.setLog(ENUM.LOGDATA.createdTime, FUNC.time());
-
 			FUNC.log("Created New Player - (id : " + this.id + ", name : " + this.name + ")");
 		}
 
@@ -3832,6 +3989,7 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.ddosCheck = player.ddosCheck;
 			this.doing = player.doing;
 			this.nowChat = player.nowChat;
+			this.canCommand = player.canCommand;
 			this.achieve = player.achieve;
 			this.research = player.research;
 			this.title = player.title;
@@ -3858,48 +4016,16 @@ var evalNumber = 0;
 var evalError = 0;
 var evalTime;
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName) {
+	if (!room.includes("[CNKB]"))
+		return;
+
 	msg = msg.trim();
 
 	try {
 		if (typeof FUNC.findValue(VAR.rooms, room) === "undefined")
 			VAR.rooms.push(room);
 
-		if (msg.startsWith("..")) {
-			var player = FUNC.findPlayer(sender, ImageDB);
-
-			if (typeof player === "undefined")
-				nonPlayerFunc(msg);
-
-			else {
-				if (player.isDdos()) {
-					replier.reply("채팅의 간격은 최소 " + VAR.ddosTime + "ms 이어야 합니다");
-					return;
-				}
-
-				player.addLog(ENUM.LOGDATA.chat, 1);
-				if (msg === "이모티콘을 보냈습니다.")
-					player.addLog(ENUM.LOGDATA.emoteSent, 1);
-
-				if (playerFunc(msg)) {
-					var time = new Date();
-					var lastTime = new Date(player.lastTime);
-
-					if (time.getDate() !== lastTime.getDate())
-						player.addLog(ENUM.LOGDATA.playedDay, 1);
-
-					player.setLastTime(time);
-					player.setRecentRoom(room);
-
-					VAR.msgCount++;
-					if (msgCount >= 100) {
-						Api.makeNoti("Data Saved", String(this.time()), 3);
-						FUNC.saveDB();
-					}
-				}
-			}
-		}
-
-		else if (msg.startsWith("neval ")) {
+		if (msg.startsWith("neval ")) {
 			var split = msg.split(" ");
 
 			if (split[1] === "start") {
@@ -3918,7 +4044,7 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
 				if (evalNumber === 0)
 					replier.reply("Eval Number를 생성해주십시오");
 
-				else if (evalTime > FUNC.time() + 300000) {
+				else if (FUNC.time() > evalTime + (1000 * 60 * 5)) {
 					evalNumber = 0;
 					replier.reply("Eval Number는 이미 만료되었습니다");
 				}
@@ -3944,16 +4070,94 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName)
 				}
 			}
 		}
+
+		else {
+			var player = FUNC.findPlayer(sender, ImageDB);
+
+			if (typeof player === "undefined")
+				nonPlayerFunc(room, msg, sender, replier, ImageDB);
+
+			else {
+				if (msg === "이모티콘을 보냈습니다.") {
+					player.addLog(ENUM.LOGDATA.emoteSent, 1);
+					return;
+				}
+
+				else if (player.isDdos()) {
+					replier.reply("채팅의 간격은 최소 " + VAR.ddosTime + "ms 이어야 합니다");
+					return;
+				}
+
+				player.addLog(ENUM.LOGDATA.chat, 1);
+
+				if (playerFunc(player, msg, sender, replier)) {
+					var time = new Date();
+					var lastTime = new Date(player.lastTime);
+
+					if (time.getDate() !== lastTime.getDate())
+						player.addLog(ENUM.LOGDATA.playedDay, 1);
+
+					player.setLastTime(time);
+					player.setRecentRoom(room);
+
+					VAR.msgCount++;
+					if (msgCount >= 100)
+						FUNC.saveDB();
+				}
+			}
+		}
 	} catch (e) {
 		FUNC.log("<RUNTIME> - " + e, ENUM.LOG.error);
+		replier.reply("런타임 에러 - " + e);
 	}
 }
 
-function nonPlayerFunc(msg) {
+function nonPlayerFunc(room, msg, sender, replier, ImageDB) {
+	var split = msg.split(" ");
 
+	//회원가입 구문
+	if (split[0] === "..가입" || split[0] === "..회원가입") {
+		if (typeof split[1] === "undefined")
+			replier.reply("\"(..가입 / ..회원가입) [닉네임]\" 의 형식으로 재입력해주세요");
+
+		else {
+			for (var player of VAR.players.values()) {
+				if (player.nickName === split[1]) {
+					replier.reply("해당 닉네임은 이미 사용중입니다.\n다른 닉네임으로 시도해주세요");
+					return;
+				}
+			}
+
+			var player = new Player(split[1], sender, ImageDB, room);
+			FUNC.saveDB();
+			replier.reply("CNKB Rpg 세계에 오신 것을 환영합니다!\n\"(..명령어 / ..도움말 / ..help)\" 로 명령어 확인이 가능합니다");
+		}
+	}
+
+	//명령어 출력
+	else if (split[0] === "..명령어")
+		FUNC.showCommands(room);
 }
 
-function playerFunc(msg) {
+function playerFunc(player, msg, sender, replier) {
+	var split = msg.split(" ");
+
+	//회원가입 실패 - 이름 + 프로필 중복
+	if (split[0] === "..가입") {
+		replier.reply(sender + "님과 이름 및 프로필 이미지가 동일한 유저가 이미 존재합니다.\n이름 또는 프로필 이미지를 바꾸고 다시 시도해주세요");
+		return true;
+	}
+
+	//명령어 출력
+	else if (split[0] === "..명령어")
+		FUNC.showCommands(room);
+
+	//명령어 사용 가능 여부에 따라 명령어가 막히는 구간
+	if (!player.canCommand) {
+		FUNC.reply(player.id, "현재 명령어를 실행할 수 없는 상태입니다");
+		return true;
+	}
+
 	return false;
 }
 
