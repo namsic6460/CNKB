@@ -91,6 +91,31 @@
 		"mine",				//광질/채집 등
 		"reinforce"			//강화
 	},
+	"BUILDINGTYPE": {
+		//TODO : 만들기......
+	}
+	"FIELDTYPE": {
+		"basic",			//일반
+		"mine",				//광산
+		"orchard",			//과수원
+		"flower"			//꽃밭
+		"pond",				//연못
+		"forest",			//숲
+		"mountain",			//산
+		"magma",			//용암지대
+		"sinkhole",			//싱크홀지대
+		"river",			//강
+		"sea",				//바다
+		"poison",			//독 지대
+		"ice",				//빙산 지대
+		"energy",			//에너지 지대
+		"dark"				//암흑 지대
+	},
+	"DAMAGETYPE": {
+		"physical",			//물리
+		"magical",			//마법
+		"static",			//고정
+	},
 	"ID": {
 		"player",			//플레이어
 		"chat",				//채팅
@@ -139,18 +164,20 @@ VAR: {
 	"items": new Map(),
 	"achieves": new Map(),
 	"researches": new Map(),
+	"buildings": new Map(),
+	"skills": new Map(),
+	"monsters": new Map(),
 	"id": new Map(),
 	"all": "\n\n" + ("\u200b".repeat(500)),
 	"max": 999999999,
 	"spGive": 5,
 	"expBoost": 1
-};
+}
 
 "Coordinate": {
 	"x": Number,			//X 좌표(Unsigned)(가로) = 0
 	"y": Number				//Y 좌표(Unsigned)(세로) = 0
 	//-----------------------------------------------
-	getter/setter/adder
 	getDistance(Coordinate)	//A* 알고리즘 이용 + 마을마다 - Number(거리)
 	//-----------------------------------------------
 }
@@ -173,7 +200,6 @@ typeLf : 0~5
 	"stat": Map<STAT2, Number>,					//STAT2, 스텟 = {}
 	"item": Map<Number, Number>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
 	//-----------------------------------------------
-	getter/setter
 }
 
 "Npc": {
@@ -197,7 +223,6 @@ typeLf : 0~5
 	"job": Map<JOB, Number>,												//JOB, 직업 레벨 = {}
  	"selling": Map<JOB, Map<Number, Map<Number, Map<Number, Number>>>>,		//JOB, {최소 JOB lv, {최소 호감도, {아이템 id, 아이템 갯수}}} = {}
 	//-----------------------------------------------
-	getter/setter
 	getAvailableChat(Number) - List<Number>									//플레이어 id - 챗 id
 	getAvailableSelling(JOB, Number) - Map<Number, Number>					//플레이어 id - 아이템 id, 아이템 갯수
 }
@@ -224,7 +249,6 @@ typeLf : 0~5
 	"rewardStat": Map<STAT2, Number>,					//보상 스텟, 스텟 = {}
 	"rewardCloseRate": Map<Number, Number>				//엔피시 id, 보상 친밀도
 	//-----------------------------------------------
-	getter/setter
 }
 
 "Item": {
@@ -236,7 +260,6 @@ typeLf : 0~5
 	"isWeapon": boolean						//무기인지 아이템인지 판별 - 수정 불가 = false
 	"recipe": List<Map<Number, Number>>		//[{아이템 id, 갯수}]
 	//-----------------------------------------------
-	getter/setter
 	getFullName()
 }
 
@@ -258,7 +281,6 @@ typeLf : 0~5
 	"type": Map<TYPE, Number>,						//TYPE, 속성 레벨 = {}
 	"reinforce": Map<STAT2, Number>					//STAT2, 강화 스텟 = {}
 	//-----------------------------------------------
-	getter/setter
 	getFullName()
 }
 
@@ -275,7 +297,6 @@ Achieve: {
 	"rewardCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
 	"rewardItem": Map<Number, Number>		//아이템 id, 갯수 = {}
 	//-----------------------------------------------
-	getter/setter
 }
 
 Research: {
@@ -287,12 +308,48 @@ Research: {
 	"needItem": Map<Number, Number>,		//아이템 id, 갯수 = {}
 	"rewardStat": Map<STAT2, Number>,		//STAT2, 스텟 = {}
 	//-----------------------------------------------
-	getter/setter
+}
+
+Building: {
+	"id": Number,							//인식 정보 - 기본 키
+	"name": String,							//이름
+	"difficulty": Number,					//난이도 = 0
+	"npc": List<Number>,					//엔피시 id = []
+	"uniqueMonster": List<Number>,			//몬스터 id = []
+	"move": List<Number>					//빌딩 id = [] - 0일 경우, 건물 밖으로 이동 가능
+	"buildingType": List<BUILDINGTYPE>		//BUILDINGTYPE = []
+	//-----------------------------------------------
+},
+
+Skill: {
+	"id": Number,									//인식 정보 - 기본 키
+	"name": String,									//이름
+	"isPassive": Boolean,							//패시브여부 = false
+	"damageType": Map<DAMAGETYPE, Number>			//DAMAGETYPE, 확률 - 확률의 총 합은 항상 100 또는 없음 = {}
+	"use": Function(user, target, isUserPlayer)		//사용 함수 - setter 없음(직접 대입)
+	//-----------------------------------------------
+}
+
+//페이즈 0은 0번 인덱스이고, 기본 설정사항, 즉 1페이즈는 따로 설정하기에, 페이즈 항목의 0은 2페이즈를 의미
+"Monster": {
+	"id": Number,					//인식 정보 - 기본 키
+	"name": String,					//이름
+	"rarePercent": Number,			//희귀 몹 확률 = 0(0 ~ 10000(100%))
+	"mainField": FIELDTYPE,									//주요 필드 = FIELDTYPE.basic
+	"subField": List<FIELDTYPE>,							//FIELDTYPE = []
+	"phaseHealth": List<Number>,							//체력 퍼센트 = []
+	"skill": List<Skill>,									//스킬 id = []
+	"phaseStartSkill": Map<Integer, Skill>,					//페이즈, 스킬 id = {}
+	"stat": Map<STAT2, Number>,								//STAT2, 스텟 = {}
+	"rareStatIncrease": Map<STAT2, Number>,					//STAT2, 스텟 = {}
+	"phaseSkill": Map<Integer, List<Skill>>,				//페이즈, [스킬 id] = {}
+	"phaseIncreaseStat": Map<Number, Map<STAT2, Number>>	//페이즈, {STAT2, 스텟} = {}
+	//-----------------------------------------------
 }
 
 "Player": {
 	"id": Number,			//인식 정보 - 기본 키
-	"nickName": String,		//닉네임 - 후보키
+	"nickName": String,		//닉네임 - 유니크
 	"name": String,			//카카오톡 이름 - 합성 키(image)
 	"image": String,		//카카오톡 프로필 - 합성 키(name)
 	"lastTime": Number,		//최종 접속 시간 = Date.now()
@@ -306,6 +363,7 @@ Research: {
 	"sp": Number,			//잔여 레벨 스탯 = 10
 	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
 	"ddosCheck": Number		//디도스(도배) 체크 - 채팅 간격 설정
+	"building": Number		//현재 들어가있는 건물 - 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
 	"nowChat": Number,		//챗 id(대답 대기용)
 	"canCommand": Boolean,	//명령어를 실행할 지 여부 결정
@@ -313,6 +371,7 @@ Research: {
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
 	"nowQuest": List<Number>,						//퀘스트 id = []
+	"skill": List<Skill>,							//스킬 목록
 	"job": Map<JOB, Number>,						//JOB, 직업 레벨 = {}
 	"mainStat": Map<STAT1, Map<STAT2, Number>>,		//STAT1, {STAT2, 스텟} = {}
 	"resistStat": Map<TYPE, Number>,				//TYPE, 저항 스텟 = {}
@@ -321,11 +380,9 @@ Research: {
 	"clearedQuest": Map<Number, Number>,			//퀘스트 id, 클리어 횟수 = {}
 	"closeRate": Map<Number, Number>,				//엔피시 id, 친밀도 = {}
 	"log": Map<Number, Number>,						//특정 행동, 행동 횟수 = {}
-	"isClearedOnce": <Number, Boolean>,				//퀘스트 id, 최초(지급 후) 클리어 여부 = {}
 	"type": Map<TYPE, Number>,						//TYPE, 단계
 	"buff": Map<STAT2, Map<Number, Number>>			//STAT2, {종료시간, 증가 스텟}
 	//-----------------------------------------------
-	getter/setter
 	sendText(chatId, npcName)
 	executeChat(npcId)
 	getFullName()
