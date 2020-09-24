@@ -187,6 +187,7 @@ jobLv : 1~100
 closeRate : 0~10000
 handleLevel : 1~10
 typeLf : 0~5
+difficulty: 0~999
 
 "Chat": {
 	"id": Number,								//인식 정보
@@ -326,7 +327,8 @@ Skill: {
 	"name": String,									//이름
 	"isPassive": Boolean,							//패시브여부 = false
 	"damageType": Map<DAMAGETYPE, Number>			//DAMAGETYPE, 확률 - 확률의 총 합은 항상 100 또는 없음 = {}
-	"use": Function(user, target, isUserPlayer)		//사용 함수 - setter 없음(직접 대입)
+	//TODO : 흐어엉
+	"use": Function(user, target, isUserPlayer)		//사용 함수 - setter 없음(직접 대입) = (user, target, isUserPlayer) => return true
 	//-----------------------------------------------
 }
 
@@ -335,6 +337,8 @@ Skill: {
 	"id": Number,					//인식 정보 - 기본 키
 	"name": String,					//이름
 	"rarePercent": Number,			//희귀 몹 확률 = 0(0 ~ 10000(100%))
+	"minDifficulty": Number,		//출현 최소 난이도 = 0
+	"maxDifficulty": Number,		//출현 최대 난이도 = 999
 	"mainField": FIELDTYPE,									//주요 필드 = FIELDTYPE.basic
 	"subField": List<FIELDTYPE>,							//FIELDTYPE = []
 	"phaseHealth": List<Number>,							//체력 퍼센트 = []
@@ -362,11 +366,15 @@ Skill: {
 	"totalExp": Number,		//총 경험치 = 0
 	"sp": Number,			//잔여 레벨 스탯 = 10
 	"adv": Number,			//모험 - 다른 지역 입장 시 일정량 요구 = 0
-	"ddosCheck": Number		//디도스(도배) 체크 - 채팅 간격 설정
-	"building": Number		//현재 들어가있는 건물 - 0
+	"ddosCheck": Number		//디도스(도배) 체크 - 채팅 간격 설정(adder 없음)
+	"nowChat": Number,		//챗 id(대답 대기용) = 0
+	"building": Number		//건물 id - 0
+	"nowMonster": Number	//몬스터 id	= 0
+	"nowPlayer": Number		//플레이어 id = 0
 	"doing": DOING,			//현재 하고 있는 행동 = DOING.NONE
-	"nowChat": Number,		//챗 id(대답 대기용)
-	"canCommand": Boolean,	//명령어를 실행할 지 여부 결정
+	"canCommand": Boolean,	//명령어를 실행할 지 여부 결정 = true
+	"isFighting": Boolean,	//전투중인지 여부 = false
+	"isPvpOn": Boolean,		//pvp가 항상 가능한지 여부(마을은 보호지역) = true
 	"achieve": List<Number>,						//업적 id = []
 	"research": List<Number>,						//연구 id = []
 	"title": List<String>,							//칭호 이름 = []
@@ -393,6 +401,7 @@ Skill: {
 	canAddResearch(researchid)
 	research(researchId)
 	canAddTitle(title)
+	canAddSkill(skillId)
 	canClearQuest(questId)
 	clearQuest(questId)
 	canEquip(equipid)

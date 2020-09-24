@@ -1097,7 +1097,7 @@ function Chat(chat, isNew) {
 		if (temp !== null) this.pause = temp;
 	}
 	this.setQuest = function (questId) {
-		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size - 1);
+		var temp = FUNC.checkNaN(questId, 0, VAR.quests.size - 1);
 		if (temp !== null) this.quest = temp;
 	}
 	this.setMoney = function (money) {
@@ -1366,10 +1366,6 @@ function Npc(name, npc, isNew) {
 		return undefined;
 	}
 
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setCoord = function (x, y) {
 		var temp1 = FUNC.checkNaN(x, 0);
 		var temp2 = FUNC.checkNaN(y, 0);
@@ -1574,10 +1570,6 @@ function Quest(name, quest, isNew) {
 		return this.rewardCloseRate.get(temp);
 	}
 
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setIsRepeatable = function (isRepeatable) {
 		var temp = FUNC.checkType(Boolean, isRepeatable);
 		if (temp !== null) this.isRepeatable = temp;
@@ -2020,10 +2012,6 @@ function Item(name, item, isNew) {
 		return str;
 	}
 
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setDescription = function (description) {
 		var temp = FUNC.checkType(String, description);
 		if (temp !== null) this.description = temp;
@@ -2122,10 +2110,6 @@ function Equipment(name, description, eTypeEnum, equipment, isNew) {
 		return this.reinforce.get(temp);
 	}
 
-	this.setname = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (tmpe !== null) this.name = temp;
-	}
 	this.setDescription = function (description) {
 		var temp = FUNC.checkType(String, description);
 		if (temp !== null) this.description = temp;
@@ -2402,10 +2386,6 @@ function Achieve(name, achieve, isNew) {
 		return this.rewardItem.get(temp);
 	}
 
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setLimitLv = function (lv) {
 		var temp = FUNC.checkNaN(lv, 1, 999);
 		if (temp !== null) this.limitLv = temp;
@@ -2659,10 +2639,6 @@ function Research(name, research, isNew) {
 		return this.rewardStat.get(temp);
 	}
 
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setNeedMoney = function (money) {
 		var temp = FUNC.checkNaN(money, 0);
 		if (temp !== null) this.money = temp;
@@ -2792,6 +2768,56 @@ function Research(name, research, isNew) {
 }
 
 function Building(name, building, isNew) {
+	this.setDifficulty = function (difficulty) {
+		var temp = FUNC.checkNaN(difficulty, 0, 999);
+		if (temp !== null) this.difficulty = temp;
+	}
+
+	this.addDifficulty = function (difficulty) {
+		var temp = FUNC.checkNaN(difficulty);
+		if (temp !== null) this.setDifficulty(this.difficulty + temp);
+	}
+	this.addNpc = function (npcId) {
+		var temp = FUNC.checkNaN(npcId, 1, VAR.npcs.size - 1);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.npc, temp) === "undefined")
+				this.npc.push(temp);
+			else
+				FUNC.log("addNpc Error", ENUM.LOG.error);
+		}
+	}
+	this.addUniqueMonster = function (monsterId) {
+		var temp = FUNC.checkNaN(monsterId, 1, VAR.monsters.size - 1);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.uniqueMonster, temp) === "undefined")
+				this.uniqueMonster.push(temp);
+			else
+				FUNC.log("addUniqueMonster Error", ENUM.LOG.error);
+		}
+	}
+	this.addMove = function (buildingId) {
+		var temp = FUNC.checkNaN(buildingId, 1, VAR.buildings.size - 1);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.building, temp) === "undefined")
+				this.building.push(temp);
+			else
+				FUNC.log("addMove Error", ENUM.LOG.error);
+		}
+	}
+	this.addBuildingType = function (buildingTypeEnum) {
+		var temp = FUNC.checkNaN(buildingTypeEnum);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.buildingType, temp) === "undefined")
+				this.building.push(temp);
+			else
+				FUNC.log("addBuildingType Error", ENUM.LOG.error);
+		}
+	}
+
 	//Constructor
 	isNew = typeof isNew === "undefined" ? true : false;
 	if (isNew) {
@@ -2813,7 +2839,8 @@ function Building(name, building, isNew) {
 				return null;
 			}
 
-			this.id = skill.id;
+			//몬스터 경우, 원형을 복사하더라도 신규 아이템 취급
+			this.id = FUNC.getId(ENUM.ID.monster);
 			this.name = skill.name;
 			this.difficulty = building.difficulty;
 			this.npc = building.npc;
@@ -3027,7 +3054,7 @@ function Monster(name, monster, isNew) {
 		}
 	}
 	this.addSkill = function (skillId) {
-		var temp = FUNC.checkNaN(skillId, 1, VAR.skills.size);
+		var temp = FUNC.checkNaN(skillId, 1, VAR.skills.size - 1);
 
 		if (temp !== null) {
 			if (typeof FUNC.findValue(this.skill, temp) === "undefined")
@@ -3062,7 +3089,7 @@ function Monster(name, monster, isNew) {
 	}
 	this.addPhaseSkill = function (phase, skillId) {
 		var temp1 = FUNC.checkNaN(phase, 0);
-		var temp2 = FUNC.checkNaN(skillId, 1, VAR.skills.size);
+		var temp2 = FUNC.checkNaN(skillId, 1, VAR.skills.size - 1);
 
 		if (temp1 !== null && temp2 !== null) {
 			if (typeof FUNC.findValue(this.phaseSkill.get(temp1)) === "undefined")
@@ -3398,6 +3425,9 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			return true;
 		return false;
 	}
+	this.canAddSkill = function (skillId) {
+		//TODO : 흐어엉
+	}
 	this.canClearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size - 1);
 
@@ -3524,7 +3554,7 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		if (time - this.ddosCheck < VAR.ddosTime)
 			return true;
 
-		this.ddosCheck = time;
+		this.setDdosCheck(time);
 		return false;
 	}
 	this.updateStat = function () {
@@ -3625,10 +3655,6 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		var temp = FUNC.checkType(String, nickName);
 		if (temp !== null) this.nickName = temp;
 	}
-	this.setName = function (name) {
-		var temp = FUNC.checkType(String, name);
-		if (temp !== null) this.name = temp;
-	}
 	this.setImage = function (image) {
 		var temp = FUNC.checkType(String, image);
 		if (temp !== null) this.image = temp;
@@ -3697,17 +3723,41 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.handleQuest();
 		}
 	}
+	this.setDdosCheck = function (time) {
+		var temp = FUNC.checkNaN(time, 0);
+		if (temp !== null) this.ddosCheck = temp;
+	}
+	this.setNowChat = function (chatId) {
+		var temp = FUNC.checkNaN(chatId, 0, VAR.chats.size - 1);
+		if (temp !== null) this.nowChat = temp;
+	}
+	this.setBuilding = function (building) {
+		var temp = FUNC.checkNaN(building, 0, VAR.buildings.size - 1);
+		if (temp !== null) this.building = temp;
+	}
+	this.setNowMonster = function (nowMonster) {
+		var temp = FUNC.checkNaN(nowMonster, 0, VAR.monsters.size - 1);
+		if (temp !== null) this.nowMonster = temp;
+	}
+	this.setNowPlayer = function (nowPlayer) {
+		var temp = FUNC.checkNaN(nowPlayer, 0, VAR.players.size - 1);
+		if (temp !== null) this.nowPlayer = temp;
+	}
 	this.setDoing = function (doingEnum) {
 		var temp = FUNC.checkNaN(doingEnum, 0);
 		if (temp !== null) this.doing = temp;
 	}
-	this.setNowChat = function (chatId) {
-		var temp = FUNC.checkNaN(chatId, 1, VAR.chats.size - 1);
-		if (temp !== null) this.nowChat = temp;
-	}
 	this.setCanCommand = function (canCommand) {
 		var temp = FUNC.checkType(Boolean, canCommand);
 		if (temp !== null) this.canCommand = temp;
+	}
+	this.setIsFighting = function (isFighting) {
+		var temp = FUNC.checkType(Boolean, isFighting);
+		if (temp !== null) this.isFighting = temp;
+	}
+	this.setIsPvpOn = function (isPvpOn) {
+		var temp = FUNC.checkType(Boolean, isPvpOn);
+		if (temp !== null) this.isPvpOn = temp;
 	}
 	this.setJob = function (jobEnum, jobLv, ignore) {
 		ignore = typeof ignore === "undefined" ? false : true;
@@ -4030,11 +4080,21 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		var temp = FUNC.checkNaN(questId);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.nwoQuest, temp) === "undefined") {
+			if (typeof FUNC.findValue(this.nowQuest, temp) === "undefined") {
 				this.nowQuest.push(temp);
 				this.addLog(ENUM.LOGDATA.questReceived, 1);
 			}
 
+			else
+				FUNC.log("addNowQuest Error", ENUM.LOG.error);
+		}
+	}
+	this.addSkill = function (skillId) {
+		var temp = FUNC.checkNaN(skillId);
+
+		if (temp !== null) {
+			if (typeof FUNC.findValue(this.skill, temp) === "undefined")
+				this.skill.push(temp);
 			else
 				FUNC.log("addNowQuest Error", ENUM.LOG.error);
 		}
@@ -4170,13 +4230,19 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.sp = 10;
 			this.adv = 0;
 			this.ddosCheck = 0;
-			this.doing = ENUM.DOING.none;
 			this.nowChat = 0;
-			this.canCommand = false;
+			this.building = 0;
+			this.nowMonster = 0;
+			this.nowPlayer = 0;
+			this.doing = ENUM.DOING.none;
+			this.canCommand = true;
+			this.isFighting = false;
+			this.isPvpOn = true;
 			this.achieve = new Array();
 			this.research = new Array();
 			this.title = new Array();
 			this.nowQuest = new Array();
+			this.skill = new Array();
 			this.job = new Map();
 			this.mainStat = new Map();
 			this.resistStat = new Map();
@@ -4264,13 +4330,19 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.sp = player.sp;
 			this.adv = player.adv;
 			this.ddosCheck = player.ddosCheck;
-			this.doing = player.doing;
 			this.nowChat = player.nowChat;
+			this.building = player.building;
+			this.nowMonster = player.nowMonster;
+			this.nowPlayer = player.nowPlayer;
+			this.doing = player.doing;
 			this.canCommand = player.canCommand;
+			this.isFighting = player.isFighting;
+			this.isPvpOn = player.isPvpOn;
 			this.achieve = player.achieve;
 			this.research = player.research;
 			this.title = player.title;
 			this.nowQuest = player.nowQuest;
+			this.skill = player.skill;
 			this.job = player.job;
 			this.mainStat = player.mainStat;
 			this.resistStat = player.resistStat;
