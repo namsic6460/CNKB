@@ -205,7 +205,7 @@ difficulty: 0~999
 
 "Npc": {
 	"id": Number,															//인식 정보
-	"name": String,															//npc 이름
+	"name": String,															//이름
 	"coord": Coordinate														//Coordinate = new Coordinate()
 	"chat": [
 		{
@@ -247,7 +247,7 @@ difficulty: 0~999
 	"needItem": Map<Number, Number>,					//클리어 요구 아이템, 아이템 갯수(클리어 시 아이템-) = {}
 	"needStat": Map<STAT2, Number>,						//STAT2, 클리어 요구 스텟
 	"rewardItem": Map<Number, Number>,					//보상 아이템, 아이템 갯수 = {}
-	"rewardStat": Map<STAT2, Number>,					//보상 스텟, 스텟 = {}
+	"rewardStat": Map<STAT2, Number>,					//STAT2, 보상 스텟 = {}
 	"rewardCloseRate": Map<Number, Number>				//엔피시 id, 보상 친밀도
 	//-----------------------------------------------
 }
@@ -280,7 +280,7 @@ difficulty: 0~999
 	"stat": Map<STAT2, Number>,						//STAT2, 스텟 = {}
 	"limitStat": Map<STAT2, Number>					//STAT2, 스텟 제한 = {}
 	"type": Map<TYPE, Number>,						//TYPE, 속성 레벨 = {}
-	"reinforce": Map<STAT2, Number>					//STAT2, 강화 스텟 = {}
+	"reinforce": Map<STAT2, Number>					//STAT2, 스텟 강화 = {}
 	//-----------------------------------------------
 	getFullName()
 }
@@ -325,9 +325,12 @@ Building: {
 Skill: {
 	"id": Number,									//인식 정보 - 기본 키
 	"name": String,									//이름
+	"argumentList": String,							//use 함수 인자 목록
+	"executePart": String,							//use 함수 구현부
+	"limitLv": Number,								//레벨 제한 = 1
 	"isPassive": Boolean,							//패시브여부 = false
-	"damageType": Map<DAMAGETYPE, Number>			//DAMAGETYPE, 확률 - 확률의 총 합은 항상 100 또는 없음 = {}
-	//TODO : 흐어엉
+	"damageType": Map<DAMAGETYPE, Number>,			//DAMAGETYPE, 확률 - 확률의 총 합은 항상 100 또는 없음 = {}
+	"limitStat": Map<STAT2, Number>,				//STAT2, 스텟 제한 = {}
 	"use": Function(user, target, isUserPlayer)		//사용 함수 - setter 없음(직접 대입) = (user, target, isUserPlayer) => return true
 	//-----------------------------------------------
 }
