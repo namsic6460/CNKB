@@ -35,61 +35,7 @@ const FUNC = {
 			var player;
 
 			for (var playerData of playerDatas) {
-				player = new Player(null, null, null, null, null, false);
-				player.id = Number(playerData.id);
-				player.nickName = String(playerData.nickName);
-				player.name = String(playerData.name);
-				player.image = Number(playerData.image);
-				player.lastTime = Number(playerData.lastTime);
-				player.recentRoom = player.room;
-				player.coord = this.objToCoord(playerData.coord);
-				player.nowTitle = String(playerData.nowTitle);
-				player.money = Number(playerData.money);
-				player.lv = Number(player.lv);
-				player.exp = Number(playerData.exp);
-				player.sp = Number(playerData.sp);
-				player.adv = Number(playerData.adv);
-				player.ddosCheck = Number(playerData.ddosCheck);
-				player.doing = Number(playerData.doing);
-				player.nowChat = Number(playerData.nowChat);
-				player.achieve = new Array(playerData.achieve);
-				player.research = new Array(playerData.research);
-				player.title = new Array(playerData.title);
-				player.nowQuest = new Array(playerData.nowQuest);
-				player.job = this.objToMap(playerData.job);
-				player.resistStat = this.objToMap(playerData.resistStat);
-				player.inventory = this.objToMap(playerData.inventory);
-				player.equipped = this.objToMap(playerData.equipped);
-				player.clearedQuest = this.objToMap(playerData.clearedQuest);
-				player.closeRate = this.objToMap(playerData.closeRate);
-				player.log = this.objToMap(playerData.log);
-				player.type = this.objToMap(playerData.type);
 
-				player.mainStat = new Map();
-				for (var obj of playerData.mainStat) {
-					key1 = String(obj);
-
-					player.mainStat.set(key1, new Map());
-					for (var stat2Map of obj.value) {
-						key2 = Number(stat2Map.key);
-						value = Number(stat2Map.value);
-
-						player.mainStat.get(key1).set(key2, value);
-					}
-				}
-
-				player.buff = new Map();
-				for (var obj of playerData.buff) {
-					key1 = Number(obj.key1);
-
-					player.buff.set(key1, new Map());
-					for (var buffMap of obj.value) {
-						key2 = Number(buffMap.key);
-						value = Number(buffMap.value);
-
-						player.buff.get(key1).set(key2, value);
-					}
-				}
 
 				VAR.players.set(player.id, player);
 			}
@@ -102,17 +48,7 @@ const FUNC = {
 			var chat;
 
 			for (var chatData of chatDatas) {
-				chat = new Chat(null, false);
-				chat.id = Number(chatData.id);
-				chat.pause = Number(chatData.pause);
-				chat.quest = Number(chatData.quest);
-				chat.money = Number(chatData.money);
-				chat.teleport = this.objToCoord(chatData.teleport);
-				chat.text = new Array(chatData.text);
-				chat.wait = new Array(chatData.wait);
-				chat.chat = this.objToMap(chatData.chat);
-				chat.stat = this.objToMap(chatData.stat);
-				chat.item = this.objToMap(chatData.item);
+
 
 				VAR.chats.set(chat.id, chat);
 			}
@@ -125,51 +61,7 @@ const FUNC = {
 			var npc;
 
 			for (var npcData of npcDatas) {
-				npc = new Npc(null, null, false);
-				npc.id = Number(npcData.id);
-				npc.name = String(npcData.name);
-				npc.coord = this.objToCoord(npcData.coord);
-				npc.job = this.objToMap(npcData.job);
 
-				npc.chat = new Array();
-				for (var chat of npcData.chat) {
-					map = new Map();
-					map.set("chat", Number(chat.chat));
-					map.set("percent", Number(chat.percent));
-					map.set("minLv", Number(chat.minLv));
-					map.set("minCloseRate", Number(chat.minCloseRate));
-					map.set("minStat", this.objToMap(chat.minStat));
-					map.set("minQuest", this.objToMap(chat.minQuest));
-					map.set("maxLv", Number(chat.maxLv));
-					map.set("maxCloseRate", Number(chat.maxCloseRate));
-					map.set("maxStat", this.objToMap(chat.maxStat));
-					map.set("maxQuest", this.objToMap(chat.maxQuest));
-
-					npc.chat.push(map);
-				}
-
-				npc.selling = new Map();
-				for (var jobEnumMap of npcData.selling) {
-					key1 = Number(jobEnumMap.key);
-
-					npc.selling.set(key1, new Map());
-					for (var jobMap of jobEnumMap.value) {
-						key2 = Number(jobMap.key);
-
-						npc.selling.get(key1).set(key2, new Map());
-						for (var closeRateMap of jobMap.value) {
-							key3 = Number(closeRateMap.key);
-
-							npc.selling.get(key1).get(key2).set(key3, new Map());
-							for (var itemMap of closeRateMap.value) {
-								key4 = Number(itemMap.key);
-								value = Number(itemMap.value);
-
-								npc.selling.get(key1).get(key2).get(key3).set(key4, value);
-							}
-						}
-					}
-				}
 
 				VAR.npcs.set(npc.id, npc);
 			}
@@ -182,27 +74,7 @@ const FUNC = {
 			var quest;
 
 			for (var questData of questDatas) {
-				quest = new Quest(null, null, false);
-				quest.id = Number(questData.id);
-				quest.name = String(questData.name);
-				quest.isRepeatable = Boolean(questData.isRepeatable);
-				quest.minLimitLv = Number(questData.minLimitLv);
-				quest.maxLimitLv = Number(questData.maxLimitLv);
-				quest.needMoney = Number(questData.needMoney);
-				quest.needExp = Number(questData.needexp);
-				quest.needAdv = Number(questData.needAdv);
-				quest.rewardMoney = Number(questData.rewardMoney);
-				quest.rewardExp = Number(questData.rewardExp);
-				quest.rewardAdv = Number(questData.rewardAdv);
-				quest.minLimitCloseRate = this.objToMap(questData.minLimitCloseRate);
-				quest.maxLimitCloseRate = this.objToMap(questData.maxLimitCloseRate);
-				quest.minLimitStat = this.objToMap(questData.minLimitStat);
-				quest.maxLimitStat = this.objToMap(questData.maxLimitStat);
-				quest.needItem = this.objToMap(questData.needItem);
-				quest.needStat = this.objToMap(questData.needStat);
-				quest.rewardItem = this.objToMap(questData.rewardItem);
-				quest.rewardStat = this.objToMap(questData.rewardStat);
-				quest.rewardCloseRate = this.objToMap(questData.rewardCloseRate);
+
 
 				VAR.quests.set(quest.id, quest);
 			}
@@ -215,45 +87,13 @@ const FUNC = {
 			var item, equipment;
 
 			for (var itemData of itemDatas) {
-				item = new Item(null, null, false);
-				item.id = Number(itemData.id);
-				item.name = String(itemData.name);
-				item.description = String(itemData.description);
-				item.handleLevel = Number(itemData.handleLevel);
-				item.value = Number(itemData.value);
-				item.isWeapon = false;
 
-				item.recipe = new Array();
-				for (var recipeMap of itemData.recipe) {
-					key1 = Number(recipeMap.key);
-					value = Number(recipeMap.value);
 
-					map = new Map();
-					map.set(key1, value);
 
-					item.recipe.push(map);
-				}
 
 				//장비 데이터 파싱
 				if (item.isWeapon) {
-					equipment = new Equipment(null, null, null, null, false);
 
-					equipment.id = item.id;
-					equipment.name = item.name;
-					equipment.description = item.description;
-					equipment.handleLevel = item.handleLevel;
-					equipment.value = item.value;
-					equipment.isWeapon = true;
-					equipment.recipe = item.recipe;
-					equipment.eType = Number(itemData.eType);
-					equipment.limitLv = Number(itemData.limitLv);
-					equipment.maxReinforce = Number(itemData.maxReinforce);
-					equipment.nowReinforce = Number(itemData.nowReinforce);
-					equipment.lvDown = Number(itemData.lvDown);
-					equipment.stat = this.objToMap(itemData.stat);
-					equipment.limitStat = this.objToMap(itemData.limitStat);
-					equipment.type = this.objToMap(itemData.type);
-					equipment.reinforce = this.objToMap(itemData.reinforce);
 
 					VAR.items.set(equipment.id, equipment);
 				}
@@ -269,18 +109,7 @@ const FUNC = {
 			var achieve;
 
 			for (var achieveData of achieveDatas) {
-				achieve = new Achieve(null, null, false);
-				achieve.id = Number(achieveData.id);
-				achieve.name = String(achieveData.name);
-				achieve.limitLv = Number(achieveData.limitLv);
-				achieve.rewardMoney = Number(achieveData.rewardMoney);
-				achieve.rewardExp = Number(achieveData.rewardExp);
-				achieve.rewardAdv = Number(achieveData.rewardAdv);
-				achieve.limitStat = this.objToMap(achieveData.limitStat);
-				achieve.limitCloseRate = this.objToMap(achieveData.limitCloseRate);
-				achieve.otherLimit = this.objToMap(achieveData.otherLimit);
-				achieve.rewardCloseRate = this.objToMap(achieveData.rewardCloseRate);
-				achieve.rewardItem = this.objToMap(achieveData.rewardItem);
+
 
 				VAR.achieves.set(achieve.id, achieve);
 			}
@@ -293,14 +122,7 @@ const FUNC = {
 			var research;
 
 			for (var researchData of researchDatas) {
-				research = new Research(null, null, false);
-				research.id = Number(researchData.id);
-				research.name = String(researchData.name);
-				research.needMoney = Number(researchData.needMoney);
-				research.limitLv = Number(researchData.limitLv);
-				research.rewardExp = Number(researchData.rewardExp);
-				research.needItem = this.objToMap(researchData.needItem);
-				research.rewardItem = this.objToMap(researchData.rewardStat);
+
 
 				VAR.researches.set(research.id, research);
 			}
@@ -336,52 +158,7 @@ const FUNC = {
 		var playerData;
 
 		for (var player of VAR.players.values()) {
-			playerData = new Object();
 
-			playerData.id = player.id;
-			playerData.nickName = player.nickName;
-			playerData.name = player.name;
-			playerData.image = player.image;
-			playerData.lastTime = player.lastTime;
-			playerData.recentRoom = player.room;
-			playerData.coord = this.coordToObj(player.coord);
-			playerData.nowTitle = player.nowTitle;
-			playerData.money = player.money;
-			playerData.lv = player.lv;
-			playerData.exp = player.exp;
-			playerData.sp = player.sp;
-			playerData.adv = player.adv;
-			playerData.ddosCheck = player.ddosCheck;
-			playerData.doing = player.doing;
-			playerData.nowChat = player.nowChat;
-			playerData.achieve = player.achieve;
-			playerData.research = player.research;
-			playerData.title = player.title;
-			playerData.nowQuest = player.nowQuest;
-			playerData.job = this.mapToObj(player.job);
-			playerData.resistStat = this.mapToObj(player.resistStat);
-			playerData.inventory = this.mapToObj(player.inventory);
-			playerData.equipped = this.mapToObj(player.equipped);
-			playerData.clearedQuest = this.mapToObj(player.clearedQuest);
-			playerData.closeRate = this.mapToObj(player.closeRate);
-			playerData.log = this.mapToObj(player.log);
-			playerData.type = this.mapToObj(player.type);
-
-			playerData.mainStat = new Array();
-			for (var [stat1Enum, stat2Map] of player.mainStat) {
-				obj = new Object();
-				obj.key = stat1Enum;
-				obj.value = this.mapToObj(stat2Map);
-				playerData.mainStat.push(obj);
-			}
-
-			playerData.buff = new Array();
-			for (var [stat2Enum, buffMap] of player.buff) {
-				obj = new Object();
-				obj.key = stat2Enum;
-				obj.value = this.mapToObj(buffMap);
-				playerData.buff.push(obj);
-			}
 
 			playerDatas.push(playerData);
 		}
@@ -393,18 +170,7 @@ const FUNC = {
 		var chatData;
 
 		for (var chat of VAR.chats.values()) {
-			chatData = new Object();
 
-			chatData.id = chat.id;
-			chatData.pause = chat.pause;
-			chatData.quest = chat.quest;
-			chatData.money = chat.money;
-			chatData.teleport = this.coordToObj(chat.teleport);
-			chatData.text = chat.text;
-			chatData.wait = chat.wait;
-			chatData.chat = this.mapToObj(chat.chat);
-			chatData.stat = this.mapToObj(chat.stat);
-			chatData.item = this.mapToObj(chat.item);
 
 			chatDatas.push(chatData);
 		}
@@ -416,57 +182,9 @@ const FUNC = {
 		var npcData;
 
 		for (var npc of VAR.npcs.values()) {
-			npcData = new Object();
 
-			npcData.id = npc.id;
-			npcData.name = npc.name;
-			npcData.coord = this.coordToObj(npc.coord);
-			npcData.job = this.mapToObj(npc.job);
 
-			npcData.chat = new Array();
-			for (var chat of npc.chat) {
-				obj = new Object();
-				obj.chat = chat.get("chat");
-				obj.percent = chat.get("percent");
-				obj.minLv = chat.get("minLv");
-				obj.minCloseRate = chat.get("minCloseRate");
-				obj.minStat = this.mapToObj(chat.get("minStat"));
-				obj.minQuest = this.mapToObj(chat.get("minQuest"));
-				obj.maxLv = chat.get("maxLv");
-				obj.maxCloseRate = chat.get("maxCloseRate");
-				obj.maxStat = this.mapToObj(chat.get("maxStat"));
-				obj.maxQuest = this.mapToObj(chat.get("maxQuest"));
-
-				npcData.chat.push(obj);
-			}
-
-			npcData.selling = new Array();
-			for (var [jobEnum, jobMap] of npc.selling) {
-				obj1 = new Object();
-
-				obj1.key = jobEnum;
-				obj1.value = new Array();
-
-				for (var [jobLv, closeRateMap] of jobMap) {
-					obj2 = new Object();
-
-					obj2.key = jobLv;
-					obj2.value = new Array();
-
-					for (var [closeRate, itemMap] of closeRateMap) {
-						obj3 = new Object();
-
-						obj3.key = closeRate;
-						obj3.value = this.mapToObj(itemMap);
-
-						obj2.value.push(obj3);
-					}
-
-					obj1.value.push(obj1);
-				}
-
-				npcData.selling.push(obj1);
-			}
+			npcDatas.push(npcData);
 		}
 		this.setDB(NPCPATH, JSON.stringify(npcDatas, null, "\t"));
 
@@ -476,28 +194,7 @@ const FUNC = {
 		var questData;
 
 		for (var quest of VAR.quests) {
-			questData = new Object();
 
-			questData.id = quest.id;
-			questData.name = quest.name;
-			questData.isRepeatable = quest.isRepeatable;
-			questData.minLimitLv = quest.minLimitLv;
-			questData.maxLimitLv = quest.maxLimitLv;
-			questData.needMoney = quest.needMoney;
-			questData.needExp = quest.needexp;
-			questData.needAdv = quest.needAdv;
-			questData.rewardMoney = quest.rewardMoney;
-			questData.rewardExp = quest.rewardExp;
-			questData.rewardAdv = quest.rewardAdv;
-			questData.minLimitCloseRate = this.mapToObj(quest.minLimitCloseRate);
-			questData.maxLimitCloseRate = this.mapToObj(quest.maxLimitCloseRate);
-			questData.minLimitStat = this.mapToObj(quest.minLimitStat);
-			questData.maxLimitStat = this.mapToObj(quest.maxLimitStat);
-			questData.needItem = this.mapToObj(quest.needItem);
-			questData.needStat = this.mapToObj(quest.needStat);
-			questData.rewardItem = this.mapToObj(quest.rewardItem);
-			questData.rewardStat = this.mapToObj(quest.rewardStat);
-			questData.rewardCloseRate = this.mapToObj(quest.rewardCloseRate);
 
 			questDatas.push(questData);
 		}
@@ -509,36 +206,11 @@ const FUNC = {
 		var itemData;
 
 		for (var item of VAR.items.values()) {
-			itemData = new Object();
 
-			itemData.id = item.id;
-			itemData.name = item.name;
-			itemData.description = item.description;
-			itemData.handleLevel = item.handleLevel;
-			itemData.value = item.value;
-			itemData.isWeapon = item.isWeapon;
-
-			itemData.recipe = new Array();
-			for (var recipeMap of itemData.recipe) {
-				for (var [itemId, itemCount] of recipeMap) {
-					obj = new Object();
-					obj.key = itemId;
-					obj.value = itemCount;
-					itemData.recipe.push(obj);
-				}
-			}
 
 			//장비 데이터 저장
 			if (item.isWeapon) {
-				itemData.eType = item.eType;
-				itemData.limitLv = item.limitLv;
-				itemData.maxReinforce = item.maxReinforce;
-				itemData.nowReinforce = item.nowReinforce;
-				itemData.lvDown = item.lvDown;
-				itemData.stat = this.mapToObj(item.stat);
-				itemData.limitStat = this.mapToObj(item.limitStat);
-				itemData.type = this.mapToObj(item.type);
-				itemData.reinforce = this.mapToObj(item.reinforce);
+
 			}
 
 			itemDatas.push(itemData);
@@ -551,19 +223,7 @@ const FUNC = {
 		var achieveData;
 
 		for (var achieve of VAR.achieves.values()) {
-			achieveData = new Object();
 
-			achieveData.id = achieve.id;
-			achieveData.name = achieve.name;
-			achieveData.limitLv = achieve.limitLv;
-			achieveData.rewardMoney = achieve.rewardMoney;
-			achieveData.rewardExp = achieve.rewardExp;
-			achieveData.rewardAdv = achieve.rewardAdv;
-			achieveData.limitStat = this.mapToObj(achieve.limitStat);
-			achieveData.limitCloseRate = this.mapToObj(achieve.limitCloseRate);
-			achieveData.otherLimit = this.mapToObj(achieve.otherLimit);
-			achieveData.rewardCloseRate = this.mapToObj(achieve.rewardCloseRate);
-			achieveData.rewardItem = this.mapToObj(achieve.rewardItem);
 
 			achieveDatas.push(achieveData);
 		}
@@ -575,15 +235,7 @@ const FUNC = {
 		var researchData;
 
 		for (var research of VAR.researches.values()) {
-			researchData = new Object();
 
-			researchData.id = research.id;
-			researchData.name = research.name;
-			researchData.needMoney = research.needMoney;
-			researchData.limitLv = research.limitLv;
-			researchData.rewardExp = research.rewardExp;
-			researchData.needItem = this.mapToObj(research.needItem);
-			researchData.rewardItem = this.mapToObj(research.rewardStat);
 
 			researchDatas.push(researchData);
 		}
@@ -815,22 +467,11 @@ const FUNC = {
 		return arr;
 	},
 
-	coordToObj: function (coord) {
-		var obj = new Object();
-		obj.x = coord.x;
-		obj.y = coord.y;
-		return obj;
-	},
-
 	objToMap: function (obj) {
 		var map = new Map();
 		for (var element of obj)
 			map.set(element.key, element.value);
 		return map;
-	},
-
-	objToCoord: function (obj) {
-		return new Coordinate(obj.x, obj.y);
 	},
 
 	//실제 게임 구현부
@@ -1048,7 +689,6 @@ const MAP = {
 }
 
 function Coordinate(x, y) {
-
 	if (typeof x !== "undefined")
 		this.x = x;
 	else
@@ -1076,6 +716,15 @@ function Coordinate(x, y) {
 		var temp = FUNC.checkNaN(y);
 		if (temp !== null) this.setY(this.y + temp);
 	}
+}
+Coordinate.fromObject = function (coordData) {
+	return new Coordinate(coordData.x, coordData.y);
+}
+Coordinate.toObject = function (coord) {
+	var obj = new Object();
+	obj.x = coord.x;
+	obj.y = coord.y;
+	return obj;
 }
 
 function Chat(chat, isNew) {
@@ -1272,6 +921,38 @@ function Chat(chat, isNew) {
 
 		VAR.chats.set(this.id, this);
 	}
+}
+Chat.toObject = function (chat) {
+	var chatData = new Object();
+
+	chatData.id = chat.id;
+	chatData.pause = chat.pause;
+	chatData.quest = chat.quest;
+	chatData.money = chat.money;
+	chatData.teleport = Coord.toObject(chat.teleport);
+	chatData.text = chat.text;
+	chatData.wait = chat.wait;
+	chatData.chat = FUNC.mapToObj(chat.chat);
+	chatData.stat = FUNC.mapToObj(chat.stat);
+	chatData.item = FUNC.mapToObj(chat.item);
+
+	return chatData;
+}
+Chat.fromObject = function (chatData) {
+	var chat = new Chat(null, false);
+
+	chat.id = Number(chatData.id);
+	chat.pause = Number(chatData.pause);
+	chat.quest = Number(chatData.quest);
+	chat.money = Number(chatData.money);
+	chat.teleport = Coord.fromObject(chatData.teleport);
+	chat.text = new Array(chatData.text);
+	chat.wait = new Array(chatData.wait);
+	chat.chat = FUNC.objToMap(chatData.chat);
+	chat.stat = FUNC.objToMap(chatData.stat);
+	chat.item = FUNC.objToMap(chatData.item);
+
+	return chat;
 }
 
 function Npc(name, npc, isNew) {
@@ -1529,7 +1210,115 @@ function Npc(name, npc, isNew) {
 
 		VAR.npcs.set(this.id, this);
 	}
+}
+Npc.toObject = function (npc) {
+	var obj, obj1, obj2, obj3;
+	var npcData = new Object();
 
+	npcData.id = npc.id;
+	npcData.name = npc.name;
+	npcData.coord = Coord.toObject(npc.coord);
+	npcData.job = FUNC.mapToObj(npc.job);
+
+	npcData.chat = new Array();
+	for (var chat of npc.chat) {
+		obj = new Object();
+		obj.chat = chat.get("chat");
+		obj.percent = chat.get("percent");
+		obj.minLv = chat.get("minLv");
+		obj.minCloseRate = chat.get("minCloseRate");
+		obj.minStat = FUNC.mapToObj(chat.get("minStat"));
+		obj.minQuest = FUNC.mapToObj(chat.get("minQuest"));
+		obj.maxLv = chat.get("maxLv");
+		obj.maxCloseRate = chat.get("maxCloseRate");
+		obj.maxStat = FUNC.mapToObj(chat.get("maxStat"));
+		obj.maxQuest = FUNC.mapToObj(chat.get("maxQuest"));
+
+		npcData.chat.push(obj);
+	}
+
+	npcData.selling = new Array();
+	for (var [jobEnum, jobMap] of npc.selling) {
+		obj1 = new Object();
+
+		obj1.key = jobEnum;
+		obj1.value = new Array();
+
+		for (var [jobLv, closeRateMap] of jobMap) {
+			obj2 = new Object();
+
+			obj2.key = jobLv;
+			obj2.value = new Array();
+
+			for (var [closeRate, itemMap] of closeRateMap) {
+				obj3 = new Object();
+
+				obj3.key = closeRate;
+				obj3.value = FUNC.mapToObj(itemMap);
+
+				obj2.value.push(obj3);
+			}
+
+			obj1.value.push(obj1);
+		}
+
+		npcData.selling.push(obj1);
+	}
+
+	return npcData;
+}
+Npc.fromObject = function (npcData) {
+	var map;
+	var key1, key2, key3, key4;
+	var value;
+	var npc = new Npc(null, null, false);
+
+	npc.id = Number(npcData.id);
+	npc.name = String(npcData.name);
+	npc.coord = Coord.fromObject(npcData.coord);
+	npc.job = FUNC.objToMap(npcData.job);
+
+	npc.chat = new Array();
+	for (var chat of npcData.chat) {
+		map = new Map();
+		map.set("chat", Number(chat.chat));
+		map.set("percent", Number(chat.percent));
+		map.set("minLv", Number(chat.minLv));
+		map.set("minCloseRate", Number(chat.minCloseRate));
+		map.set("minStat", FUNC.objToMap(chat.minStat));
+		map.set("minQuest", FUNC.objToMap(chat.minQuest));
+		map.set("maxLv", Number(chat.maxLv));
+		map.set("maxCloseRate", Number(chat.maxCloseRate));
+		map.set("maxStat", FUNC.objToMap(chat.maxStat));
+		map.set("maxQuest", FUNC.objToMap(chat.maxQuest));
+
+		npc.chat.push(map);
+	}
+
+	npc.selling = new Map();
+	for (var jobEnumMap of npcData.selling) {
+		key1 = Number(jobEnumMap.key);
+
+		npc.selling.set(key1, new Map());
+		for (var jobMap of jobEnumMap.value) {
+			key2 = Number(jobMap.key);
+
+			npc.selling.get(key1).set(key2, new Map());
+			for (var closeRateMap of jobMap.value) {
+				key3 = Number(closeRateMap.key);
+
+				npc.selling.get(key1).get(key2).set(key3, new Map());
+				for (var itemMap of closeRateMap.value) {
+					key4 = Number(itemMap.key);
+					value = Number(itemMap.value);
+
+					npc.selling.get(key1).get(key2).get(key3).set(key4, value);
+				}
+			}
+		}
+	}
+
+	return npc;
 }
 
 function Quest(name, quest, isNew) {
@@ -1998,6 +1787,58 @@ function Quest(name, quest, isNew) {
 		VAR.quests.set(this.id, this);
 	}
 }
+Quest.toObject = function (quest) {
+	var questData = new Object();
+
+	questData.id = quest.id;
+	questData.name = quest.name;
+	questData.isRepeatable = quest.isRepeatable;
+	questData.minLimitLv = quest.minLimitLv;
+	questData.maxLimitLv = quest.maxLimitLv;
+	questData.needMoney = quest.needMoney;
+	questData.needExp = quest.needexp;
+	questData.needAdv = quest.needAdv;
+	questData.rewardMoney = quest.rewardMoney;
+	questData.rewardExp = quest.rewardExp;
+	questData.rewardAdv = quest.rewardAdv;
+	questData.minLimitCloseRate = this.mapToObj(quest.minLimitCloseRate);
+	questData.maxLimitCloseRate = this.mapToObj(quest.maxLimitCloseRate);
+	questData.minLimitStat = this.mapToObj(quest.minLimitStat);
+	questData.maxLimitStat = this.mapToObj(quest.maxLimitStat);
+	questData.needItem = this.mapToObj(quest.needItem);
+	questData.needStat = this.mapToObj(quest.needStat);
+	questData.rewardItem = this.mapToObj(quest.rewardItem);
+	questData.rewardStat = this.mapToObj(quest.rewardStat);
+	questData.rewardCloseRate = this.mapToObj(quest.rewardCloseRate);
+
+	return questData;
+}
+Quest.fromObject = function (questData) {
+	var quest = new Quest(null, null, false);
+
+	quest.id = Number(questData.id);
+	quest.name = String(questData.name);
+	quest.isRepeatable = Boolean(questData.isRepeatable);
+	quest.minLimitLv = Number(questData.minLimitLv);
+	quest.maxLimitLv = Number(questData.maxLimitLv);
+	quest.needMoney = Number(questData.needMoney);
+	quest.needExp = Number(questData.needexp);
+	quest.needAdv = Number(questData.needAdv);
+	quest.rewardMoney = Number(questData.rewardMoney);
+	quest.rewardExp = Number(questData.rewardExp);
+	quest.rewardAdv = Number(questData.rewardAdv);
+	quest.minLimitCloseRate = FUNC.objToMap(questData.minLimitCloseRate);
+	quest.maxLimitCloseRate = FUNC.objToMap(questData.maxLimitCloseRate);
+	quest.minLimitStat = FUNC.objToMap(questData.minLimitStat);
+	quest.maxLimitStat = FUNC.objToMap(questData.maxLimitStat);
+	quest.needItem = FUNC.objToMap(questData.needItem);
+	quest.needStat = FUNC.objToMap(questData.needStat);
+	quest.rewardItem = FUNC.objToMap(questData.rewardItem);
+	quest.rewardStat = FUNC.objToMap(questData.rewardStat);
+	quest.rewardCloseRate = FUNC.objToMap(questData.rewardCloseRate);
+
+	return quest;
+}
 
 function Item(name, item, isNew) {
 	//[★★☆] "테스트 수정구슬""
@@ -2078,6 +1919,55 @@ function Item(name, item, isNew) {
 
 		VAR.items.set(this.id, this);
 	}
+}
+Item.toObject = function (item) {
+	var obj;
+	var itemData = new Object();
+
+	itemData.id = item.id;
+	itemData.name = item.name;
+	itemData.description = item.description;
+	itemData.handleLevel = item.handleLevel;
+	itemData.value = item.value;
+	itemData.isWeapon = item.isWeapon;
+
+	itemData.recipe = new Array();
+	for (var recipeMap of itemData.recipe) {
+		for (var [itemId, itemCount] of recipeMap) {
+			obj = new Object();
+			obj.key = itemId;
+			obj.value = itemCount;
+			itemData.recipe.push(obj);
+		}
+	}
+
+	return itemData;
+}
+Item.fromObject = function (itemData) {
+	var map;
+	var key;
+	var value;
+	var item = new Item(null, null, false);
+
+	item.id = Number(itemData.id);
+	item.name = String(itemData.name);
+	item.description = String(itemData.description);
+	item.handleLevel = Number(itemData.handleLevel);
+	item.value = Number(itemData.value);
+	item.isWeapon = false;
+
+	item.recipe = new Array();
+	for (var recipeMap of itemData.recipe) {
+		key = Number(recipeMap.key);
+		value = Number(recipeMap.value);
+
+		map = new Map();
+		map.set(key, value);
+
+		item.recipe.push(map);
+	}
+
+	return item;
 }
 
 function Equipment(name, description, eTypeEnum, equipment, isNew) {
@@ -2363,6 +2253,75 @@ function Equipment(name, description, eTypeEnum, equipment, isNew) {
 		VAR.items.set(this.id, this);
 	}
 }
+Equipment.toObject = function (equipment) {
+	var obj;
+	var equipmentData = new Object();
+
+	equipmentData.id = equipment.id;
+	equipmentData.name = equipment.name;
+	equipmentData.description = equipment.description;
+	equipmentData.handleLevel = equipment.handleLevel;
+	equipmentData.value = equipment.value;
+	equipmentData.isWeapon = equipment.isWeapon;
+
+	equipmentData.recipe = new Array();
+	for (var recipeMap of equipmentData.recipe) {
+		for (var [itemId, itemCount] of recipeMap) {
+			obj = new Object();
+			obj.key = itemId;
+			obj.value = itemCount;
+			equipmentData.recipe.push(obj);
+		}
+	}
+
+	equipmentData.eType = equipment.eType;
+	equipmentData.limitLv = equipment.limitLv;
+	equipmentData.maxReinforce = equipment.maxReinforce;
+	equipmentData.nowReinforce = equipment.nowReinforce;
+	equipmentData.lvDown = equipment.lvDown;
+	equipmentData.stat = FUNC.mapToObj(equipment.stat);
+	equipmentData.limitStat = FUNC.mapToObj(equipment.limitStat);
+	equipmentData.type = FUNC.mapToObj(equipment.type);
+	equipmentData.reinforce = FUNC.mapToObj(equipment.reinforce);
+
+	return equipmentData;
+}
+Equipment.fromObject = function (equipmentData) {
+	var map;
+	var key;
+	var value;
+	var equipment = new Equipment(null, null, null, null, false);
+
+	equipment.id = Number(equipmentData.id);
+	equipment.name = String(equipmentData.name);
+	equipment.description = String(equipmentData.description);
+	equipment.handleLevel = Number(equipmentData.handleLevel);
+	equipment.value = Number(equipmentData.value);
+	equipment.isWeapon = true;
+
+	equipment.recipe = new Array();
+	for (var recipeMap of equipmentData.recipe) {
+		key = Number(recipeMap.key);
+		value = Number(recipeMap.value);
+
+		map = new Map();
+		map.set(key, value);
+
+		equipment.recipe.push(map);
+	}
+
+	equipment.eType = Number(equipmentData.eType);
+	equipment.limitLv = Number(equipmentData.limitLv);
+	equipment.maxReinforce = Number(equipmentData.maxReinforce);
+	equipment.nowReinforce = Number(equipmentData.nowReinforce);
+	equipment.lvDown = Number(equipmentData.lvDown);
+	equipment.stat = FUNC.objToMap(equipmentData.stat);
+	equipment.limitStat = FUNC.objToMap(equipmentData.limitStat);
+	equipment.type = FUNC.objToMap(equipmentData.type);
+	equipment.reinforce = FUNC.objToMap(equipmentData.reinforce);
+
+	return equipment;
+}
 
 function Achieve(name, achieve, isNew) {
 	this.getLimitStat = function (stat2Enum) {
@@ -2628,6 +2587,40 @@ function Achieve(name, achieve, isNew) {
 		VAR.achieves.set(this.id, this);
 	}
 }
+Achieve.toObject = function (achieve) {
+	var achieveData = new Object();
+
+	achieveData.id = achieve.id;
+	achieveData.name = achieve.name;
+	achieveData.limitLv = achieve.limitLv;
+	achieveData.rewardMoney = achieve.rewardMoney;
+	achieveData.rewardExp = achieve.rewardExp;
+	achieveData.rewardAdv = achieve.rewardAdv;
+	achieveData.limitStat = FUNC.mapToObj(achieve.limitStat);
+	achieveData.limitCloseRate = FUNC.mapToObj(achieve.limitCloseRate);
+	achieveData.otherLimit = FUNC.mapToObj(achieve.otherLimit);
+	achieveData.rewardCloseRate = FUNC.mapToObj(achieve.rewardCloseRate);
+	achieveData.rewardItem = FUNC.mapToObj(achieve.rewardItem);
+
+	return achieveData;
+}
+Achieve.fromObject = function (achieveData) {
+	var achieve = new Achieve(null, null, false);
+
+	achieve.id = Number(achieveData.id);
+	achieve.name = String(achieveData.name);
+	achieve.limitLv = Number(achieveData.limitLv);
+	achieve.rewardMoney = Number(achieveData.rewardMoney);
+	achieve.rewardExp = Number(achieveData.rewardExp);
+	achieve.rewardAdv = Number(achieveData.rewardAdv);
+	achieve.limitStat = FUNC.objToMap(achieveData.limitStat);
+	achieve.limitCloseRate = FUNC.objToMap(achieveData.limitCloseRate);
+	achieve.otherLimit = FUNC.objToMap(achieveData.otherLimit);
+	achieve.rewardCloseRate = FUNC.objToMap(achieveData.rewardCloseRate);
+	achieve.rewardItem = FUNC.objToMap(achieveData.rewardItem);
+
+	return achieve;
+}
 
 function Research(name, research, isNew) {
 	this.getNeedItem = function (itemId) {
@@ -2766,6 +2759,32 @@ function Research(name, research, isNew) {
 		VAR.researches.set(this.id, this);
 	}
 }
+Research.toObject = function (research) {
+	var researchData = new Object();
+
+	researchData.id = research.id;
+	researchData.name = research.name;
+	researchData.needMoney = research.needMoney;
+	researchData.limitLv = research.limitLv;
+	researchData.rewardExp = research.rewardExp;
+	researchData.needItem = FUNC.mapToObj(research.needItem);
+	researchData.rewardItem = FUNC.mapToObj(research.rewardStat);
+
+	return researchData;
+}
+Research.fromObject = function (researchData) {
+	var research = new Research(null, null, false);
+
+	research.id = Number(researchData.id);
+	research.name = String(researchData.name);
+	research.needMoney = Number(researchData.needMoney);
+	research.limitLv = Number(researchData.limitLv);
+	research.rewardExp = Number(researchData.rewardExp);
+	research.needItem = FUNC.objToMap(researchData.needItem);
+	research.rewardItem = FUNC.objToMap(researchData.rewardStat);
+
+	return research;
+}
 
 function Building(name, building, isNew) {
 	this.setDifficulty = function (difficulty) {
@@ -2854,6 +2873,32 @@ function Building(name, building, isNew) {
 		VAR.buildings.set(this.id, this);
 	}
 }
+Building.toObject = function (building) {
+	var buildingData = new Object();
+
+	buildingData.id = building.id;
+	buildingData.name = building.name;
+	buildingData.difficulty = building.difficulty;
+	buildingData.npc = building.npc;
+	buildingData.uniqueMonster = building.uniqueMonster;
+	buildingData.move = building.move;
+	buildingData.buildingType = building.buildingType;
+
+	return buildingData;
+}
+Building.fromObject = function (buildingData) {
+	var building = new Building(null, null, false);
+
+	building.id = Number(buildingData.id);
+	building.name = String(buildingData.name);
+	building.difficulty = Number(buildingData.difficulty);
+	building.npc = new Array(buildingData.npc);
+	building.uniqueMonster = new Array(buildingData.uniqueMonster);
+	building.move = new Array(buildingData.move);
+	building.buildingType = new Array(buildingData.buildingType);
+
+	return building;
+}
 
 function Skill(name, skill, isNew) {
 	this.getDamageType = function (damageType) {
@@ -2882,6 +2927,16 @@ function Skill(name, skill, isNew) {
 			this.damageType = damageTypeMap;
 		}
 	}
+	this.setUse = function (argumentList, executePart) {
+		var temp1 = FUNC.checkType(Array, argumentList);
+		var temp2 = FUNC.checkType(String, executePart);
+
+		if (temp1 !== null && temp2 !== null) {
+			this.argumentList = temp1;
+			this.executePart = temp2;
+			this.use = new Function(temp1, temp2);
+		}
+	}
 
 	//Constructor
 	isNew = typeof isNew === "undefined" ? true : false;
@@ -2889,9 +2944,15 @@ function Skill(name, skill, isNew) {
 		if (typeof skill === "undefined") {
 			this.id = FUNC.getId(ENUM.ID.skill);
 			this.name = name;
+			this.argumentList;
+			this.executePart;
+			this.limitLv = 1;
 			this.isPassive = false;
 			this.damageType = new Map();
-			this.use = new Function("user", "target", "isUserPlayer", "return true;");
+			this.limitStat = new Map();
+			this.use;
+
+			this.setUse(["user", "target", "isUserPlayer"], "return true;");
 
 			FUNC.log("Created New Skill - (id : " + this.id + ", name : " + this.name + ")");
 		}
@@ -2904,8 +2965,12 @@ function Skill(name, skill, isNew) {
 
 			this.id = skill.id;
 			this.name = skill.name;
+			this.argumentList = skill.argumentList;
+			this.executePart = skill.executePart;
+			this.limitLv = skill.limitLv;
 			this.isPassive = skill.isPassive;
 			this.damageType = skill.damageType;
+			this.limitStat = skill.limitStat;
 			this.use = skill.use;
 
 			FUNC.log("Copied Skill(id : " + this.id + ", name : " + this.name + ")");
@@ -2913,6 +2978,34 @@ function Skill(name, skill, isNew) {
 
 		VAR.skills.set(this.id, this);
 	}
+}
+Skill.toObject = function (skill) {
+	var skillData = new Object();
+
+	skillData.id = skill.id;
+	skillData.name = skill.name;
+	skillData.argumentList = skill.argumentList;
+	skillData.executePart = skill.executePart;
+	skillData.limitLv = skill.limitLv;
+	skillData.isPassive = skill.isPassive;
+	skillData.damageType = FUNC.mapToObj(skill.damageType);
+	skillData.limitStat = FUNC.mapToObj(skill.limitStat);
+
+	return skillData;
+}
+Skill.fromObject = function (skillData) {
+	var skill = new Skill(null, null, false);
+
+	skill.id = Number(skillData.id);
+	skill.name = String(skillData.name);
+	skill.limitLv = Number(skillData.limitLv);
+	skill.isPassive = Boolean(skillData.isPassive);
+	skill.damageType = FUNC.objToMap(skillData.damageType);
+	skill.limitStat = FUNC.objToMap(skillData.limitStat);
+
+	skill.setUse(new Array(skillData.argumentList), String(skillData.executePart));
+
+	return skill;
 }
 
 function Monster(name, monster, isNew) {
@@ -3156,6 +3249,72 @@ function Monster(name, monster, isNew) {
 
 		VAR.monsters.set(this.id, this);
 	}
+}
+Monster.toObject = function (monster) {
+	var obj;
+	var monsterData = new Object();
+
+	monsterData.id = monster.id;
+	monsterData.name = monster.name;
+	monsterData.rarePercent = monster.rarePercent;
+	monsterData.minDifficulty = monster.minDifficulty;
+	monsterData.maxDifficulty = monster.maxDifficulty;
+	monsterData.mainField = monster.mainField;
+	monsterData.subField = monster.subField;
+	monsterData.phaseHealth = monster.phaseHealth;
+	monsterData.skill = monster.skill;
+	monsterData.phaseStartSkill = FUNC.mapToObj(monster.phaseStartSkill);
+	monsterData.stat = FUNC.mapToObj(monster.stat);
+	monsterData.rareStatIncrease = FUNC.mapToObj(monster.rareStatIncrease);
+	monsterData.phaseSkill = FUNC.mapToObj(monster.phaseSkill);
+
+	monsterData.phaseIncreaseStat = new Array();
+	for (var [phase, stat2Map] of monster.phaseIncreaseStat) {
+		obj = new Object();
+		obj.key = phase;
+		obj.value = FUNC.mapToObj(stat2Map);
+		monsterData.phaseIncreaseStat.push(obj);
+	}
+
+	return monsterData;
+}
+Monster.fromObject = function (monsterData) {
+	var key1, key2;
+	var value;
+	var monster = new Monster(null, null, false);
+
+	monster.id = Number(monsterData.id);
+	monster.name = String(monsterData.name);
+	monster.rarePercent = Number(monsterData.rarePercent);
+	monster.minDifficulty = Number(monsterData.minDifficulty);
+	monster.maxDifficulty = Number(monsterData.maxDifficulty);
+	monster.mainField = new Array(monsterData.mainField);
+	monster.subField = new Array(monsterData.subField);
+	monster.phaseHealth = new Array(monsterData.phaseHealth);
+	monster.skill = new Array(monsterData.skill);
+	monster.phaseStartSkill = FUNC.objToMap(monsterData.phaseStartSkill);
+	monster.stat = FUNC.objToMap(monsterData.stat);
+	monster.rareStatIncrease = FUNC.objToMap(monsterData.rareStatIncrease);
+
+	var map = new Map();
+	for (var element of monster.phaseSkill)
+		map.set(element.key, new Array(element.value));
+	monster.phaseSkill = map;
+
+	monster.phaseIncreaseStat = new Map();
+	for (var obj of monsterData.phaseIncreaseStat) {
+		key1 = Number(obj.key);
+
+		player.mainStat.set(key1, new Map());
+		for (var stat2Map of obj.value) {
+			key2 = Number(stat2Map.key);
+			value = Number(stat2Map.value);
+
+			player.mainStat.get(key1).set(key2, value);
+		}
+	}
+
+	return monster;
 }
 
 function Player(nickName, name, ImageDB, room, player, isNew) {
@@ -3426,7 +3585,17 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 		return false;
 	}
 	this.canAddSkill = function (skillId) {
-		//TODO : 흐어엉
+		var temp = FUNC.checkNaN(skillId, 1, VAR.skills.size - 1);
+
+		if (temp === null)
+			return false;
+
+		var skill = VAR.skills.get(temp);
+		if (skill.limitLv <= this.lv &&
+			FUNC.check(skill.limitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
+			return true;
+		return false;
+
 	}
 	this.canClearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size - 1);
@@ -4359,6 +4528,133 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 
 		VAR.players.set(this.id, this);
 	}
+}
+Player.toObject = function (player) {
+	var obj;
+	var playerData = new Object();
+
+	playerData.id = player.id;
+	playerData.nickName = player.nickName;
+	playerData.name = player.name;
+	playerData.image = player.image;
+	playerData.lastTime = player.lastTime;
+	playerData.recentRoom = player.room;
+	playerData.coord = Coordinate.toObject(player.coord);
+	playerData.nowTitle = player.nowTitle;
+	playerData.money = player.money;
+	playerData.lv = player.lv;
+	playerData.exp = player.exp;
+	playerData.sp = player.sp;
+	playerData.adv = player.adv;
+	playerData.ddosCheck = player.ddosCheck;
+	playerData.nowChat = player.nowChat;
+	playerData.building = player.building;
+	playerData.nowMonster = player.nowMonster;
+	playerData.nowPlayer = player.nowPlayer;
+	playerData.doing = player.doing;
+	playerData.canCommand = player.canCommand;
+	playerData.isFighting = player.isFighting;
+	playerData.isPvpOn = player.isPvpOn;
+	playerData.achieve = player.achieve;
+	playerData.research = player.research;
+	playerData.title = player.title;
+	playerData.nowQuest = player.nowQuest;
+	playerData.skill = player.skill;
+	playerData.job = FUNC.mapToObj(player.job);
+	playerData.resistStat = FUNC.mapToObj(player.resistStat);
+	playerData.inventory = FUNC.mapToObj(player.inventory);
+	playerData.equipped = FUNC.mapToObj(player.equipped);
+	playerData.clearedQuest = FUNC.mapToObj(player.clearedQuest);
+	playerData.closeRate = FUNC.mapToObj(player.closeRate);
+	playerData.log = FUNC.mapToObj(player.log);
+	playerData.type = FUNC.mapToObj(player.type);
+
+	playerData.mainStat = new Array();
+	for (var [stat1Enum, stat2Map] of player.mainStat) {
+		obj = new Object();
+		obj.key = stat1Enum;
+		obj.value = FUNC.mapToObj(stat2Map);
+		playerData.mainStat.push(obj);
+	}
+
+	playerData.buff = new Array();
+	for (var [stat2Enum, buffMap] of player.buff) {
+		obj = new Object();
+		obj.key = stat2Enum;
+		obj.value = FUNC.mapToObj(buffMap);
+		playerData.buff.push(obj);
+	}
+
+	return playerData;
+}
+Player.fromObject = function (playerData) {
+	var key1, key2;
+	var value;
+	var player = new Player(null, null, null, null, null, false);
+
+	player.id = Number(playerData.id);
+	player.nickName = String(playerData.nickName);
+	player.name = String(playerData.name);
+	player.image = Number(playerData.image);
+	player.lastTime = Number(playerData.lastTime);
+	player.recentRoom = player.room;
+	player.coord = Coordinate.fromObject(playerData.coord);
+	player.nowTitle = String(playerData.nowTitle);
+	player.money = Number(playerData.money);
+	player.lv = Number(player.lv);
+	player.exp = Number(playerData.exp);
+	player.sp = Number(playerData.sp);
+	player.adv = Number(playerData.adv);
+	player.ddosCheck = Number(playerData.ddosCheck);
+	player.nowChat = Number(playerData.nowChat);
+	player.building = Number(playerData.building);
+	player.nowMonster = Number(playerData.nowMonster);
+	player.nowPlayer = Number(playerData.nowPlayer);
+	player.doing = Number(playerData.doing);
+	player.canCommand = Boolean(playerData.canCommand);
+	player.isFighting = Boolean(playerData.isFighting);
+	player.isPvpOn = Boolean(playerData.isPvpOn);
+	player.achieve = new Array(playerData.achieve);
+	player.research = new Array(playerData.research);
+	player.title = new Array(playerData.title);
+	player.nowQuest = new Array(playerData.nowQuest);
+	player.skill = new Array(playerData.skill);
+	player.job = FUNC.objToMap(playerData.job);
+	player.resistStat = FUNC.objToMap(playerData.resistStat);
+	player.inventory = FUNC.objToMap(playerData.inventory);
+	player.equipped = FUNC.objToMap(playerData.equipped);
+	player.clearedQuest = FUNC.objToMap(playerData.clearedQuest);
+	player.closeRate = FUNC.objToMap(playerData.closeRate);
+	player.log = FUNC.objToMap(playerData.log);
+	player.type = FUNC.objToMap(playerData.type);
+
+	player.mainStat = new Map();
+	for (var obj of playerData.mainStat) {
+		key1 = String(obj.key);
+
+		player.mainStat.set(key1, new Map());
+		for (var stat2Map of obj.value) {
+			key2 = Number(stat2Map.key);
+			value = Number(stat2Map.value);
+
+			player.mainStat.get(key1).set(key2, value);
+		}
+	}
+
+	player.buff = new Map();
+	for (var obj of playerData.buff) {
+		key1 = Number(obj.key);
+
+		player.buff.set(key1, new Map());
+		for (var buffMap of obj.value) {
+			key2 = Number(buffMap.key);
+			value = Number(buffMap.value);
+
+			player.buff.get(key1).set(key2, value);
+		}
+	}
+
+	return player;
 }
 
 var evalNumber = 0;
