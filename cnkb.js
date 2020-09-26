@@ -25,35 +25,16 @@ const LOGPATH = FOLPATH + "Log/";
 
 const FUNC = {
 	loadDB: function () {
-		var key1, key2, key3, key4;
-		var value;
-		var map;
-
-		//플레이어 데이터 파싱
-		var playerDatas = JSON.parse(this.getDB(PLAYERPATH));
-		if (playerDatas !== null) {
-			var player;
-
-			for (var playerData of playerDatas) {
-
-
-				VAR.players.set(player.id, player);
-			}
-		}
-
-
 		//채팅 데이터 파싱
 		var chatDatas = JSON.parse(this.getDB(CHATPATH));
 		if (chatDatas !== null) {
 			var chat;
 
 			for (var chatData of chatDatas) {
-
-
+				chat = Chat.fromObject(chatData);
 				VAR.chats.set(chat.id, chat);
 			}
 		}
-
 
 		//엔피시 데이터 파싱
 		var npcDatas = JSON.parse(this.getDB(NPCPATH));
@@ -61,12 +42,10 @@ const FUNC = {
 			var npc;
 
 			for (var npcData of npcDatas) {
-
-
+				npc = Npc.fromObject(npcData);
 				VAR.npcs.set(npc.id, npc);
 			}
 		}
-
 
 		//퀘스트 데이터 파싱
 		var questDatas = JSON.parse(this.getDB(QUESTPATH));
@@ -74,32 +53,23 @@ const FUNC = {
 			var quest;
 
 			for (var questData of questDatas) {
-
-
+				quest = Quest.fromObject(questData);
 				VAR.quests.set(quest.id, quest);
 			}
 		}
 
-
 		//아이템 데이터 파싱
 		var itemDatas = JSON.parse(this.getDB(ITEMPATH));
 		if (itemDatas !== null) {
-			var item, equipment;
+			var item;
 
 			for (var itemData of itemDatas) {
+				item = Item.fromObject(itemData);
 
+				if (item.isWeapon)
+					item = Equipment.fromObject(itemData);
 
-
-
-				//장비 데이터 파싱
-				if (item.isWeapon) {
-
-
-					VAR.items.set(equipment.id, equipment);
-				}
-
-				else
-					VAR.items.set(item.id, item);
+				VAR.items.set(item.id, item);
 			}
 		}
 
@@ -109,8 +79,7 @@ const FUNC = {
 			var achieve;
 
 			for (var achieveData of achieveDatas) {
-
-
+				achieve = Achieve.fromObject(achieveData);
 				VAR.achieves.set(achieve.id, achieve);
 			}
 		}
@@ -122,9 +91,52 @@ const FUNC = {
 			var research;
 
 			for (var researchData of researchDatas) {
-
-
+				research = Research.fromObject(researchData);
 				VAR.researches.set(research.id, research);
+			}
+		}
+
+		//건물 데이터 파싱
+		var buildingDatas = JSON.parse(this.getDB(BUILDINGPATH));
+		if (buildingDatas !== null) {
+			var building;
+
+			for (var buildingData of buildingDatas) {
+				building = Building.fromObject(buildingData);
+				VAR.buildings.set(building.id, building);
+			}
+		}
+
+		//스킬 데이터 파싱
+		var skillDatas = JSON.parse(this.getDB(SKILLPATH));
+		if (skillDatas !== null) {
+			var skill;
+
+			for (var skillData of skillDatas) {
+				skill = Skill.fromObject(skillData);
+				VAR.skills.set(skill.id, skill);
+			}
+		}
+
+		//몬스터 데이터 파싱
+		var monsterDatas = JSON.parse(this.getDB(MONSTERPATH));
+		if (monsterDatas !== null) {
+			var monster;
+
+			for (var monsterData of monsterDatas) {
+				monster = Building.fromObject(monsterData);
+				VAR.buildings.set(monster.id, monster);
+			}
+		}
+
+		//플레이어 데이터 파싱
+		var playerDatas = JSON.parse(this.getDB(PLAYERPATH));
+		if (playerDatas !== null) {
+			var player;
+
+			for (var playerData of playerDatas) {
+				player = Player.fromObject(playerData);
+				VAR.players.set(player.id, player);
 			}
 		}
 
@@ -138,7 +150,6 @@ const FUNC = {
 			VAR.expBoost = varData.expBoost;
 		}
 
-
 		//맵 데이터 파싱
 		var mapData = JSON.parse(this.getDB(RESEARCHPATH));
 		if (mapData !== null) {
@@ -150,97 +161,109 @@ const FUNC = {
 	},
 
 	saveDB: function () {
-		var obj;
-		var obj1, obj2, obj3;
-
-		//플레이어 데이터 저장
-		var playerDatas = new Array();
-		var playerData;
-
-		for (var player of VAR.players.values()) {
-
-
-			playerDatas.push(playerData);
-		}
-		this.setDB(PLAYERPATH, JSON.stringify(playerDatas, null, "\t"));
-
-
 		//채팅 데이터 저장
 		var chatDatas = new Array();
 		var chatData;
 
 		for (var chat of VAR.chats.values()) {
-
-
+			chatData = Chat.toObject(chat);
 			chatDatas.push(chatData);
 		}
 		this.setDB(CHATPATH, JSON.stringify(chatDatas, null, "\t"));
-
 
 		//엔피시 데이터 저장
 		var npcDatas = new Array();
 		var npcData;
 
 		for (var npc of VAR.npcs.values()) {
-
-
+			npcData = Npc.toObject(npc);
 			npcDatas.push(npcData);
 		}
 		this.setDB(NPCPATH, JSON.stringify(npcDatas, null, "\t"));
-
 
 		//퀘스트 데이터 저장
 		var questDatas = new Array();
 		var questData;
 
 		for (var quest of VAR.quests) {
-
-
+			questData = Quest.toObject(quest);
 			questDatas.push(questData);
 		}
 		this.setDB(QUESTPATH, JSON.stringify(questDatas, null, "\t"));
-
 
 		//아이템 데이터 저장
 		var itemDatas = new Array();
 		var itemData;
 
 		for (var item of VAR.items.values()) {
-
-
-			//장비 데이터 저장
-			if (item.isWeapon) {
-
-			}
+			if (!item.isWeapon)
+				itemData = Item.toObject(item);
+			else
+				itemData = Equipment.toObject(item);
 
 			itemDatas.push(itemData);
 		}
 		this.setDB(ITEMPATH, JSON.stringify(itemDatas, null, "\t"));
-
 
 		//업적 데이터 저장
 		var achieveDatas = new Array();
 		var achieveData;
 
 		for (var achieve of VAR.achieves.values()) {
-
-
+			achieveData = Achieve.toObject(achieve);
 			achieveDatas.push(achieveData);
 		}
 		this.setDB(ACHIEVEPATH, JSON.stringify(achieveDatas, null, "\t"));
-
 
 		//연구 데이터 저장
 		var researchDatas = new Array();
 		var researchData;
 
 		for (var research of VAR.researches.values()) {
-
-
+			researchData = Research.toObject(research);
 			researchDatas.push(researchData);
 		}
 		this.setDB(RESEARCHPATH, JSON.stringify(researchDatas, null, "\t"));
 
+		//건물 데이터 저장
+		var buildingDatas = new Array();
+		var buildingData;
+
+		for (var building of VAR.buildings.values()) {
+			buildingData = Building.toObject(building);
+			buildingDatas.push(buildingData);
+		}
+		this.setDB(BUILDINGPATH, JSON.stringify(buildingDatas, null, "\t"));
+
+		//스킬 데이터 저장
+		var skillDatas = new Array();
+		var skillData;
+
+		for (var skill of VAR.skills.values()) {
+			skillData = Research.toObject(skill);
+			skillDatas.push(skillData);
+		}
+		this.setDB(SKILLPATH, JSON.stringify(skillDatas, null, "\t"));
+
+		//몬스터 데이터 저장
+		var monsterDatas = new Array();
+		var monsterData;
+
+		for (var monster of VAR.monsters.values()) {
+			monsterData = Research.toObject(monster);
+			monsterDatas.push(monsterData);
+		}
+		this.setDB(MONSTERPATH, JSON.stringify(monsterDatas, null, "\t"));
+
+		//플레이어 데이터 저장
+		var playerDatas = new Array();
+		var playerData;
+
+		for (var player of VAR.players.values()) {
+			playerData = Player.toObject(player);
+			playerDatas.push(playerData);
+		}
+		this.setDB(PLAYERPATH, JSON.stringify(playerDatas, null, "\t"));
 
 		//변수 데이터 저장
 		var varData = new Object();
@@ -252,10 +275,8 @@ const FUNC = {
 		varData.expBoost = VAR.expBoost;
 		this.setDB(VARPATH, JSON.stringify(varData, null, "\t"));
 
-
 		//맵 데이터 저장
 		var mapData = new Array();
-
 
 		this.setDB(MAPPATH, JSON.stringify(mapData, null, "\t"));
 
@@ -1954,7 +1975,7 @@ Item.fromObject = function (itemData) {
 	item.description = String(itemData.description);
 	item.handleLevel = Number(itemData.handleLevel);
 	item.value = Number(itemData.value);
-	item.isWeapon = false;
+	item.isWeapon = Boolean(itemData.isWeapon);
 
 	item.recipe = new Array();
 	for (var recipeMap of itemData.recipe) {
