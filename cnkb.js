@@ -4895,8 +4895,9 @@ function nonPlayerFunc(room, msg, sender, replier, ImageDB) {
 
 			var player = new Player(split[1], sender, ImageDB, room);
 			FUNC.saveDB();
-			replier.reply("CNKB Rpg 세계에 오신 것을 환영합니다!\n\"(..명령어 / ..도움말 / ..help)\" 로 명령어 확인이 가능합니다");
-		}
+			FUNC.reply(player.id, "CNKB Rpg 세계에 오신 것을 환영합니다!\n\"(..명령어 / ..도움말 / ..help)\" 로 		}명령어 확인이 가능합니다",
+				"부적절한 닉네임은 추후 불이익을 받을 수 있습니다");
+
 	}
 
 	//명령어 출력
@@ -4909,7 +4910,7 @@ function playerFunc(player, msg, sender, replier) {
 
 	//회원가입 실패 - 이름 + 프로필 중복
 	if (split[0] === "..가입") {
-		replier.reply(sender + "님과 이름 및 프로필 이미지가 동일한 유저가 이미 존재합니다.\n이름 또는 프로필 이미지를 바꾸고 다시 시도해주세요");
+		replier.reply(sender + "님과 이름 및 프로필 이미지가 동일한 유저가 이미 존재합니다.\n이름 또는 프로필 이미지 변경 후 다시 시도해주세요");
 		return true;
 	}
 
