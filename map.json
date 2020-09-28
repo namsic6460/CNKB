@@ -1,54 +1,47 @@
-[
-	{
-		"y": 0,
-		"yMap": {
-			"x": 0,
-			"xMap": {
-				"name": "땅 끝 마을",
-				"difficulty": 0,
-				"buildingType": 0,
-				"building": [
-					{
-						"name": "잡화상점",
-						"npc": [
-							1,
-							2,
-							3
-						],
-						"difficulty": 0
-					}
-				]
-			}
+{
+	"xLimit": 10,
+	"yLimit": 10,
+	"mapData": [
+		{
+			"y": 0,
+			"value": [
+				{
+					"x": 0,
+					"name": "regionName",
+					"npc": [
+						5,
+						6,
+						7
+					],
+					"building": [
+						1,
+						2,
+						3
+					]
+				}
+			]
 		}
-	},
-	{
-		"y": 1,
-		"yMap": {
-			"x": 0,
-			"xMap": {
-				"name": "작은 광산",
-				"difficulty": 0,
-				"buildingType": 1,
+	]
+}
+
+{
+	"xLimit": 10,
+	"yLimit": 10,
+	"map": {
+		"0": {
+			"0": {
+				"name": "regionName",
+				"npc": [
+					5,
+					6,
+					7
+				],
 				"building": [
-					{
-						"id": 1,
-						"name": "광산 깊은 곳 1",
-						"npc": [
-							4
-						],
-						"difficulty": 3,
-						"uniqueMonster": [
-							1,
-							2,
-							3
-						],
-						"move": [
-							"0",
-							"2"
-						]
-					}
+					1,
+					2,
+					3
 				]
 			}
 		}
 	}
-]
+}

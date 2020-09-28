@@ -151,9 +151,24 @@ const FUNC = {
 		}
 
 		//맵 데이터 파싱
-		var mapData = JSON.parse(this.getDB(RESEARCHPATH));
+		var x, y;
+		var mapData = JSON.parse(this.getDB(MAPPATH));
 		if (mapData !== null) {
+			MAP.yLimit = Number(mapData.yLimit);
+			MAP.xLimit = Number(mapData.xLimit);
 
+			for (var yMap of mapData.mapData) {
+				y = Number(yMap.y);
+				MAP.map.set(y, new Map());
+
+				for (xMap of yMap.value) {
+					x = Number(xMap.x);
+					MAP.map.get(y).set(x, new Map());
+					MAP.map.get(y).get(x).set("name", String(xMap.name));
+					MAP.map.get(y).get(x).set("npc", new Array(xMap.npc));
+					MAP.map.get(y).get(x).set("building", new Array(xMap.building));
+				}
+			}
 		}
 
 
@@ -276,7 +291,29 @@ const FUNC = {
 		this.setDB(VARPATH, JSON.stringify(varData, null, "\t"));
 
 		//맵 데이터 저장
-		var mapData = new Array();
+		var obj1, obj2;
+		var mapData = new Object();
+		mapData.yLimit = MAP.yLimit;
+		mapData.xLimit = MAP.xLimit;
+
+		mapData.mapData = new Array();
+		for (var [y, yMap] of MAP.map) {
+			obj1 = new Object();
+			obj1.y = y;
+			obj1.value = new Array();
+
+			for (var [x, xMap] of yMap) {
+				obj2 = new Object();
+				obj2.x = x;
+				obj2.name = xMap.get("name");
+				obj2.npc = xMap.get("npc");
+				obj2.building = xMap.get("building");
+
+				obj1.value.push(obj2);
+			}
+
+			mapData.mapData.push(obj1);
+		}
 
 		this.setDB(MAPPATH, JSON.stringify(mapData, null, "\t"));
 
