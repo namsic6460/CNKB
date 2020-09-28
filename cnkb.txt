@@ -183,7 +183,7 @@ lv : 1~999
 jobLv : 1~100
 closeRate : 0~10000
 handleLevel : 1~10
-typeLf : 0~5
+typeLv : 0~5
 difficulty: 0~999
 
 "Chat": {
@@ -346,7 +346,7 @@ Skill: {
 	"skill": List<Skill>,									//스킬 id = []
 	"phaseStartSkill": Map<Integer, Skill>,					//페이즈, 스킬 id = {}
 	"stat": Map<STAT2, Number>,								//STAT2, 스텟 = {}
-	"rareStatIncrease": Map<STAT2, Number>,					//STAT2, 스텟 = {}
+	"rareIncreaseStat": Map<STAT2, Number>,					//STAT2, 스텟 = {}
 	"phaseSkill": Map<Integer, List<Skill>>,				//페이즈, [스킬 id] = {}
 	"phaseIncreaseStat": Map<Number, Map<STAT2, Number>>	//페이즈, {STAT2, 스텟} = {}
 	//-----------------------------------------------
