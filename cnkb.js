@@ -361,7 +361,15 @@ const FUNC = {
 	},
 
 	random: function (min, max) {
-		return Math.floor(Math.random() * (max - min)) + min;
+		var temp1 = this.checkNaN(min);
+		var temp2 = this.checkNaN(max);
+
+		if (temp1 !== null && temp2 !== null) {
+			if (temp1 <= temp2)
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+		}
+
+		return 0;
 	},
 
 	getFuncName: function (func) {
@@ -978,7 +986,8 @@ Chat.fromObject = function (chatData) {
 
 function Npc(name, npc, isNew) {
 	this.getAvailableChat = function (playerId) {
-		var output = new Array();
+		var percent = 0;
+		var array = new Array();
 		var temp1 = FUNC.checkNaN(playerId, 1, VAR.players.size - 1);
 
 		if (temp1 !== null) {
@@ -994,12 +1003,20 @@ function Npc(name, npc, isNew) {
 					FUNC.check(c.get("minStat"), stat, ENUM.CHECKING.big, false, true) &&
 					FUNC.check(c.get("maxStat"), stat, ENUM.CHECKING.small, false, true) &&
 					FUNC.check(c.get("minQuest"), quest, ENUM.CHECKING.big, false, true) &&
-					FUNC.check(c.get("maxQuest"), quest, ENUM.CHECKING.small, false, true))
-					output.push(c.get("chat"));
+					FUNC.check(c.get("maxQuest"), quest, ENUM.CHECKING.small, false, true)) {
+
+					if (c.percent !== -1) {
+						percent += c.percent;
+						array.push(c.get("chat"));
+					}
+
+					else
+						return [1, new Array(c.get("chat"))];
+				}
 			}
 		}
 
-		return output;
+		return [percent, array];
 	}
 	this.getAvailableSelling = function (playerId, jobEnum) {
 		var output = new Map();
@@ -2808,6 +2825,45 @@ Research.fromObject = function (researchData) {
 }
 
 function Building(name, building, isNew) {
+	this.getMonsters = function () {
+		var percent = 0;
+		var map = new Map();
+
+		for (var monster of VAR.monsters) {
+			if (monster.minDifficulty > this.difficulty || monster.maxDifficulty < this.difficulty)
+				continue;
+
+			if (typeof FUNC.findValue(this.fieldType, monster.mainField) !== "undefined") {
+				percent += 2;
+				map.set(monser.id, 2);
+			}
+
+			else {
+				for (var field of monster.subField) {
+					if (typeof FUNC.findValue(this.fieldType, field) !== "undefined") {
+						percent += 1;
+						map.set(monster.id, 1);
+					}
+				}
+			}
+		}
+
+		return [percent, map];
+	}
+	this.randomMonster = function () {
+		var monsters = this.getMonsters();
+		var totalPercent = monsters[0];
+		var random = FUNC.random(1, totalPercent);
+
+		var value = 0;
+		for (var [monsterId, percent] of monsters[1]) {
+			value += percent;
+
+			if (value <= random)
+				return monsterId;
+		}
+	}
+
 	this.setDifficulty = function (difficulty) {
 		var temp = FUNC.checkNaN(difficulty, 0, 999);
 		if (temp !== null) this.difficulty = temp;
@@ -2847,14 +2903,14 @@ function Building(name, building, isNew) {
 				FUNC.log("addMove Error", ENUM.LOG.error);
 		}
 	}
-	this.addBuildingType = function (buildingTypeEnum) {
-		var temp = FUNC.checkNaN(buildingTypeEnum);
+	this.addFieldType = function (fieldTypeEnum) {
+		var temp = FUNC.checkNaN(fieldTypeEnum);
 
 		if (temp !== null) {
-			if (typeof FUNC.findValue(this.buildingType, temp) === "undefined")
+			if (this.difficulty !== 0 && typeof FUNC.findValue(this.fieldType, temp) === "undefined")
 				this.building.push(temp);
 			else
-				FUNC.log("addBuildingType Error", ENUM.LOG.error);
+				FUNC.log("addFieldType Error", ENUM.LOG.error);
 		}
 	}
 
@@ -2868,7 +2924,7 @@ function Building(name, building, isNew) {
 			this.npc = new Array();
 			this.uniqueMonster = new Array();
 			this.move = new Array();
-			this.buildingType = new Array();
+			this.fieldType = new Array();
 
 			FUNC.log("Created New Building - (id : " + this.id + ", name : " + this.name + ")");
 		}
@@ -2886,7 +2942,7 @@ function Building(name, building, isNew) {
 			this.npc = building.npc;
 			this.uniqueMonster = building.uniqueMonster;
 			this.move = building.move;
-			this.buildingType = building.buildingType;
+			this.fieldType = building.fieldType;
 
 			FUNC.log("Copied Building(id : " + this.id + ", name : " + this.name + ")");
 		}
@@ -2903,7 +2959,7 @@ Building.toObject = function (building) {
 	buildingData.npc = building.npc;
 	buildingData.uniqueMonster = building.uniqueMonster;
 	buildingData.move = building.move;
-	buildingData.buildingType = building.buildingType;
+	buildingData.fieldType = building.fieldType;
 
 	return buildingData;
 }
@@ -2916,7 +2972,7 @@ Building.fromObject = function (buildingData) {
 	building.npc = new Array(buildingData.npc);
 	building.uniqueMonster = new Array(buildingData.uniqueMonster);
 	building.move = new Array(buildingData.move);
-	building.buildingType = new Array(buildingData.buildingType);
+	building.fieldType = new Array(buildingData.fieldType);
 
 	return building;
 }
@@ -2948,14 +3004,12 @@ function Skill(name, skill, isNew) {
 			this.damageType = damageTypeMap;
 		}
 	}
-	this.setUse = function (argumentList, executePart) {
-		var temp1 = FUNC.checkType(Array, argumentList);
-		var temp2 = FUNC.checkType(String, executePart);
+	this.setUse = function (executePart) {
+		var temp = FUNC.checkType(String, executePart);
 
-		if (temp1 !== null && temp2 !== null) {
-			this.argumentList = temp1;
+		if (temp !== null) {
 			this.executePart = temp2;
-			this.use = new Function(temp1, temp2);
+			this.use = new Function("user", "target", "isUserPlayer", temp);
 		}
 	}
 
@@ -2965,7 +3019,6 @@ function Skill(name, skill, isNew) {
 		if (typeof skill === "undefined") {
 			this.id = FUNC.getId(ENUM.ID.skill);
 			this.name = name;
-			this.argumentList;
 			this.executePart;
 			this.limitLv = 1;
 			this.isPassive = false;
@@ -2973,7 +3026,7 @@ function Skill(name, skill, isNew) {
 			this.limitStat = new Map();
 			this.use;
 
-			this.setUse(["user", "target", "isUserPlayer"], "return true;");
+			this.setUse("return true;");
 
 			FUNC.log("Created New Skill - (id : " + this.id + ", name : " + this.name + ")");
 		}
@@ -2986,7 +3039,6 @@ function Skill(name, skill, isNew) {
 
 			this.id = skill.id;
 			this.name = skill.name;
-			this.argumentList = skill.argumentList;
 			this.executePart = skill.executePart;
 			this.limitLv = skill.limitLv;
 			this.isPassive = skill.isPassive;
@@ -3005,7 +3057,6 @@ Skill.toObject = function (skill) {
 
 	skillData.id = skill.id;
 	skillData.name = skill.name;
-	skillData.argumentList = skill.argumentList;
 	skillData.executePart = skill.executePart;
 	skillData.limitLv = skill.limitLv;
 	skillData.isPassive = skill.isPassive;
@@ -3019,12 +3070,11 @@ Skill.fromObject = function (skillData) {
 
 	skill.id = Number(skillData.id);
 	skill.name = String(skillData.name);
+	skill.setUse(String(skillData.executePart));
 	skill.limitLv = Number(skillData.limitLv);
 	skill.isPassive = Boolean(skillData.isPassive);
 	skill.damageType = FUNC.objToMap(skillData.damageType);
 	skill.limitStat = FUNC.objToMap(skillData.limitStat);
-
-	skill.setUse(new Array(skillData.argumentList), String(skillData.executePart));
 
 	return skill;
 }
@@ -3059,8 +3109,16 @@ function Monster(name, monster, isNew) {
 		var temp = FUNC.checkNaN(rarePercent, 0, 10000);
 		if (temp !== null) this.rarePercent = temp;
 	}
-	this.setMainField = function (fieldEnum) {
-		var temp = FUNC.checkNaN(fieldEnum);
+	this.setMinDifficulty = function (minDifficulty) {
+		var temp = FUNC.checkNaN(minDifficulty, 1, 999);
+		if (temp !== null) this.minDifficulty = temp;
+	}
+	this.setMaxDifficulty = function (maxDifficulty) {
+		var temp = FUNC.checkNaN(maxDifficulty, 1, 999);
+		if (temp !== null) this.maxDifficulty = temp;
+	}
+	this.setMainField = function (fieldTypeEnum) {
+		var temp = FUNC.checkNaN(fieldTypeEnum);
 		if (temp !== null) this.mainField = temp;
 	}
 	this.setPhaseStartSkill = function (phase, skillId, ignore) {
@@ -3233,6 +3291,8 @@ function Monster(name, monster, isNew) {
 			this.id = FUNC.getId(ENUM.ID.monster);
 			this.name = name;
 			this.rarePercent = 0;
+			this.minDifficulty = 1;
+			this.maxDifficulty = 999;
 			this.mainField = ENUM.FIELDTYPE.basic;
 			this.subField = new Array();
 			this.phaseHealth = new Array();
@@ -3255,6 +3315,8 @@ function Monster(name, monster, isNew) {
 			this.id = monster.id;
 			this.name = monster.name;
 			this.rarePercent = monster.rarePercent;
+			this.minDifficulty = 0;
+			this.maxDifficulty = 999;
 			this.mainField = monster.mainField;
 			this.subField = monster.subField;
 			this.phaseHealth = monster.phaseHealth;
@@ -3436,32 +3498,17 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 
 		var npc = VAR.npcs.get(temp);
 		var availableChat = npc.getAvailableChat(this.getId());
-		var totalPercent = 0;
+		var totalPercent = availableChat[0];
+		var random = FUNC.random(1, totalPercent);
 		var chatId = -1;
 
+		var value = 0;
 		for (var chat of availableChat) {
-			value = chat.get("percent");
+			value += chat.get("percent");
 
-			if (value !== -1)
-				totalPercent += value;
-
-			else {
+			if (value <= random) {
 				chatId = chat.get("chat");
 				break;
-			}
-		}
-
-		if (chatId === -1) {
-			var random = FUNC.random(1, totalPercent);
-
-			var value = 0;
-			for (var chat of availableChat) {
-				value += chat.get("percent");
-
-				if (value >= random) {
-					chatId = chat.get("chat");
-					break;
-				}
 			}
 		}
 
@@ -3616,7 +3663,6 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			FUNC.check(skill.limitStat, this.mainStat.get(ENUM.STAT1.totalStat), ENUM.CHECKING.big, false, true))
 			return true;
 		return false;
-
 	}
 	this.canClearQuest = function (questId) {
 		var temp = FUNC.checkNaN(questId, 1, VAR.quests.size - 1);
@@ -3738,6 +3784,12 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 				this.buff.delete(stat2Enum);
 		}
 	}
+	this.handlePassive = function () {
+		for (var s of this.skill) {
+			if (s.isPassive)
+				s.use(this.id, this.id, true);
+		}
+	}
 	this.isDdos = function () {
 		var time = FUNC.time();
 
@@ -3771,6 +3823,8 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 			this.mainStat.get(ENUM.STAT1.totalStat).set(stat2, basicStat + increStat);
 			this.addLog(ENUM.LOGDATA.statUpdated, 1);
 		}
+
+		this.handlePassive();
 	}
 
 	this.getJob = function (jobEnum) {

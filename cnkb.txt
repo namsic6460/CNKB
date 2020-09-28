@@ -91,9 +91,6 @@
 		"mine",				//광질/채집 등
 		"reinforce"			//강화
 	},
-	"BUILDINGTYPE": {
-		//TODO : 만들기......
-	}
 	"FIELDTYPE": {
 		"basic",			//일반
 		"mine",				//광산
@@ -318,20 +315,21 @@ Building: {
 	"npc": List<Number>,					//엔피시 id = []
 	"uniqueMonster": List<Number>,			//몬스터 id = []
 	"move": List<Number>					//빌딩 id = [] - 0일 경우, 건물 밖으로 이동 가능
-	"buildingType": List<BUILDINGTYPE>		//BUILDINGTYPE = []
+	"fieldType": List<FIELDTYPE>			//FIELDTYPE = [] - difficulty가 0 일 경우, 추가 불가능
 	//-----------------------------------------------
+	getMonsters()
+	randomMonster()
 },
 
 Skill: {
 	"id": Number,									//인식 정보 - 기본 키
 	"name": String,									//이름
-	"argumentList": String,							//use 함수 인자 목록
 	"executePart": String,							//use 함수 구현부
 	"limitLv": Number,								//레벨 제한 = 1
 	"isPassive": Boolean,							//패시브여부 = false
 	"damageType": Map<DAMAGETYPE, Number>,			//DAMAGETYPE, 확률 - 확률의 총 합은 항상 100 또는 없음 = {}
 	"limitStat": Map<STAT2, Number>,				//STAT2, 스텟 제한 = {}
-	"use": Function(user, target, isUserPlayer)		//사용 함수 - setter 없음(직접 대입) = (user, target, isUserPlayer) => return true
+	"use": Function(Number, Number, Boolean)		//사용 함수 - (유저 id, 타겟 id, isUserPlayer) => return true
 	//-----------------------------------------------
 }
 
@@ -340,7 +338,7 @@ Skill: {
 	"id": Number,					//인식 정보 - 기본 키
 	"name": String,					//이름
 	"rarePercent": Number,			//희귀 몹 확률 = 0(0 ~ 10000(100%))
-	"minDifficulty": Number,		//출현 최소 난이도 = 0
+	"minDifficulty": Number,		//출현 최소 난이도 = 1
 	"maxDifficulty": Number,		//출현 최대 난이도 = 999
 	"mainField": FIELDTYPE,									//주요 필드 = FIELDTYPE.basic
 	"subField": List<FIELDTYPE>,							//FIELDTYPE = []
@@ -412,6 +410,7 @@ Skill: {
 	handleQuest()
 	handleAchieve()
 	handleBuff()
-	updateStat()
+	handlePassive()
 	isDdos()
+	updateStat()
 }
