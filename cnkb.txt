@@ -75,7 +75,7 @@
 		"darkPriest"		//암흑 성직자
 	},
 	"WAIT_RESPONSE": {
-		"nothing",			//대답 없음
+		"nothing",			//대답 없음 - 사용 안함
 		"yes",				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
 		"no",				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
 		"number",			//숫자 형태 전부
@@ -120,7 +120,10 @@
 		"quest",			//퀘스트
 		"item",				//아이템, 장비
 		"achieve",			//업적
-		"research"			//연구
+		"research",			//연구
+		"building",			//건물
+		"skill",			//스킬
+		"monster"			//몬스터
 	},
 	"LOGDATA": {
 		"chat": 0,
@@ -143,8 +146,7 @@
 		"statUpdated": 17,
 		"emoteSent": 18,
 		"createdTime": 19,
-		"lastTime": 20,					//사용 안함
-		"playedDay": 21
+		"playedDay": 20
 	}
 }
 
@@ -188,13 +190,13 @@ difficulty: 0~999
 
 "Chat": {
 	"id": Number,								//인식 정보
-	"pause": Number,							//채팅 후 멈춤 시간 = 0(ms)
+	"pause": Number,							//채팅 후 멈춤 시간 = 1000(ms)
 	"quest": Number,							//퀘스트 id = 0(없음)
 	"money": Number,							//지급 돈 = 0
 	"teleport": Coordinate,						//텔레포트 좌표 = null
 	"text": List<Text>,							//챗 텍스트 = []
 	"wait": List<WAIT_RESPONSE>					//대답 가능 목록 = [WAIT_RESPONSE.nothing]
-	"chat": Map<String, Number>					//대답(WAIT_RESPONSE.anything), 챗 id = {}
+	"chat": Map<String, Number>					//대답, 챗 id = {}
 	"stat": Map<STAT2, Number>,					//STAT2, 스텟 = {}
 	"item": Map<Number, Number>,				//아이템 id, 갯수 = {} (갯수 == 0일 경우, 가진 것 모두 회수)
 	//-----------------------------------------------
@@ -228,7 +230,7 @@ difficulty: 0~999
 "Quest": {
 	"id": Number,										//인식 정보
 	"name": String,										//이름
-	"isRepeatable": boolean,							//반복 허용 여부 = false
+	"isRepeatable": Boolean,							//반복 허용 여부 = false
 	"minLimitLv": Number								//최소 레벨 제한 = 1
 	"maxLimitLv": Number								//최대 레벨 제한 = 999
 	"needMoney": Number,								//클리어 요구 돈 = 0
@@ -250,13 +252,16 @@ difficulty: 0~999
 }
 
 "Item": {
-	"id": Number,							//인식 정보
-	"name": String,							//이름
-	"description": String,					//설명
-	"handleLevel": Number,					//아이템 등급
-	"value": Number,						//기본 가격 = -1(구매 불가)
-	"isWeapon": boolean						//무기인지 아이템인지 판별 - 수정 불가 = false
-	"recipe": List<Map<Number, Number>>		//[{아이템 id, 갯수}]
+	"id": Number,									//인식 정보
+	"name": String,									//이름
+	"description": String,							//설명
+	"executePart": String,							//use 함수 구현부
+	"handleLevel": Number,							//아이템 등급 = 1
+	"value": Number,								//기본 가격 = -1(구매 불가)
+	"isWeapon": Boolean	,							//무기인지 아이템인지 판별 - 수정 불가 = false
+	"canUse": Boolean,
+	"recipe": List<Map<Number, Number>>,				//[{아이템 id, 갯수}]
+	"use": Function(Number, Number, Boolean)		//사용 함수 - (유저 id, 타겟 id, isUserPlayer) => return true
 	//-----------------------------------------------
 	getFullName()
 }
@@ -266,13 +271,13 @@ difficulty: 0~999
 	"name": String,									//이름
 	"description": String,							//설명
 	"eType": ETYPE,									//ETYPE
-	"handleLevel": Number,							//장비 등급
+	"handleLevel": Number,							//장비 등급 = 1
 	"value": Number,								//기본 가격 = -1(구매 불가)
 	"limitLv": Number,								//레벨 제한 = 1
 	"maxReinforce": Number,							//최대 강화 횟수 = 0
 	"nowReinforce": Number,							//현재 강화 횟수 = 0
 	"lvDown": Number								//레벨 제한 다운 수치 = 0
-	"isWeapon": boolean,							//무기인지 아이템인지 판별 - 수정불가 = true
+	"isWeapon": Boolean,							//무기인지 아이템인지 판별 - 수정불가 = true
 	"recipe": List<Map<Number, Number>>,			//[{아이템 id, 갯수}]
 	"stat": Map<STAT2, Number>,						//STAT2, 스텟 = {}
 	"limitStat": Map<STAT2, Number>					//STAT2, 스텟 제한 = {}
@@ -291,7 +296,6 @@ Achieve: {
 	"rewardAdv": Number,					//보상 모험 = 0
 	"limitStat": Map<STAT2, Number>,		//STAT2, 스텟 = {}
 	"limitCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
-	"otherLimit": Map<Number, Number>,		//특정 행동, 행동 횟수  = {}
 	"rewardCloseRate": Map<Number, Number>,	//엔피시 id, 친밀도 = {}
 	"rewardItem": Map<Number, Number>		//아이템 id, 갯수 = {}
 	//-----------------------------------------------
@@ -317,7 +321,7 @@ Building: {
 	"move": List<Number>					//빌딩 id = [] - 0일 경우, 건물 밖으로 이동 가능
 	"fieldType": List<FIELDTYPE>			//FIELDTYPE = [] - difficulty가 0 일 경우, 추가 불가능
 	//-----------------------------------------------
-	getMonsters()
+	getAvailableMonster()
 	randomMonster()
 },
 
@@ -392,9 +396,10 @@ Skill: {
 	"type": Map<TYPE, Number>,						//TYPE, 단계
 	"buff": Map<STAT2, Map<Number, Number>>			//STAT2, {종료시간, 증가 스텟}
 	//-----------------------------------------------
+	getFullName()
+	getAvailableNpc()
 	sendText(chatId, npcName)
 	executeChat(npcId)
-	getFullName()
 	getRequireExp()
 	tuneExp(exp)
 	canAddQuest(questid)

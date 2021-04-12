@@ -32,7 +32,7 @@ const FUNC = {
 
 			for (var chatData of chatDatas) {
 				chat = Chat.fromObject(chatData);
-				VAR.chats.set(chat.id, chat);
+				this.saveInstance(ENUM.ID.chat, chat);
 			}
 		}
 
@@ -43,7 +43,7 @@ const FUNC = {
 
 			for (var npcData of npcDatas) {
 				npc = Npc.fromObject(npcData);
-				VAR.npcs.set(npc.id, npc);
+				this.saveInstance(ENUM.ID.npc, npc);
 			}
 		}
 
@@ -54,7 +54,7 @@ const FUNC = {
 
 			for (var questData of questDatas) {
 				quest = Quest.fromObject(questData);
-				VAR.quests.set(quest.id, quest);
+				this.saveInstance(ENUM.ID.quest, quest);
 			}
 		}
 
@@ -65,11 +65,10 @@ const FUNC = {
 
 			for (var itemData of itemDatas) {
 				item = Item.fromObject(itemData);
-
 				if (item.isWeapon)
 					item = Equipment.fromObject(itemData);
 
-				VAR.items.set(item.id, item);
+				this.saveInstance(ENUM.ID.item, item);
 			}
 		}
 
@@ -80,7 +79,7 @@ const FUNC = {
 
 			for (var achieveData of achieveDatas) {
 				achieve = Achieve.fromObject(achieveData);
-				VAR.achieves.set(achieve.id, achieve);
+				this.saveInstance(ENUM.ID.achieve, achieve);
 			}
 		}
 
@@ -92,7 +91,7 @@ const FUNC = {
 
 			for (var researchData of researchDatas) {
 				research = Research.fromObject(researchData);
-				VAR.researches.set(research.id, research);
+				this.saveInstance(ENUM.ID.research, research);
 			}
 		}
 
@@ -103,7 +102,7 @@ const FUNC = {
 
 			for (var buildingData of buildingDatas) {
 				building = Building.fromObject(buildingData);
-				VAR.buildings.set(building.id, building);
+				this.saveInstance(ENUM.ID.building, building);
 			}
 		}
 
@@ -114,7 +113,7 @@ const FUNC = {
 
 			for (var skillData of skillDatas) {
 				skill = Skill.fromObject(skillData);
-				VAR.skills.set(skill.id, skill);
+				this.saveInstance(ENUM.ID.skill, skill);
 			}
 		}
 
@@ -125,7 +124,7 @@ const FUNC = {
 
 			for (var monsterData of monsterDatas) {
 				monster = Building.fromObject(monsterData);
-				VAR.buildings.set(monster.id, monster);
+				this.saveInstance(ENUM.ID.monster, monster);
 			}
 		}
 
@@ -136,7 +135,7 @@ const FUNC = {
 
 			for (var playerData of playerDatas) {
 				player = Player.fromObject(playerData);
-				VAR.players.set(player.id, player);
+				this.saveInstance(ENUM.ID.player, player);
 			}
 		}
 
@@ -170,7 +169,6 @@ const FUNC = {
 				}
 			}
 		}
-
 
 		Api.makeNoti("Data Loaded", new Date(), 4);
 	},
@@ -333,6 +331,37 @@ const FUNC = {
 		FUNC.setDB(LOGPATH + String(this.time()) + ".txt", VAR.log);
 	},
 
+	findInstanceMap: function (idEnum) {
+		switch (idEnum) {
+			case ENUM.ID.achieve:
+				return VAR.achieves;
+			case ENUM.ID.building:
+				return VAR.buildings;
+			case ENUM.ID.chat:
+				return VAR.chats;
+			case ENUM.ID.item:
+				return VAR.item;
+			case ENUM.ID.monster:
+				return VAR.monsters;
+			case ENUM.ID.npc:
+				return VAR.npcs;
+			case ENUM.ID.player:
+				return VAR.players;
+			case ENUM.ID.quest:
+				return VAR.quests;
+			case ENUM.ID.research:
+				return VAR.researches;
+			case ENUM.ID.skill:
+				return VAR.skills;
+		}
+	},
+
+	saveInstance: function (idEnum, instance) {
+		var map = this.findInstanceMap(idEnum);
+		VAR.id.set(idEnum, map.size);
+		map.set(instance.id, instance);
+	},
+
 	log: function (logData, logType) {
 		logType = typeof logType !== "undefined" ? logType : ENUM.LOG.info;
 
@@ -353,6 +382,9 @@ const FUNC = {
 		} catch (e) {
 			VAR.log += " (" + String(e.rhinoException.getScriptStack()[1]) + ") - " + logData + "\n";
 		}
+
+		if (logType == ENUM.LOG.error)
+			Api.makeNoti("Error Occured!", new Date(), 5);
 
 		VAR.logCount++;
 		if (VAR.logCount >= 100) {
@@ -383,18 +415,13 @@ const FUNC = {
 		return Math.round(Number(variable));
 	},
 
-	getId: function (idType) {
-		var value = VAR.id.get(idType);
+	getId: function (idEnum) {
+		var value = VAR.id.get(idEnum);
 
-		if (typeof value !== "undefined") {
-			VAR.id.set(idType, value + 1);
+		if (typeof value !== "undefined")
 			return value;
-		}
-
-		else {
-			VAR.id.set(idType, 2);
+		else
 			return 1;
-		}
 	},
 
 	random: function (min, max) {
@@ -517,6 +544,15 @@ const FUNC = {
 		}
 
 		return undefined;
+	},
+
+	compareCoord: function (coord1, coord2) {
+		if (this.checkType(Coordinate, coord1) === null || this.checkType(Coordinate, coord2))
+			return false;
+
+		if (coord1.x === coord2.x && coord1.y === coord2.y)
+			return true;
+		return false;
 	},
 
 	mapToObj: function (map) {
@@ -650,7 +686,7 @@ const ENUM = {
 	},
 	"WAIT_RESPONSE": {
 		"nothing": 0,			//대답 없음
-		"yes": 1,				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "dd"
+		"yes": 1,				//"예" 또는 "Y" 또는 "y" 또는 "ㅇ" 또는 "d"
 		"no": 2,				//"아니오" 또는 "아니요" 또는 "N" 또는 "n" 또는 "ㄴ" 또는 "ss"
 		"number": 3,			//숫자 형태 전부
 		"anything": 4,			//아무 채팅
@@ -793,7 +829,7 @@ Coordinate.toObject = function (coord) {
 	return obj;
 }
 
-function Chat(chat, isNew) {
+function Chat(chat) {
 	this.getChat = function (response) {
 		var temp = FUNC.checkType(String, response);
 		return this.chat.get(temp);
@@ -833,9 +869,16 @@ function Chat(chat, isNew) {
 			}
 		}
 	}
-	this.setChat = function (response, chatId, ignore) {
+	this.setChat = function (response, chatId, isResponseEnum, ignore) {
+		isResponseEnum = typeof isResponseEnum === "undefined" ? false : true;
 		ignore = typeof ignore === "undefined" ? false : true;
-		var temp1 = FUNC.checkType(String, response);
+
+		var temp1;
+		if (!isResponseEnum)
+			temp1 = FUNC.checkType(String, response);
+		else
+			temp1 = FUNC.checkNaN(response);
+
 		var temp2 = FUNC.checkNaN(chatId, 1, VAR.chats.size);
 
 		if (temp1 !== null && temp2 !== null) {
@@ -903,13 +946,7 @@ function Chat(chat, isNew) {
 	}
 	this.addText = function (text) {
 		var temp = FUNC.checkType(String, text);
-
-		if (temp !== null) {
-			if (typeof FUNC.findValue(this.text, temp) === "undefined")
-				this.text.push(temp);
-			else
-				FUNC.log("addText Error", ENUM.LOG.error);
-		}
+		if (temp !== null) this.text.push(temp);
 	}
 	this.addWait = function (waitEnum) {
 		var temp = FUNC.checkNaN(waitEnum);
@@ -947,45 +984,38 @@ function Chat(chat, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof chat === "undefined") {
-			this.id = FUNC.getId(ENUM.id);
-			this.pause = 0;
-			this.quest = 0;
-			this.money = 0;
-			this.teleport = null;
-			this.text = new Array();
-			this.wait = new Array();
-			this.chat = new Map();
-			this.stat = new Map();
-			this.item = new Map();
+	if (typeof chat === "undefined") {
+		this.id = FUNC.getId(ENUM.id);
+		this.pause = 1000;
+		this.quest = 0;
+		this.money = 0;
+		this.teleport = null;
+		this.text = new Array();
+		this.wait = new Array();
+		this.chat = new Map();
+		this.stat = new Map();
+		this.item = new Map();
 
-			this.wait.push(ENUM.WAIT_RESPONSE.nothing);
+		FUNC.log("Created New Chat - (id : " + this.id + ")");
+	}
 
-			FUNC.log("Created New Chat - (id : " + this.id + ")");
+	else {
+		if (FUNC.checkType(Chat, chat) === null) {
+			FUNC.log("Chat Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Chat, chat) === null) {
-				FUNC.log("Chat Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = chat.id;
+		this.pause = chat.pause;
+		this.quest = chat.quest;
+		this.money = chat.money
+		this.teleport = chat.teleport
+		this.text = chat.text;
+		this.wait = chat.wait;
+		this.stat = chat.stat;
+		this.item = chat.item;
 
-			this.id = chat.id;
-			this.pause = chat.pause;
-			this.quest = chat.quest;
-			this.money = chat.money
-			this.teleport = chat.teleport
-			this.text = chat.text;
-			this.wait = chat.wait;
-			this.stat = chat.stat;
-			this.item = chat.item;
-
-			FUNC.log("Copied Chat - (id : " + this.id + ")");
-		}
-
-		VAR.chats.set(this.id, this);
+		FUNC.log("Copied Chat - (id : " + this.id + ")");
 	}
 }
 Chat.toObject = function (chat) {
@@ -1005,7 +1035,7 @@ Chat.toObject = function (chat) {
 	return chatData;
 }
 Chat.fromObject = function (chatData) {
-	var chat = new Chat(null, false);
+	var chat = new Chat();
 
 	chat.id = Number(chatData.id);
 	chat.pause = Number(chatData.pause);
@@ -1021,7 +1051,7 @@ Chat.fromObject = function (chatData) {
 	return chat;
 }
 
-function Npc(name, npc, isNew) {
+function Npc(name, npc) {
 	this.getAvailableChat = function (playerId) {
 		var percent = 0;
 		var array = new Array();
@@ -1254,36 +1284,31 @@ function Npc(name, npc, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof npc === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.npc);
-			this.name = name;
-			this.coord = new Coordinate();
-			this.chat = new Array();
-			this.job = new Map();
-			this.selling = new Map();
+	if (typeof npc === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.npc);
+		this.name = name;
+		this.coord = new Coordinate();
+		this.chat = new Array();
+		this.job = new Map();
+		this.selling = new Map();
 
-			FUNC.log("Created New Npc - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Npc - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Npc, chat) === null) {
+			FUNC.log("Npc Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Npc, chat) === null) {
-				FUNC.log("Npc Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = npc.id;
+		this.name = npc.name;
+		this.coord = npc.coord;
+		this.job = npc.get
+		this.chat = npc.chat;
+		this.selling = npc.selling;
 
-			this.id = npc.id;
-			this.name = npc.name;
-			this.coord = npc.coord;
-			this.job = npc.get
-			this.chat = npc.chat;
-			this.selling = npc.selling;
-
-			FUNC.log("Copied Chat - (id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.npcs.set(this.id, this);
+		FUNC.log("Copied Chat - (id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Npc.toObject = function (npc) {
@@ -1346,7 +1371,7 @@ Npc.fromObject = function (npcData) {
 	var map;
 	var key1, key2, key3, key4;
 	var value;
-	var npc = new Npc(null, null, false);
+	var npc = new Npc(null);
 
 	npc.id = Number(npcData.id);
 	npc.name = String(npcData.name);
@@ -1396,7 +1421,7 @@ Npc.fromObject = function (npcData) {
 	return npc;
 }
 
-function Quest(name, quest, isNew) {
+function Quest(name, quest) {
 	this.getMinLimitCloseRate = function (npcId) {
 		var temp = FUNC.checkNaN(npcId, 1, VAR.npcs.size);
 		return this.minLimitCloseRate.get(temp);
@@ -1802,64 +1827,59 @@ function Quest(name, quest, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof quest === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.quest);
-			this.name = name;
-			this.isRepeatable = false;
-			this.minLimitLv = 1;
-			this.maxLimitLv = 999;
-			this.needMoney = 0;
-			this.needExp = 0;
-			this.needAdv = 0;
-			this.rewardExp = 0;
-			this.rewardAdv = 0;
-			this.rewardMoney = 0;
-			this.minLimitCloseRate = new Map();
-			this.maxLimitCloseRate = new Map();
-			this.minLimitStat = new Map();
-			this.maxLimitStat = new Map();
-			this.needItem = new Map();
-			this.needStat = new Map();
-			this.rewardItem = new Map();
-			this.rewardStat = new Map();
-			this.rewardCloseRate = new Map();
+	if (typeof quest === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.quest);
+		this.name = name;
+		this.isRepeatable = false;
+		this.minLimitLv = 1;
+		this.maxLimitLv = 999;
+		this.needMoney = 0;
+		this.needExp = 0;
+		this.needAdv = 0;
+		this.rewardExp = 0;
+		this.rewardAdv = 0;
+		this.rewardMoney = 0;
+		this.minLimitCloseRate = new Map();
+		this.maxLimitCloseRate = new Map();
+		this.minLimitStat = new Map();
+		this.maxLimitStat = new Map();
+		this.needItem = new Map();
+		this.needStat = new Map();
+		this.rewardItem = new Map();
+		this.rewardStat = new Map();
+		this.rewardCloseRate = new Map();
 
-			FUNC.log("Created New Quest - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Quest - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Quest, quest) === null) {
+			FUNC.log("Quest Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Quest, quest) === null) {
-				FUNC.log("Quest Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = quest.id;
+		this.name = quest.name;
+		this.isRepeatable = quest.isRepeatable;
+		this.minLimitLv = quest.minLimitLv;
+		this.maxLimitLv = quest.maxLimitLv;
+		this.needMoney = quest.needMoney;
+		this.needExp = quest.needExp;
+		this.needAdv = quest.needAdv;
+		this.rewardExp = quest.rewardExp;
+		this.rewardAdv = quest.rewardAdv;
+		this.rewardMoney = quest.rewardMoney;
+		this.minLimitCloseRate = quest.minLimitCloseRate;
+		this.maxLimitCloseRate = quest.maxLimitCloseRate;
+		this.minLimitStat = quest.minLimitStat;
+		this.maxLimitStat = quest.minLimitStat;
+		this.needItem = quest.needItem;
+		this.needStat = quest.needStat
+		this.rewardItem = quest.rewardItem;
+		this.rewardStat = quest.rewardStat;
+		this.rewardCloseRate = quest.rewardCloseRate;
 
-			this.id = quest.id;
-			this.name = quest.name;
-			this.isRepeatable = quest.isRepeatable;
-			this.minLimitLv = quest.minLimitLv;
-			this.maxLimitLv = quest.maxLimitLv;
-			this.needMoney = quest.needMoney;
-			this.needExp = quest.needExp;
-			this.needAdv = quest.needAdv;
-			this.rewardExp = quest.rewardExp;
-			this.rewardAdv = quest.rewardAdv;
-			this.rewardMoney = quest.rewardMoney;
-			this.minLimitCloseRate = quest.minLimitCloseRate;
-			this.maxLimitCloseRate = quest.maxLimitCloseRate;
-			this.minLimitStat = quest.minLimitStat;
-			this.maxLimitStat = quest.minLimitStat;
-			this.needItem = quest.needItem;
-			this.needStat = quest.needStat
-			this.rewardItem = quest.rewardItem;
-			this.rewardStat = quest.rewardStat;
-			this.rewardCloseRate = quest.rewardCloseRate;
-
-			FUNC.log("Copied Quest - (id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.quests.set(this.id, this);
+		FUNC.log("Copied Quest - (id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Quest.toObject = function (quest) {
@@ -1889,7 +1909,7 @@ Quest.toObject = function (quest) {
 	return questData;
 }
 Quest.fromObject = function (questData) {
-	var quest = new Quest(null, null, false);
+	var quest = new Quest(null);
 
 	quest.id = Number(questData.id);
 	quest.name = String(questData.name);
@@ -1915,7 +1935,7 @@ Quest.fromObject = function (questData) {
 	return quest;
 }
 
-function Item(name, item, isNew) {
+function Item(name, item) {
 	//[★★☆] "테스트 수정구슬""
 	this.getFullName = function () {
 		var str = "[";
@@ -1940,6 +1960,20 @@ function Item(name, item, isNew) {
 		var temp = FUNC.checkNaN(value);
 		if (temp !== null) this.value = temp;
 	}
+	this.setCanUse = function (canUse, executePart) {
+		var temp1 = FUNC.checkType(Boolean, canUse);
+
+		if (temp1 !== null) {
+			this.canUse = temp1;
+
+			if (temp1) {
+				var temp2 = FUNC.checkType(String, executePart);
+
+				this.executePart = temp2;
+				this.use = new Function("user", temp2);
+			}
+		}
+	}
 
 	this.addHandleLevel = function (handleLevel) {
 		var temp = FUNC.checkNaN(handleLevel);
@@ -1961,38 +1995,41 @@ function Item(name, item, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof item === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.item);
-			this.name = name;
-			this.description = "";
-			this.handleLevel = 1;
-			this.value = -1;
-			this.isWeapon = false;
-			this.recipe = new Array();
+	if (typeof item === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.item);
+		this.name = name;
+		this.description = "";
+		this.executePart;
+		this.handleLevel = 1;
+		this.value = -1;
+		this.isWeapon = false;
+		this.canUse = false;
+		this.recipe = new Array();
+		this.use;
 
-			FUNC.log("Created New Item - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Item - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Item, item) === null) {
+			FUNC.log("Item Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Item, item) === null) {
-				FUNC.log("Item Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = item.id;
+		this.name = item.name;
+		this.description = item.description;
+		this.executePart;
+		this.handleLevel = item.handleLevel;
+		this.value = item.value;
+		this.isWeapon = false;
+		this.canUse = false;
+		this.recipe = item.recipe;
+		this.use;
 
-			this.id = item.id;
-			this.name = item.name;
-			this.description = item.description;
-			this.handleLevel = item.handleLevel;
-			this.value = item.value;
-			this.isWeapon = false;
-			this.recipe = item.recipe;
+		this.setCanUse(item.canUse, item.executePart);
 
-			FUNC.log("Copied Item(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.items.set(this.id, this);
+		FUNC.log("Copied Item(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Item.toObject = function (item) {
@@ -2002,9 +2039,11 @@ Item.toObject = function (item) {
 	itemData.id = item.id;
 	itemData.name = item.name;
 	itemData.description = item.description;
+	itemData.executePart = item.executePart;
 	itemData.handleLevel = item.handleLevel;
 	itemData.value = item.value;
 	itemData.isWeapon = item.isWeapon;
+	itemData.canUse = item.canUse;
 
 	itemData.recipe = new Array();
 	for (var recipeMap of itemData.recipe) {
@@ -2022,7 +2061,7 @@ Item.fromObject = function (itemData) {
 	var map;
 	var key;
 	var value;
-	var item = new Item(null, null, false);
+	var item = new Item(null);
 
 	item.id = Number(itemData.id);
 	item.name = String(itemData.name);
@@ -2030,6 +2069,7 @@ Item.fromObject = function (itemData) {
 	item.handleLevel = Number(itemData.handleLevel);
 	item.value = Number(itemData.value);
 	item.isWeapon = Boolean(itemData.isWeapon);
+	item.setCanUse(Boolean(itemData.canUse), String(itemData.executePart));
 
 	item.recipe = new Array();
 	for (var recipeMap of itemData.recipe) {
@@ -2045,7 +2085,7 @@ Item.fromObject = function (itemData) {
 	return item;
 }
 
-function Equipment(name, description, eTypeEnum, equipment, isNew) {
+function Equipment(name, description, eTypeEnum, equipment) {
 	//[★★☆] "테스트 대검" (+3)"
 	this.getFullName = function () {
 		var str = "[";
@@ -2275,57 +2315,51 @@ function Equipment(name, description, eTypeEnum, equipment, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof equipment === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.item);
-			this.name = name;
-			this.description = description;
-			this.eType = eTypeEnum;
-			this.value = -1;
-			this.handleLevel = 1;
-			this.limitLv = 1;
-			this.maxReinforce = 0;
-			this.nowReinforce = 0;
-			this.lvDown = 0;
-			this.isWeapon = true;
-			this.recipe = new Array();
-			this.stat = new Map();
-			this.limitStat = new Map();
-			this.type = new Map();
-			this.reinforce = new Map();
+	if (typeof equipment === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.item);
+		this.name = name;
+		this.description = description;
+		this.eType = eTypeEnum;
+		this.value = -1;
+		this.handleLevel = 1;
+		this.limitLv = 1;
+		this.maxReinforce = 0;
+		this.nowReinforce = 0;
+		this.lvDown = 0;
+		this.isWeapon = true;
+		this.recipe = new Array();
+		this.stat = new Map();
+		this.limitStat = new Map();
+		this.type = new Map();
+		this.reinforce = new Map();
 
-			FUNC.log("Created New Equipment - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Equipment - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Equipment, equipment) === null) {
+			FUNC.log("Equipment Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Equipment, equipment) === null) {
-				FUNC.log("Equipment Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = equipment.id;
+		this.name = equipment.iname;
+		this.description = equipment.description;
+		this.eType = equipment.eType;
+		this.value = -equipment.value;
+		this.handleLevel = equipment.handleLevel;
+		this.limitLv = equipment.limitLv;
+		this.maxReinforce = equipment.maxReinforce;
+		this.nowReinforce = equipment.nowReinforce;
+		this.lvDown = equipment.lvDown;
+		this.isWeapon = true;
+		this.recipe = equipment.recipe;
+		this.stat = equipment.stat;
+		this.limitStat = equipment.limitStat;
+		this.type = equipment.type;
+		this.reinforce = equipment.reinforce;
 
-			//장비의 경우, 원형을 복사하더라도 신규 아이템 취급
-			this.id = FUNC.getId(ENUM.ID.item);
-			this.name = equipment.iname;
-			this.description = equipment.description;
-			this.eType = equipment.eType;
-			this.value = -equipment.value;
-			this.handleLevel = equipment.handleLevel;
-			this.limitLv = equipment.limitLv;
-			this.maxReinforce = equipment.maxReinforce;
-			this.nowReinforce = equipment.nowReinforce;
-			this.lvDown = equipment.lvDown;
-			this.isWeapon = true;
-			this.recipe = equipment.recipe;
-			this.stat = equipment.stat;
-			this.limitStat = equipment.limitStat;
-			this.type = equipment.type;
-			this.reinforce = equipment.reinforce;
-
-			FUNC.log("Copied Equipment(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.items.set(this.id, this);
+		FUNC.log("Copied Equipment(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Equipment.toObject = function (equipment) {
@@ -2365,7 +2399,7 @@ Equipment.fromObject = function (equipmentData) {
 	var map;
 	var key;
 	var value;
-	var equipment = new Equipment(null, null, null, null, false);
+	var equipment = new Equipment(null, null, null);
 
 	equipment.id = Number(equipmentData.id);
 	equipment.name = String(equipmentData.name);
@@ -2398,7 +2432,7 @@ Equipment.fromObject = function (equipmentData) {
 	return equipment;
 }
 
-function Achieve(name, achieve, isNew) {
+function Achieve(name, achieve) {
 	this.getLimitStat = function (stat2Enum) {
 		var temp = FUNC.checkNaN(stat2Enum);
 		return this.limitStat.get(temp);
@@ -2620,46 +2654,41 @@ function Achieve(name, achieve, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof achieve === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.achieve);
-			this.name = name;
-			this.limitLv = 999;
-			this.rewardMoney = 0;
-			this.rewardExp = 0;
-			this.rewardAdv = 0;
-			this.limitStat = new Map();
-			this.limitCloseRate = new Map();
-			this.otherLimit = new Map();
-			this.rewardCloseRate = new Map();
-			this.rewardItem = new Map();
+	if (typeof achieve === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.achieve);
+		this.name = name;
+		this.limitLv = 999;
+		this.rewardMoney = 0;
+		this.rewardExp = 0;
+		this.rewardAdv = 0;
+		this.limitStat = new Map();
+		this.limitCloseRate = new Map();
+		this.otherLimit = new Map();
+		this.rewardCloseRate = new Map();
+		this.rewardItem = new Map();
 
-			FUNC.log("Created New Achieve - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Achieve - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Achieve, achieve) === null) {
+			FUNC.log("Achieve Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Achieve, achieve) === null) {
-				FUNC.log("Achieve Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = achieve.id;
+		this.name = achieve.name;
+		this.limitLv = achieve.limitLv;
+		this.rewardMoney = achieve.rewardMoney;
+		this.rewardExp = achieve.rewardExp;
+		this.rewardAdv = achieve.rewardAdv;
+		this.limitStat = achieve.limitStat;
+		this.limitCloseRate = achieve.limitCloseRate;
+		this.otherLimit = achieve.otherLimit;
+		this.rewardCloseRate = achieve.rewardCloseRate;
+		this.rewardItem = achieve.rewardItem;
 
-			this.id = achieve.id;
-			this.name = achieve.name;
-			this.limitLv = achieve.limitLv;
-			this.rewardMoney = achieve.rewardMoney;
-			this.rewardExp = achieve.rewardExp;
-			this.rewardAdv = achieve.rewardAdv;
-			this.limitStat = achieve.limitStat;
-			this.limitCloseRate = achieve.limitCloseRate;
-			this.otherLimit = achieve.otherLimit;
-			this.rewardCloseRate = achieve.rewardCloseRate;
-			this.rewardItem = achieve.rewardItem;
-
-			FUNC.log("Copied Achieve(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.achieves.set(this.id, this);
+		FUNC.log("Copied Achieve(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Achieve.toObject = function (achieve) {
@@ -2680,7 +2709,7 @@ Achieve.toObject = function (achieve) {
 	return achieveData;
 }
 Achieve.fromObject = function (achieveData) {
-	var achieve = new Achieve(null, null, false);
+	var achieve = new Achieve(null);
 
 	achieve.id = Number(achieveData.id);
 	achieve.name = String(achieveData.name);
@@ -2697,7 +2726,7 @@ Achieve.fromObject = function (achieveData) {
 	return achieve;
 }
 
-function Research(name, research, isNew) {
+function Research(name, research) {
 	this.getNeedItem = function (itemId) {
 		var temp = FUNC.checkNaN(itemId, 1, VAR.items.size);
 		return this.needItem.get(temp);
@@ -2800,38 +2829,33 @@ function Research(name, research, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof research === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.research);
-			this.name = name;
-			this.needMoney = 0;
-			this.limitLv = 999;
-			this.rewardExp = 0;
-			this.needItem = new Map();
-			this.limitStat = new Map();
+	if (typeof research === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.research);
+		this.name = name;
+		this.needMoney = 0;
+		this.limitLv = 999;
+		this.rewardExp = 0;
+		this.needItem = new Map();
+		this.limitStat = new Map();
 
-			FUNC.log("Created New Research - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Research - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Achieve, achieve) === null) {
+			FUNC.log("Research Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Achieve, achieve) === null) {
-				FUNC.log("Research Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = research.id;
+		this.name = research.name;
+		this.needMoney = research.needMoney;
+		this.limitLv = research.limitLv;
+		this.rewardExp = research.rewardExp;
+		this.needItem = research.needItem
+		this.limitStat = research.limitStat;
 
-			this.id = research.id;
-			this.name = research.name;
-			this.needMoney = research.needMoney;
-			this.limitLv = research.limitLv;
-			this.rewardExp = research.rewardExp;
-			this.needItem = research.needItem
-			this.limitStat = research.limitStat;
-
-			FUNC.log("Copied Research(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.researches.set(this.id, this);
+		FUNC.log("Copied Research(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Research.toObject = function (research) {
@@ -2848,7 +2872,7 @@ Research.toObject = function (research) {
 	return researchData;
 }
 Research.fromObject = function (researchData) {
-	var research = new Research(null, null, false);
+	var research = new Research(null);
 
 	research.id = Number(researchData.id);
 	research.name = String(researchData.name);
@@ -2861,8 +2885,8 @@ Research.fromObject = function (researchData) {
 	return research;
 }
 
-function Building(name, building, isNew) {
-	this.getMonsters = function () {
+function Building(name, building) {
+	this.getAvailableMonster = function () {
 		var percent = 0;
 		var map = new Map();
 
@@ -2888,7 +2912,7 @@ function Building(name, building, isNew) {
 		return [percent, map];
 	}
 	this.randomMonster = function () {
-		var monsters = this.getMonsters();
+		var monsters = this.getAvailableMonster();
 		var totalPercent = monsters[0];
 		var random = FUNC.random(1, totalPercent);
 
@@ -2952,39 +2976,33 @@ function Building(name, building, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof building === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.building);
-			this.name = name;
-			this.difficulty = 0;
-			this.npc = new Array();
-			this.uniqueMonster = new Array();
-			this.move = new Array();
-			this.fieldType = new Array();
+	if (typeof building === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.building);
+		this.name = name;
+		this.difficulty = 0;
+		this.npc = new Array();
+		this.uniqueMonster = new Array();
+		this.move = new Array();
+		this.fieldType = new Array();
 
-			FUNC.log("Created New Building - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Building - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Building, building) === null) {
+			FUNC.log("Building Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Building, building) === null) {
-				FUNC.log("Building Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = building.id;
+		this.name = building.name;
+		this.difficulty = building.difficulty;
+		this.npc = building.npc;
+		this.uniqueMonster = building.uniqueMonster;
+		this.move = building.move;
+		this.fieldType = building.fieldType;
 
-			//몬스터 경우, 원형을 복사하더라도 신규 아이템 취급
-			this.id = FUNC.getId(ENUM.ID.monster);
-			this.name = skill.name;
-			this.difficulty = building.difficulty;
-			this.npc = building.npc;
-			this.uniqueMonster = building.uniqueMonster;
-			this.move = building.move;
-			this.fieldType = building.fieldType;
-
-			FUNC.log("Copied Building(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.buildings.set(this.id, this);
+		FUNC.log("Copied Building(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Building.toObject = function (building) {
@@ -3001,7 +3019,7 @@ Building.toObject = function (building) {
 	return buildingData;
 }
 Building.fromObject = function (buildingData) {
-	var building = new Building(null, null, false);
+	var building = new Building(null);
 
 	building.id = Number(buildingData.id);
 	building.name = String(buildingData.name);
@@ -3014,7 +3032,7 @@ Building.fromObject = function (buildingData) {
 	return building;
 }
 
-function Skill(name, skill, isNew) {
+function Skill(name, skill) {
 	this.getDamageType = function (damageType) {
 		var temp = FUNC.checkNaN(damageType);
 		return this.damageType.get(temp);
@@ -3051,42 +3069,37 @@ function Skill(name, skill, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof skill === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.skill);
-			this.name = name;
-			this.executePart;
-			this.limitLv = 1;
-			this.isPassive = false;
-			this.damageType = new Map();
-			this.limitStat = new Map();
-			this.use;
+	if (typeof skill === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.skill);
+		this.name = name;
+		this.executePart;
+		this.limitLv = 1;
+		this.isPassive = false;
+		this.damageType = new Map();
+		this.limitStat = new Map();
+		this.use;
 
-			this.setUse("return true;");
+		this.setUse("return true;");
 
-			FUNC.log("Created New Skill - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Skill - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Skill, skill) === null) {
+			FUNC.log("Skill Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Skill, skill) === null) {
-				FUNC.log("Skill Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = skill.id;
+		this.name = skill.name;
+		this.executePart = skill.executePart;
+		this.limitLv = skill.limitLv;
+		this.isPassive = skill.isPassive;
+		this.damageType = skill.damageType;
+		this.limitStat = skill.limitStat;
+		this.use = skill.use;
 
-			this.id = skill.id;
-			this.name = skill.name;
-			this.executePart = skill.executePart;
-			this.limitLv = skill.limitLv;
-			this.isPassive = skill.isPassive;
-			this.damageType = skill.damageType;
-			this.limitStat = skill.limitStat;
-			this.use = skill.use;
-
-			FUNC.log("Copied Skill(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.skills.set(this.id, this);
+		FUNC.log("Copied Skill(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Skill.toObject = function (skill) {
@@ -3103,7 +3116,7 @@ Skill.toObject = function (skill) {
 	return skillData;
 }
 Skill.fromObject = function (skillData) {
-	var skill = new Skill(null, null, false);
+	var skill = new Skill(null);
 
 	skill.id = Number(skillData.id);
 	skill.name = String(skillData.name);
@@ -3116,7 +3129,7 @@ Skill.fromObject = function (skillData) {
 	return skill;
 }
 
-function Monster(name, monster, isNew) {
+function Monster(name, monster) {
 	this.getPhaseStartSkill = function (phase) {
 		var temp = FUNC.checkNaN(phase, 0);
 		return this.phaseStartSkill.get(temp);
@@ -3243,7 +3256,6 @@ function Monster(name, monster, isNew) {
 			this.phaseIncreaseStat.get(temp1).set(temp2, temp3);
 		}
 	}
-	//TODO
 	this.addRarePercent = function (rarePercent) {
 		var temp = FUNC.checkNaN(rarePercent);
 		if (temp !== null) this.setRarePercent(this.rarePercent + temp);
@@ -3330,52 +3342,47 @@ function Monster(name, monster, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof monster === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.monster);
-			this.name = name;
-			this.rarePercent = 0;
-			this.minDifficulty = 1;
-			this.maxDifficulty = 999;
-			this.mainField = ENUM.FIELDTYPE.basic;
-			this.subField = new Array();
-			this.phaseHealth = new Array();
-			this.skill = new Array();
-			this.phaseStartSkill = new Map();
-			this.stat = new Map();
-			this.rareIncreaseStat = new Map();
-			this.phaseSkill = new Map();
-			this.phaseIncreaseStat = new Map();
+	if (typeof monster === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.monster);
+		this.name = name;
+		this.rarePercent = 0;
+		this.minDifficulty = 1;
+		this.maxDifficulty = 999;
+		this.mainField = ENUM.FIELDTYPE.basic;
+		this.subField = new Array();
+		this.phaseHealth = new Array();
+		this.skill = new Array();
+		this.phaseStartSkill = new Map();
+		this.stat = new Map();
+		this.rareIncreaseStat = new Map();
+		this.phaseSkill = new Map();
+		this.phaseIncreaseStat = new Map();
 
-			FUNC.log("Created New Monster - (id : " + this.id + ", name : " + this.name + ")");
+		FUNC.log("Created New Monster - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Monster, monster) === null) {
+			FUNC.log("Monster Copy Error", ENUM.LOG.error);
+			return null;
 		}
 
-		else {
-			if (FUNC.checkType(Monster, monster) === null) {
-				FUNC.log("Monster Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.id = monster.id;
+		this.name = monster.name;
+		this.rarePercent = monster.rarePercent;
+		this.minDifficulty = 0;
+		this.maxDifficulty = 999;
+		this.mainField = monster.mainField;
+		this.subField = monster.subField;
+		this.phaseHealth = monster.phaseHealth;
+		this.skill = monster.skill;
+		this.phaseStartSkill = monster.phaseStartSkill;
+		this.stat = monster.stat;
+		this.rareIncreaseStat = monster.rareIncreaseStat;
+		this.phaseSkill = monster.phaseSkill;
+		this.phaseIncreaseStat = monster.phaseIncreaseStat;
 
-			this.id = monster.id;
-			this.name = monster.name;
-			this.rarePercent = monster.rarePercent;
-			this.minDifficulty = 0;
-			this.maxDifficulty = 999;
-			this.mainField = monster.mainField;
-			this.subField = monster.subField;
-			this.phaseHealth = monster.phaseHealth;
-			this.skill = monster.skill;
-			this.phaseStartSkill = monster.phaseStartSkill;
-			this.stat = monster.stat;
-			this.rareIncreaseStat = monster.rareIncreaseStat;
-			this.phaseSkill = monster.phaseSkill;
-			this.phaseIncreaseStat = monster.phaseIncreaseStat;
-
-			FUNC.log("Copied Monster(id : " + this.id + ", name : " + this.name + ")");
-		}
-
-		VAR.monsters.set(this.id, this);
+		FUNC.log("Copied Monster(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Monster.toObject = function (monster) {
@@ -3409,7 +3416,7 @@ Monster.toObject = function (monster) {
 Monster.fromObject = function (monsterData) {
 	var key1, key2;
 	var value;
-	var monster = new Monster(null, null, false);
+	var monster = new Monster(null);
 
 	monster.id = Number(monsterData.id);
 	monster.name = String(monsterData.name);
@@ -3445,10 +3452,22 @@ Monster.fromObject = function (monsterData) {
 	return monster;
 }
 
-function Player(nickName, name, ImageDB, room, player, isNew) {
+function Player(nickName, name, ImageDB, room, player) {
 	//[테스트 칭호] 남식
 	this.getFullName = function () {
 		return "[" + this.nowTitle + "] " + this.nickName;
+	}
+	this.getAvailableNpc = function () {
+		var output = new Array();
+
+		for (var [npcId, npc] of VAR.npcs) {
+			if (npc.name.startsWith("[시스템]"))
+				output.push(npcId);
+			else if (FUNC.compareCoord(npc.coord, this.coord))
+				output.push(npcId);
+		}
+
+		return output;
 	}
 	this.sendText = function (chatId, npcName) {
 		this.setDoing(ENUM.DOING.chat);
@@ -3470,7 +3489,7 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 
 		var text = temp2 + " : \"" + chat.text[length - 1] + "\"\n\n";
 		var more = "";
-		if (chat.wait.length !== 1 || chat.wait[0] !== ENUM.WAIT_RESPONSE.nothing) {
+		if (chat.wait.length !== 0) {
 			text += "입력을 해야 대화가 종료됩니다";
 			this.setNowChat(chat.id);
 		}
@@ -4501,152 +4520,147 @@ function Player(nickName, name, ImageDB, room, player, isNew) {
 	}
 
 	//Constructor
-	isNew = typeof isNew === "undefined" ? true : false;
-	if (isNew) {
-		if (typeof player === "undefined") {
-			this.id = FUNC.getId(ENUM.ID.player);
-			this.nickName = nickName;
-			this.name = name;
-			this.image = FUNC.formatImage(ImageDB);
-			this.lastTime = FUNC.time();
-			this.recentRoom = room;
-			this.coord = new Coordinate();
-			this.nowTitle = "";
-			this.money = 1000;
-			this.lv = 1;
-			this.exp = 0;
-			this.totalExp = 0;
-			this.sp = 10;
-			this.adv = 0;
-			this.ddosCheck = 0;
-			this.nowChat = 0;
-			this.building = 0;
-			this.nowMonster = 0;
-			this.nowPlayer = 0;
-			this.doing = ENUM.DOING.none;
-			this.canCommand = true;
-			this.isFighting = false;
-			this.isPvpOn = true;
-			this.achieve = new Array();
-			this.research = new Array();
-			this.title = new Array();
-			this.nowQuest = new Array();
-			this.skill = new Array();
-			this.job = new Map();
-			this.mainStat = new Map();
-			this.resistStat = new Map();
-			this.inventory = new Map();
-			this.equipped = new Map();
-			this.clearedQuest = new Map();
-			this.closeRate = new Map();
-			this.log = new Map();
-			this.type = new Map();
-			this.buff = new Map();
+	if (typeof player === "undefined") {
+		this.id = FUNC.getId(ENUM.ID.player);
+		this.nickName = nickName;
+		this.name = name;
+		this.image = FUNC.formatImage(ImageDB);
+		this.lastTime = FUNC.time();
+		this.recentRoom = room;
+		this.coord = new Coordinate();
+		this.nowTitle = "";
+		this.money = 1000;
+		this.lv = 1;
+		this.exp = 0;
+		this.totalExp = 0;
+		this.sp = 10;
+		this.adv = 0;
+		this.ddosCheck = 0;
+		this.nowChat = 0;
+		this.building = 0;
+		this.nowMonster = 0;
+		this.nowPlayer = 0;
+		this.doing = ENUM.DOING.none;
+		this.canCommand = true;
+		this.isFighting = false;
+		this.isPvpOn = true;
+		this.achieve = new Array();
+		this.research = new Array();
+		this.title = new Array();
+		this.nowQuest = new Array();
+		this.skill = new Array();
+		this.job = new Map();
+		this.mainStat = new Map();
+		this.resistStat = new Map();
+		this.inventory = new Map();
+		this.equipped = new Map();
+		this.clearedQuest = new Map();
+		this.closeRate = new Map();
+		this.log = new Map();
+		this.type = new Map();
+		this.buff = new Map();
 
 
-			//스텟 init
-			this.mainStat.set(ENUM.STAT1.actStat, new Map());
-			this.mainStat.set(ENUM.STAT1.basicStat, new Map());
-			this.mainStat.set(ENUM.STAT1.buffStat, new Map());
-			this.mainStat.set(ENUM.STAT1.equipStat, new Map());
-			this.mainStat.set(ENUM.STAT1.increStat, new Map());
-			this.mainStat.set(ENUM.STAT1.levelStat, new Map());
-			this.mainStat.set(ENUM.STAT1.quickStat, new Map());
-			this.mainStat.set(ENUM.STAT1.totalStat, new Map());
+		//스텟 init
+		this.mainStat.set(ENUM.STAT1.actStat, new Map());
+		this.mainStat.set(ENUM.STAT1.basicStat, new Map());
+		this.mainStat.set(ENUM.STAT1.buffStat, new Map());
+		this.mainStat.set(ENUM.STAT1.equipStat, new Map());
+		this.mainStat.set(ENUM.STAT1.increStat, new Map());
+		this.mainStat.set(ENUM.STAT1.levelStat, new Map());
+		this.mainStat.set(ENUM.STAT1.quickStat, new Map());
+		this.mainStat.set(ENUM.STAT1.totalStat, new Map());
 
-			for (var i = 0; i <= ENUM.STAT2.max; i++) {
-				this.mainStat.get(ENUM.STAT1.actStat).set(i, 0);
-				this.mainStat.get(ENUM.STAT1.buffStat).set(i, 0);
-				this.mainStat.get(ENUM.STAT1.equipStat).set(i, 0);
-				this.mainStat.get(ENUM.STAT1.levelStat).set(i, 0);
-				this.mainStat.get(ENUM.STAT1.quickStat).set(i, 0);
-			}
-
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.acc, 5);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.atk, 1);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.bre, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.cd, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.def, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.dra, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eg, 100);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eva, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.hp, 10);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.matk, 1);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxeg, 100);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxhp, 10);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxmn, 100);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mbre, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdef, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdra, 0);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mn, 100);
-			this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.spd, 100);
-
-			this.updateStat();
-
-			this.title.push("뉴비");
-			this.nowTitle = "뉴비";
-
-			for (var i = 0; i <= ENUM.JOB.max; i++)
-				this.job.set(i, 1);
-
-			for (var i = 0; i <= ENUM.TYPE.max; i++) {
-				this.type.set(i, 0);
-				this.resistStat.set(i, 0);
-			}
-
-			this.setLog(ENUM.LOGNAME.createdTime, FUNC.time());
-			FUNC.log("Created New Player - (id : " + this.id + ", name : " + this.name + ")");
+		for (var i = 0; i <= ENUM.STAT2.max; i++) {
+			this.mainStat.get(ENUM.STAT1.actStat).set(i, 0);
+			this.mainStat.get(ENUM.STAT1.buffStat).set(i, 0);
+			this.mainStat.get(ENUM.STAT1.equipStat).set(i, 0);
+			this.mainStat.get(ENUM.STAT1.levelStat).set(i, 0);
+			this.mainStat.get(ENUM.STAT1.quickStat).set(i, 0);
 		}
 
-		else {
-			if (FUNC.checkType(Player, player) === null) {
-				FUNC.log("Player Copy Error", ENUM.LOG.error);
-				return null;
-			}
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.acc, 5);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.atk, 1);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.bre, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.cd, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.def, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.dra, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eg, 100);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.eva, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.hp, 10);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.matk, 1);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxeg, 100);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxhp, 10);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.maxmn, 100);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mbre, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdef, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mdra, 0);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.mn, 100);
+		this.mainStat.get(ENUM.STAT1.basicStat).set(ENUM.STAT2.spd, 100);
 
-			this.id = player.id;
-			this.nickName = player.nickName;
-			this.name = player.name;
-			this.image = player.image;
-			this.lastTime = FUNC.time();
-			this.recentRoom = player.room;
-			this.coord = player.coord;
-			this.nowTitle = player.ntle;
-			this.money = player.money;
-			this.lv = player.lv;
-			this.exp = player.exp;
-			this.totalExp = player.totalExp;
-			this.sp = player.sp;
-			this.adv = player.adv;
-			this.ddosCheck = player.ddosCheck;
-			this.nowChat = player.nowChat;
-			this.building = player.building;
-			this.nowMonster = player.nowMonster;
-			this.nowPlayer = player.nowPlayer;
-			this.doing = player.doing;
-			this.canCommand = player.canCommand;
-			this.isFighting = player.isFighting;
-			this.isPvpOn = player.isPvpOn;
-			this.achieve = player.achieve;
-			this.research = player.research;
-			this.title = player.title;
-			this.nowQuest = player.nowQuest;
-			this.skill = player.skill;
-			this.job = player.job;
-			this.mainStat = player.mainStat;
-			this.resistStat = player.resistStat;
-			this.inventory = player.inventory;
-			this.equipped = player.equipped;
-			this.clearedQuest = player.clearedQuest;
-			this.closeRate = player.closeRate;
-			this.log = player.log;
-			this.type = player.type;
-			this.buff = player.buff;
+		this.updateStat();
 
-			FUNC.log("Copied Player(id : " + this.id + ", name : " + this.name + ")");
+		this.title.push("뉴비");
+		this.nowTitle = "뉴비";
+
+		for (var i = 0; i <= ENUM.JOB.max; i++)
+			this.job.set(i, 1);
+
+		for (var i = 0; i <= ENUM.TYPE.max; i++) {
+			this.type.set(i, 0);
+			this.resistStat.set(i, 0);
 		}
 
-		VAR.players.set(this.id, this);
+		this.setLog(ENUM.LOGNAME.createdTime, FUNC.time());
+		FUNC.log("Created New Player - (id : " + this.id + ", name : " + this.name + ")");
+	}
+
+	else {
+		if (FUNC.checkType(Player, player) === null) {
+			FUNC.log("Player Copy Error", ENUM.LOG.error);
+			return null;
+		}
+
+		this.id = player.id;
+		this.nickName = player.nickName;
+		this.name = player.name;
+		this.image = player.image;
+		this.lastTime = FUNC.time();
+		this.recentRoom = player.room;
+		this.coord = player.coord;
+		this.nowTitle = player.ntle;
+		this.money = player.money;
+		this.lv = player.lv;
+		this.exp = player.exp;
+		this.totalExp = player.totalExp;
+		this.sp = player.sp;
+		this.adv = player.adv;
+		this.ddosCheck = player.ddosCheck;
+		this.nowChat = player.nowChat;
+		this.building = player.building;
+		this.nowMonster = player.nowMonster;
+		this.nowPlayer = player.nowPlayer;
+		this.doing = player.doing;
+		this.canCommand = player.canCommand;
+		this.isFighting = player.isFighting;
+		this.isPvpOn = player.isPvpOn;
+		this.achieve = player.achieve;
+		this.research = player.research;
+		this.title = player.title;
+		this.nowQuest = player.nowQuest;
+		this.skill = player.skill;
+		this.job = player.job;
+		this.mainStat = player.mainStat;
+		this.resistStat = player.resistStat;
+		this.inventory = player.inventory;
+		this.equipped = player.equipped;
+		this.clearedQuest = player.clearedQuest;
+		this.closeRate = player.closeRate;
+		this.log = player.log;
+		this.type = player.type;
+		this.buff = player.buff;
+
+		FUNC.log("Copied Player(id : " + this.id + ", name : " + this.name + ")");
 	}
 }
 Player.toObject = function (player) {
@@ -4710,7 +4724,7 @@ Player.toObject = function (player) {
 Player.fromObject = function (playerData) {
 	var key1, key2;
 	var value;
-	var player = new Player(null, null, null, null, null, false);
+	var player = new Player(null, null, null, null);
 
 	player.id = Number(playerData.id);
 	player.nickName = String(playerData.nickName);
@@ -4894,10 +4908,12 @@ function nonPlayerFunc(room, msg, sender, replier, ImageDB) {
 			}
 
 			var player = new Player(split[1], sender, ImageDB, room);
-			FUNC.saveDB();
-			FUNC.reply(player.id, "CNKB Rpg 세계에 오신 것을 환영합니다!\n\"(..명령어 / ..도움말 / ..help)\" 로 		}명령어 확인이 가능합니다",
-				"부적절한 닉네임은 추후 불이익을 받을 수 있습니다");
+			player.addInventory(1, 1);
+			player.executeChat(1);
+			FUNC.saveInstance(ENUM.ID.player, player);
 
+			FUNC.saveDB();
+		}
 	}
 
 	//명령어 출력
@@ -4910,7 +4926,7 @@ function playerFunc(player, msg, sender, replier) {
 
 	//회원가입 실패 - 이름 + 프로필 중복
 	if (split[0] === "..가입") {
-		replier.reply(sender + "님과 이름 및 프로필 이미지가 동일한 유저가 이미 존재합니다.\n이름 또는 프로필 이미지 변경 후 다시 시도해주세요");
+		replier.reply(sender + "님과 이름 및 프로필 이미지가 동일한 유저가 이미 존재합니다.\n이름 또는 프로필 이미지 변경 다시 시도해주세요");
 		return true;
 	}
 
@@ -4927,6 +4943,107 @@ function playerFunc(player, msg, sender, replier) {
 	return false;
 }
 
+//eval 실행
+function initDataBase() {
+	var map, map_, array;
+
+	var item, quest, chat, npc;
+
+	// --- 아이템 --- //
+	//이상한 돌
+	item = new Item("이상한 돌");
+	item.description = "말을 할 때마다 빛나는 이상한 돌이다.\n감정을 받아봐야 할 것 같다.";
+	FUNC.saveInstance(ENUM.ID.item, item);
+
+	//설화를 먹는 돌
+	item = new Item("설화를 먹는 돌");
+	item.description = "주변에서 말을 하거나 누군가가 죽는 등의 여러 상황에서 빛나는 돌이다";
+	item.handleLevel = 10;
+	FUNC.saveInstance(ENUM.ID.item, item);
+
+	// --- 퀘스트 --- //
+	//이상한 돌 감정
+	quest = new Quest("이상한 돌 감정!");
+
+	map = new Map();
+	map.set(1, 1);
+	quest.needItem = map;
+
+	map = new Map();
+	map.set(2, 1);
+	quest.rewardItem = map;
+
+	quest.rewardExp = 102;
+
+	FUNC.saveInstance(ENUM.ID.quest, quest);
+
+	// --- 채팅 --- //
+	//회원가입
+	chat = new Chat();
+	chat.id = 1;
+
+	array = new Array();
+	array.push("CNKB Rpg에 오신것을 환영합니다.");
+	chat.text = array;
+
+	map = new Map();
+	map.set(ENUM.WAIT_RESPONSE.nothing, 2);	//스토리로 이동
+	chat.chat = map;
+
+	FUNC.saveInstance(ENUM.ID.chat, chat);
+
+	//배경 스토리
+	chat = new Chat();
+	chat.id = 2;
+
+	array = new Array();
+	array.push("배경 스토리\n(스토리는 게임에 영향을 미치니 읽어보시는 것을 추천드립니다)");
+	array.push("어릴 때 할아버지와 함께 살다, 할아버지는 돌아가시고 혼자 작은 마을에 살며 자급자족을 해왔음");
+	array.push("그러던 어느 날, 말할 떄 마다 빛나는 이상한 돌을 산속에서 발견하여 감정을 위해 큰 도시로 이동함");
+	array.push("보석 감정인에게 말을 걸어주세요");
+	chat.text = array;
+
+	chat.quest = 1;
+
+	FUNC.saveInstance(ENUM.ID.chat, chat);
+
+	//스토리 시작
+	chat = new Chat();
+	chat.id = 3;
+
+	array = new Array();
+	array.push("음 신비한 돌이라.... 언젠가 책에서 이런 돌을 본 적이 있긴 하지");
+	array.push("잠시만 기다려보시게");
+	chat.text = array;
+
+	FUNC.saveInstance(ENUM.ID.chat, chat);
+
+	// --- 엔피시 --- //
+	//시스템
+	npc = new Npc("[시스템]");
+
+	array = new Array();
+
+	map = new Map();
+	map.set("chat", 1);
+	map.set("percent", -1);
+	map.set("minLv", 1);
+	map.set("minCloseRate", 0);
+	map.set("minStat", new Map());
+	map.set("minQuest", new Map());
+	map.set("maxLv", 999);
+	map.set("maxCloseRate", 0);
+	map.set("maxStat", new Map());
+	map_ = new Map();
+	map_.set(1, 0);
+	map.set("maxQuest", map_);
+
+	array.push(map);
+
+	FUNC.saveInstance(ENUM.ID.npc, npc);
+}
+
 function onStartCompile() {
+	initDataBase();
 	FUNC.loadDB();
 }
